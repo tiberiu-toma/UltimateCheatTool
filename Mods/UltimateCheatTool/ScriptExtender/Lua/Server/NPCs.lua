@@ -1,5 +1,5 @@
 ENPC = {}
-ENPC.Max = 50
+ENPC.Max = 50000
 
 function ENPC.GetAll(search)
     search = search or ""

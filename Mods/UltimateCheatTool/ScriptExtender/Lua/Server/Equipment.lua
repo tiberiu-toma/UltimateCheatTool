@@ -1,5 +1,5 @@
 EKP = {}
-EKP.Max = 50
+EKP.Max = 50000
 
 function tableToString(tbl)
     if type(tbl) ~= "table" then

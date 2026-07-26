@@ -73,6 +73,34 @@ SMS.FetchConsumables:SetHandler(function(payload)
     )
 end)
 
+SMS.FetchPassives:SetHandler(function(payload)
+    local search = HLP.GetAttr(payload, "search") or ""
+
+    local Passives = PASSV.GetAll(search)
+
+    HLP.ToClient(
+        SMS.SendPassives,
+        {
+            data = Passives
+        },
+        payload.ID
+    )
+end)
+
+SMS.FetchStatuses:SetHandler(function(payload)
+    local search = HLP.GetAttr(payload, "search") or ""
+
+    local Statuses = STAT.GetAll(search)
+
+    HLP.ToClient(
+        SMS.SendStatuses,
+        {
+            data = Statuses
+        },
+        payload.ID
+    )
+end)
+
 SMS.LearnSpell:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
@@ -103,6 +131,47 @@ SMS.LearnSpell:SetHandler(function(payload)
         Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
     end
 end)
+
+SMS.LearnPassive:SetHandler(function(payload)
+    local uuid = payload.uuid
+    local data = payload.data
+    
+    if HLP.GetAttr(payload, "unlearn") then
+        PASSV.Learn(uuid, true)
+
+        local passives = Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives or {}
+        passives[uuid] = nil
+        
+        Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives = passives
+    else
+        PASSV.Learn(uuid)
+   
+        local passives = Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives or {}
+        passives[uuid] = data
+        
+        Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives = passives
+    end
+end)
+
+SMS.ApplyStatus:SetHandler(function(payload)
+    local uuid = payload.uuid
+    local data = payload.data
+    
+    if HLP.GetAttr(payload, "remove") then
+        STAT.Apply(Osi.GetHostCharacter(), uuid, true)
+
+        local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+        statuses[uuid] = nil
+        Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
+    else
+        STAT.Apply(Osi.GetHostCharacter(), uuid)
+
+        local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+        statuses[uuid] = data
+        Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
+    end
+end)
+
 
 SMS.SpawnTemplate:SetHandler(function(payload)
     local uuid = payload.uuid

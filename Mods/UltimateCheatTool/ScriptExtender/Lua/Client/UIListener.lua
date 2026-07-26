@@ -25,6 +25,24 @@ SMS.SendSpells:SetHandler(function (payload)
         tab:SetSpells(Spells)
     end
 end)
+SMS.SendPassives:SetHandler(function (payload)
+    if UI then
+        local Passives = payload.data
+        
+        local tab = UI.PassiveTab
+
+        tab:SetPassives(Passives)
+    end
+end)
+SMS.SendStatuses:SetHandler(function (payload)
+    if UI then
+        local Statuses = payload.data
+        
+        local tab = UI.StatusTab
+
+        tab:SetStatuses(Statuses)
+    end
+end)
 SMS.SendConsumables:SetHandler(function (payload)
     if UI then
         local Consumables = payload.data

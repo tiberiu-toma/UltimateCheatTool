@@ -1,5 +1,5 @@
 TELP = {}
-TELP.Max = 50
+TELP.Max = 50000
 
 function TELP.GetAll(search)
     search = search or ""

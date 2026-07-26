@@ -41,7 +41,7 @@ function WaypointTab:SetWaypoints(items)
         return
     end
 
-    local maxTableWidth = 4
+    local maxTableWidth = 5
     local tableWidth = math.min(shownCount, maxTableWidth) 
 
     self.WaypointArea:AddText("Showing " .. shownCount .. " items (max: 50)")

@@ -17,6 +17,8 @@ MCMActive = Mods and Mods.BG3MCM -- true or false depending on if MCM is active 
 ---@field EquipmentTab EquipmentTab
 ---@field NPCTab NPCTab
 ---@field SpellTab SpellTab
+---@field PassiveTab PassiveTab
+---@field StatusTab StatusTab
 UI = {
     Ready = false,
 }
@@ -25,6 +27,8 @@ UI.__index = UI
 local EquipmentTab = Ext.Require("Client/EquipmentTab.lua")
 local NPCTab = Ext.Require("Client/NPCTab.lua")
 local SpellTab = Ext.Require("Client/SpellTab.lua")
+local PassiveTab = Ext.Require("Client/PassiveTab.lua")
+local StatusTab = Ext.Require("Client/StatusTab.lua")
 local ConsumableTab = Ext.Require("Client/ConsumableTab.lua")
 local WaypointTab = Ext.Require("Client/WaypointTab.lua")
 local RecruitTab = Ext.Require("Client/RecruitTab.lua")
@@ -58,6 +62,8 @@ function UI:Init()
     self.EquipmentTab = EquipmentTab:New(self.TabBar)
     self.NPCTab = NPCTab:New(self.TabBar)
     self.SpellTab = SpellTab:New(self.TabBar)
+    self.PassiveTab = PassiveTab:New(self.TabBar)
+    self.StatusTab = StatusTab:New(self.TabBar)
     self.ConsumableTab = ConsumableTab:New(self.TabBar)
     self.WaypointTab = WaypointTab:New(self.TabBar)
     self.RecruitTab = RecruitTab:New(self.TabBar)
@@ -65,9 +71,12 @@ function UI:Init()
     self.EquipmentTab:Init()
     self.NPCTab:Init()
     self.SpellTab:Init()
+    self.PassiveTab:Init()
+    self.StatusTab:Init()
     self.ConsumableTab:Init()
     self.WaypointTab:Init()
     self.RecruitTab:Init()
+
     
     self.Ready = true
     -- Event.UIInitialized:SendToServer({ID = USERID})

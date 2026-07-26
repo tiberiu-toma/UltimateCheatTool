@@ -1,5 +1,5 @@
 SPLL = {}
-SPLL.Max = 50
+SPLL.Max = 50000
 
 function SPLL.GetAll(search)
     search = search or ""

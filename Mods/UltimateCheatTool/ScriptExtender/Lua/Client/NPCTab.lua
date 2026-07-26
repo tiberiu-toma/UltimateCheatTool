@@ -45,7 +45,7 @@ function NPCTab:SetNPCs(items)
         return
     end
 
-    local maxTableWidth = 4
+    local maxTableWidth = 5
     local tableWidth = math.min(shownCount, maxTableWidth) 
 
     self.NPCArea:AddText("Showing " .. shownCount .. " items (max: 50)")
@@ -116,7 +116,7 @@ function NPCTab:GetSpawnedNPCs()
         return
     end
 
-    local maxTableWidth = 4
+    local maxTableWidth = 5
     local tableWidth = math.min(totalSpawned, maxTableWidth) 
 
     local header = self.SpawnedNPCsArea:AddCollapsingHeader("Spawned NPCs")

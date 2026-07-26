@@ -1,5 +1,5 @@
 CONS = {}
-CONS.Max = 50
+CONS.Max = 50000
 
 function CONS.GetAll(search)
     search = search or ""
