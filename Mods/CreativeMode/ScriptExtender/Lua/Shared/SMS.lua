@@ -1,0 +1,25 @@
+SMS = {}
+
+function SMS:New(name)
+    self[name] = Ext.Net.CreateChannel(ModuleUUID, name)
+end
+
+SMS:New("FetchEquipment")
+SMS:New("FetchNPCs")
+SMS:New("SendEquipment")
+SMS:New("SendNPCs")
+SMS:New("SpawnTemplate")
+SMS:New("SpawnCharacter")
+SMS:New("DespawnCharacter")
+SMS:New("ManageNPC")
+SMS:New("FetchSpells")
+SMS:New("ManageSpells")
+SMS:New("SendSpells")
+SMS:New("LearnSpell")
+SMS:New("SendConsumables")
+SMS:New("FetchConsumables")
+SMS:New("SendWaypoints")
+SMS:New("FetchWaypoints")
+SMS:New("TeleportToWaypoint")
+SMS:New("RecruitCompanion")
+SMS:New("CompanionApproval")

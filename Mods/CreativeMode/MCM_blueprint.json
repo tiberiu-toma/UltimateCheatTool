@@ -1,0 +1,10 @@
+{
+    "SchemaVersion": 1,
+    "ModDescription": "The ultimate convenience for your campaign",
+    "Tabs": [
+        {
+            "TabName": "Creative Mode",
+            "TabId": "CreativeMode"
+        }
+    ]
+}
