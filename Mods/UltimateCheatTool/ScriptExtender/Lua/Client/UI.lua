@@ -35,7 +35,7 @@ local RecruitTab = Ext.Require("Client/RecruitTab.lua")
 function UI:New(mcm)
     local window
     if mcm then
-        window = mcm:AddChildWindow("CreativeMode")
+        window = mcm:AddChildWindow("UltimateCheatTool")
     -- else
     --     window = Ext.IMGUI.NewWindow("BG3SX")
     --     window:SetSize({500*ViewPortScale, 500*ViewPortScale}, "FirstUseEver")
@@ -134,7 +134,7 @@ end
 
 if MCMActive then
     ----print("Inserting into MCM")
-    Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "CreativeMode", function(mcm)
+    Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "UltimateCheatTool", function(mcm)
         UI:New(mcm):Init()
     end)
 end

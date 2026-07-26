@@ -1,5 +1,5 @@
 {
     "RequiredVersion": 29,
-    "ModTable": "CreativeMode",
+    "ModTable": "UltimateCheatTool",
     "FeatureFlags": ["Lua"]
 }
