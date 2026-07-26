@@ -14,7 +14,7 @@ StatusTab.__index = StatusTab
 ---@param holder ExtuiTabBar
 function StatusTab:GetAllStatuses(search)
     search = search or ""
-    SMS.FetchStatuses:SendToServer({ ID=USERID, search=search, data=search })
+    SMS.FetchStatuses:SendToServer({ ID=USERID, search=search })
 end
 
 function StatusTab:New(holder)

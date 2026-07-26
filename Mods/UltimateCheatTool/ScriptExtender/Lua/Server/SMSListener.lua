@@ -1,5 +1,4 @@
 SMS.FetchEquipment:SetHandler(function(payload)
-    local data = payload.data
     local search = HLP.GetAttr(payload, "search") or ""
 
     local equipment = EKP.GetAll(search)
@@ -14,7 +13,6 @@ SMS.FetchEquipment:SetHandler(function(payload)
 end)
 
 SMS.FetchNPCs:SetHandler(function(payload)
-    local data = payload.data
     local search = HLP.GetAttr(payload, "search") or ""
 
     local NPCs = ENPC.GetAll(search)
@@ -29,7 +27,6 @@ SMS.FetchNPCs:SetHandler(function(payload)
 end)
 
 SMS.FetchSpells:SetHandler(function(payload)
-    local data = payload.data
     local search = HLP.GetAttr(payload, "search") or ""
 
     local Spells = SPLL.GetAll(search)
@@ -44,7 +41,6 @@ SMS.FetchSpells:SetHandler(function(payload)
 end)
 
 SMS.FetchWaypoints:SetHandler(function(payload)
-    local data = payload.data
     local search = HLP.GetAttr(payload, "search") or ""
 
     local Waypoints = TELP.GetAll(search)
@@ -59,15 +55,14 @@ SMS.FetchWaypoints:SetHandler(function(payload)
 end)
 
 SMS.FetchConsumables:SetHandler(function(payload)
-    local data = payload.data
     local search = HLP.GetAttr(payload, "search") or ""
 
-    local Spells = CONS.GetAll(search)
+    local Consumables = CONS.GetAll(search)
 
     HLP.ToClient(
         SMS.SendConsumables,
         {
-            data = Spells
+            data = Consumables
         },
         payload.ID
     )

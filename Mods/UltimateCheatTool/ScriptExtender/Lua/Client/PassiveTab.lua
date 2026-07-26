@@ -14,7 +14,7 @@ PassiveTab.__index = PassiveTab
 ---@param holder ExtuiTabBar
 function PassiveTab:GetAllPassives(search)
     search = search or ""
-    SMS.FetchPassives:SendToServer({ ID=USERID, search=search, data=search })
+    SMS.FetchPassives:SendToServer({ ID=USERID, search=search })
 end
 
 function PassiveTab:New(holder)
