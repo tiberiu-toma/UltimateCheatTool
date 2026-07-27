@@ -1,3 +1,5 @@
+local Pagination = Ext.Require("Client/Pagination.lua")
+
 ---@class NPCTab
 ---@field Tab ExtuiTabItem
 ---@field Description ExtuiGroup
@@ -8,13 +10,19 @@
 ---@field SpawnedNPCs table
 ---@field SpawnedNPCsArea ExtuiGroup
 ---@field AmountOptions table
+---@field CurrentPage number
+---@field TotalPages number
+---@field TotalItems number
+---@field SearchText string
+---@field PaginationAreaTop ExtuiGroup
+---@field PaginationAreaBottom ExtuiGroup
 NPCTab = {}
 NPCTab.__index = NPCTab
 
 ---@param holder ExtuiTabBar
-function NPCTab:GetAllNPCs(search)    
-    search = search or ""
-    SMS.FetchNPCs:SendToServer({ ID=USERID, search=search })
+function NPCTab:GetAllNPCs(page)
+    self.CurrentPage = page or 1
+    SMS.FetchNPCs:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
 end
 
 function NPCTab:New(holder)
@@ -24,31 +32,47 @@ function NPCTab:New(holder)
         Tab = holder:AddTabItem(LCL.Get("", "NPCs")),
         AllNPCs = {},
         ResultCount = 0,
-
         SpawnedNPCs = {},
-        
-        AmountOptions = {1}
+        AmountOptions = {1},
+        CurrentPage = 1,
+        TotalPages = 1,
+        TotalItems = 0,
+        SearchText = ""
     }, NPCTab)
     return instance
 end
 
-function NPCTab:SetNPCs(items)
+function NPCTab:SetNPCs(payload)
     UI.DestroyChildren(self.NPCArea)
+    UI.DestroyChildren(self.PaginationAreaTop)
+    UI.DestroyChildren(self.PaginationAreaBottom)
 
+    local items = payload.data
     self.AllNPCs = items
     self.ResultCount = HLP.Count(items)
 
-    local shownCount = HLP.Count(self.AllNPCs)
+    self.TotalItems = payload.totalItems or 0
+    self.TotalPages = payload.totalPages or 1
+    self.CurrentPage = payload.currentPage or 1
 
-    if shownCount == 0 then
+    if self.TotalItems == 0 then
         self.NPCArea:AddText("No items found.")
         return
     end
 
+    local shownCount = HLP.Count(self.AllNPCs)
     local maxTableWidth = 5
     local tableWidth = math.min(shownCount, maxTableWidth) 
 
-    self.NPCArea:AddText("Showing " .. shownCount .. " items (max: 50)")
+    Pagination:CreateControls({
+        parent = self.PaginationAreaTop,
+        idSuffix = "Top",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:GetAllNPCs(page) end
+    })
+
+    self.NPCArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
 
     local t = self.NPCArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
@@ -103,7 +127,13 @@ function NPCTab:SetNPCs(items)
         ::continue::
     end
 
-    --print(i .. " total cells added")
+    Pagination:CreateControls({
+        parent = self.PaginationAreaBottom,
+        idSuffix = "Bottom",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:GetAllNPCs(page) end
+    })
 end
 
 function NPCTab:GetSpawnedNPCs()
@@ -195,9 +225,8 @@ function NPCTab:AddNPCSearch()
     local btn = self.NPCSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
 
     btn.OnClick = function()
-        local txt = search.Text 
-
-        self:GetAllNPCs(txt)
+        self.SearchText = search.Text 
+        self:GetAllNPCs(1)
     end
 end
 
@@ -208,12 +237,14 @@ function NPCTab:Init()
     self:GetSpawnedNPCs()
 
     self.NPCSearch = self.Tab:AddGroup("NPCSearch")
+    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
     self.NPCArea = self.Tab:AddGroup("AllNPCs")
+    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
 
     self:AddNPCSearch()
 
     self.AllNPCs = {}
-    self:GetAllNPCs()
+    self:GetAllNPCs(1)
 end
 
 return NPCTab

@@ -1,13 +1,14 @@
 STAT = {}
 STAT.Max = 50
 
-function STAT.GetAll(search)
+function STAT.GetAll(search, page)
     search = search or ""
+    page = page or 1
+    local pageSize = STAT.Max
 
     local itemData = Ext.Stats.GetStats("StatusData")
 
-    local statusCount = 0
-    local statuses = {}
+    local allMatchingStatuses = {}
 
     for k,v in pairs(itemData) do 
         local id = v
@@ -15,30 +16,39 @@ function STAT.GetAll(search)
         local icon = HLP.GetAttr(v, "Icon")
         local name = HLP.GetAttr(v, "Name")
         local handle = HLP.GetAttr(v, "DisplayName")
-
         local displayName = Ext.Loca.GetTranslatedString(handle)
 
-        local matchesSearch = true
+        local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName))
 
-        if search ~= "" then
-            matchesSearch = HLP.StrContains(search, displayName)
-        end
-
-        if matchesSearch and displayName and displayName ~= "" then
-            statusCount = statusCount + 1
-            
-            statuses[id] = {
+        if matchesSearch and displayName and displayName ~= "" and icon and icon ~= "" then
+            table.insert(allMatchingStatuses, {
                 id = id,
                 name = name,
                 icon = icon,
                 displayName = displayName,
-            }
+            })
         end
-            
-        if HLP.Count(statuses) >= STAT.Max then break end 
     end
 
-    return statuses
+    table.sort(allMatchingStatuses, function(a, b) return a.displayName < b.displayName end)
+
+    local totalItems = #allMatchingStatuses
+    local totalPages = math.ceil(totalItems / pageSize)
+    if page > totalPages and totalPages > 0 then page = totalPages end
+    if page < 1 then page = 1 end
+
+    local startIndex = (page - 1) * pageSize + 1
+    local endIndex = math.min(startIndex + pageSize - 1, totalItems)
+
+    local statusesForPage = {}
+    for i = startIndex, endIndex do
+        local status = allMatchingStatuses[i]
+        if status then
+            statusesForPage[status.id] = status
+        end
+    end
+
+    return statusesForPage, totalItems, totalPages, page
 end
 
 function STAT.Apply(char, statusId, remove)

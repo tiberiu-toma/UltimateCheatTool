@@ -1,3 +1,5 @@
+local Pagination = Ext.Require("Client/Pagination.lua")
+
 ---@class SpellTab
 ---@field Tab ExtuiTabItem
 ---@field Description ExtuiGroup
@@ -8,13 +10,19 @@
 ---@field LearnedSpells table
 ---@field LearnedSpellsArea ExtuiGroup
 ---@field AmountOptions table
+---@field CurrentPage number
+---@field TotalPages number
+---@field TotalItems number
+---@field SearchText string
+---@field PaginationAreaTop ExtuiGroup
+---@field PaginationAreaBottom ExtuiGroup
 SpellTab = {}
 SpellTab.__index = SpellTab
 
 ---@param holder ExtuiTabBar
-function SpellTab:GetAllSpells(search)    
-    search = search or ""
-    SMS.FetchSpells:SendToServer({ ID=USERID, search=search })
+function SpellTab:GetAllSpells(page)
+    self.CurrentPage = page or 1
+    SMS.FetchSpells:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
 end
 
 function SpellTab:New(holder)
@@ -24,31 +32,47 @@ function SpellTab:New(holder)
         Tab = holder:AddTabItem(LCL.Get("", "Spells")),
         AllSpells = {},
         ResultCount = 0,
-
         LearnedSpells = {},
-        
-        AmountOptions = {1}
+        AmountOptions = {1},
+        CurrentPage = 1,
+        TotalPages = 1,
+        TotalItems = 0,
+        SearchText = ""
     }, SpellTab)
     return instance
 end
 
-function SpellTab:SetSpells(items)
+function SpellTab:SetSpells(payload)
     UI.DestroyChildren(self.SpellsArea)
+    UI.DestroyChildren(self.PaginationAreaTop)
+    UI.DestroyChildren(self.PaginationAreaBottom)
 
+    local items = payload.data
     self.AllSpells = items
     self.ResultCount = HLP.Count(items)
 
-    local shownCount = HLP.Count(self.AllSpells)
+    self.TotalItems = payload.totalItems or 0
+    self.TotalPages = payload.totalPages or 1
+    self.CurrentPage = payload.currentPage or 1
 
-    if shownCount == 0 then
+    if self.TotalItems == 0 then
         self.SpellsArea:AddText("No items found.")
         return
     end
 
+    local shownCount = HLP.Count(self.AllSpells)
     local maxTableWidth = 5
     local tableWidth = math.min(shownCount, maxTableWidth) 
 
-    self.SpellsArea:AddText("Showing " .. shownCount .. " items (max: 50)")
+    Pagination:CreateControls({
+        parent = self.PaginationAreaTop,
+        idSuffix = "Top",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:GetAllSpells(page) end
+    })
+
+    self.SpellsArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
 
     local t = self.SpellsArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
@@ -110,7 +134,13 @@ function SpellTab:SetSpells(items)
         ::continue::
     end
 
-    --print(i .. " total cells added")
+    Pagination:CreateControls({
+        parent = self.PaginationAreaBottom,
+        idSuffix = "Bottom",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:GetAllSpells(page) end
+    })
 end
 
 function SpellTab:GetLearnedSpells()
@@ -196,9 +226,8 @@ function SpellTab:AddSpellSearch()
     local btn = self.SpellSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
 
     btn.OnClick = function()
-        local txt = search.Text 
-
-        self:GetAllSpells(txt)
+        self.SearchText = search.Text
+        self:GetAllSpells(1)
     end
 end
 
@@ -209,12 +238,14 @@ function SpellTab:Init()
     self:GetLearnedSpells()
 
     self.SpellSearch = self.Tab:AddGroup("SpellSearch")
+    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
     self.SpellsArea = self.Tab:AddGroup("AllSpells")
+    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
 
     self:AddSpellSearch()
 
     self.AllSpells = {}
-    self:GetAllSpells()
+    self:GetAllSpells(1)
 end
 
 return SpellTab

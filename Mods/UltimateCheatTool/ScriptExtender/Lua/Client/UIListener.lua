@@ -1,28 +1,20 @@
 SMS.SendEquipment:SetHandler(function (payload)
     if UI then
-        local equipment = payload.data
-        
         local tab = UI.EquipmentTab
 
-        tab:SetEquipment(equipment)
+        tab:SetEquipment(payload)
     end
 end)
 SMS.SendNPCs:SetHandler(function (payload)
     if UI then
-        local NPCs = payload.data
-        
         local tab = UI.NPCTab
-
-        tab:SetNPCs(NPCs)
+        tab:SetNPCs(payload)
     end
 end)
 SMS.SendSpells:SetHandler(function (payload)
     if UI then
-        local Spells = payload.data
-        
         local tab = UI.SpellTab
-
-        tab:SetSpells(Spells)
+        tab:SetSpells(payload)
     end
 end)
 SMS.SendPassives:SetHandler(function (payload)
@@ -33,20 +25,15 @@ SMS.SendPassives:SetHandler(function (payload)
 end)
 SMS.SendStatuses:SetHandler(function (payload)
     if UI then
-        local Statuses = payload.data
-        
         local tab = UI.StatusTab
 
-        tab:SetStatuses(Statuses)
+        tab:SetStatuses(payload)
     end
 end)
 SMS.SendConsumables:SetHandler(function (payload)
     if UI then
-        local Consumables = payload.data
-        
         local tab = UI.ConsumableTab
-
-        tab:SetConsumables(Consumables)
+        tab:SetConsumables(payload)
     end
 end)
 SMS.SendWaypoints:SetHandler(function (payload)

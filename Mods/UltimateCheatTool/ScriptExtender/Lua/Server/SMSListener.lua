@@ -1,12 +1,16 @@
 SMS.FetchEquipment:SetHandler(function(payload)
     local search = HLP.GetAttr(payload, "search") or ""
+    local page = HLP.GetAttr(payload, "page") or 1
 
-    local equipment = EKP.GetAll(search)
+    local equipment, totalItems, totalPages, currentPage = EKP.GetAll(search, page)
 
     HLP.ToClient(
         SMS.SendEquipment,
         {
-            data = equipment
+            data = equipment,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
         },
         payload.ID
     )
@@ -14,13 +18,17 @@ end)
 
 SMS.FetchNPCs:SetHandler(function(payload)
     local search = HLP.GetAttr(payload, "search") or ""
+    local page = HLP.GetAttr(payload, "page") or 1
 
-    local NPCs = ENPC.GetAll(search)
+    local NPCs, totalItems, totalPages, currentPage = ENPC.GetAll(search, page)
 
     HLP.ToClient(
         SMS.SendNPCs,
         {
-            data = NPCs
+            data = NPCs,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
         },
         payload.ID
     )
@@ -28,13 +36,17 @@ end)
 
 SMS.FetchSpells:SetHandler(function(payload)
     local search = HLP.GetAttr(payload, "search") or ""
+    local page = HLP.GetAttr(payload, "page") or 1
 
-    local Spells = SPLL.GetAll(search)
+    local spells, totalItems, totalPages, currentPage = SPLL.GetAll(search, page)
 
     HLP.ToClient(
         SMS.SendSpells,
         {
-            data = Spells
+            data = spells,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
         },
         payload.ID
     )
@@ -56,13 +68,17 @@ end)
 
 SMS.FetchConsumables:SetHandler(function(payload)
     local search = HLP.GetAttr(payload, "search") or ""
+    local page = HLP.GetAttr(payload, "page") or 1
 
-    local Consumables = CONS.GetAll(search)
+    local Consumables, totalItems, totalPages, currentPage = CONS.GetAll(search, page)
 
     HLP.ToClient(
         SMS.SendConsumables,
         {
-            data = Consumables
+            data = Consumables,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
         },
         payload.ID
     )
@@ -88,13 +104,17 @@ end)
 
 SMS.FetchStatuses:SetHandler(function(payload)
     local search = HLP.GetAttr(payload, "search") or ""
+    local page = HLP.GetAttr(payload, "page") or 1
 
-    local Statuses = STAT.GetAll(search)
+    local statuses, totalItems, totalPages, currentPage = STAT.GetAll(search, page)
 
     HLP.ToClient(
         SMS.SendStatuses,
         {
-            data = Statuses
+            data = statuses,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
         },
         payload.ID
     )

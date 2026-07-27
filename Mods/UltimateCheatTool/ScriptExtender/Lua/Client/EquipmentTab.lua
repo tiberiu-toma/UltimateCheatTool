@@ -1,3 +1,5 @@
+local Pagination = Ext.Require("Client/Pagination.lua")
+
 ---@class EquipmentTab
 ---@field Tab ExtuiTabItem
 ---@field Description ExtuiGroup
@@ -6,13 +8,19 @@
 ---@field EquipmentArea ExtuiCollapsingHeader
 ---@field EquipmentSearch ExtuiGroup
 ---@field AmountOptions table
+---@field CurrentPage number
+---@field TotalPages number
+---@field TotalItems number
+---@field SearchText string
+---@field PaginationAreaTop ExtuiGroup
+---@field PaginationAreaBottom ExtuiGroup
 EquipmentTab = {}
 EquipmentTab.__index = EquipmentTab
 
 ---@param holder ExtuiTabBar
-function EquipmentTab:GetEquipmentItems(search)    
-    search = search or ""
-    SMS.FetchEquipment:SendToServer({ ID=USERID, search=search })
+function EquipmentTab:GetEquipmentItems(page)
+    self.CurrentPage = page or 1
+    SMS.FetchEquipment:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
 end
 
 function EquipmentTab:New(holder)
@@ -22,30 +30,47 @@ function EquipmentTab:New(holder)
         Tab = holder:AddTabItem(LCL.Get("", "Equipment")),
         EquipmentItems = {},
         ResultCount = 0,
-        
-        AmountOptions = {1, 2, 5, 10, 99}
+        AmountOptions = {1, 2, 5, 10, 99},
+        CurrentPage = 1,
+        TotalPages = 1,
+        TotalItems = 0,
+        SearchText = ""
     }, EquipmentTab)
     return instance
 end
 
-function EquipmentTab:SetEquipment(items)
+function EquipmentTab:SetEquipment(payload)
     UI.DestroyChildren(self.EquipmentArea)
+    UI.DestroyChildren(self.PaginationAreaTop)
+    UI.DestroyChildren(self.PaginationAreaBottom)
 
+    local items = payload.data
     self.EquipmentItems = items
     self.ResultCount = HLP.Count(items)
 
-    local shownCount = HLP.Count(self.EquipmentItems)
+    self.TotalItems = payload.totalItems or 0
+    self.TotalPages = payload.totalPages or 1
+    self.CurrentPage = payload.currentPage or 1
 
-    if shownCount == 0 then
+    if self.TotalItems == 0 then
         self.EquipmentArea:AddText("No items found.")
         return
     end
 
+    local shownCount = HLP.Count(self.EquipmentItems)
     local maxTableWidth = 5
     local tableWidth = math.min(shownCount, maxTableWidth) 
 
-    self.EquipmentArea:AddText("Showing " .. shownCount .. " items (max: 50)")
+    Pagination:CreateControls({
+        parent = self.PaginationAreaTop,
+        idSuffix = "Top",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:GetEquipmentItems(page) end
+    })
 
+    self.EquipmentArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
+    
     local t = self.EquipmentArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
@@ -94,7 +119,13 @@ function EquipmentTab:SetEquipment(items)
         ::continue::
     end
 
-    --print(i .. " total cells added")
+    Pagination:CreateControls({
+        parent = self.PaginationAreaBottom,
+        idSuffix = "Bottom",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:GetEquipmentItems(page) end
+    })
 end
 
 function EquipmentTab:AddEquipmentSearch()
@@ -106,20 +137,21 @@ function EquipmentTab:AddEquipmentSearch()
     local btn = self.EquipmentSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
 
     btn.OnClick = function()
-        local txt = search.Text 
-
-        self:GetEquipmentItems(txt)
+        self.SearchText = search.Text 
+        self:GetEquipmentItems(1)
     end
 end
 
 function EquipmentTab:Init()
     self.EquipmentSearch = self.Tab:AddGroup("EquipmentSearch")
+    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
     self.EquipmentArea = self.Tab:AddGroup("EquipmentItems")
+    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
 
     self:AddEquipmentSearch()
 
     self.EquipmentItems = {}
-    self:GetEquipmentItems()
+    self:GetEquipmentItems(1)
 end
 
 return EquipmentTab
