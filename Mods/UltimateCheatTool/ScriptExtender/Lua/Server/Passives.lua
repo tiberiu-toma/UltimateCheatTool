@@ -1,5 +1,5 @@
 PASSV = {}
-PASSV.Max = 50000
+PASSV.Max = 50
 
 function PASSV.GetAll(search)
     search = search or ""

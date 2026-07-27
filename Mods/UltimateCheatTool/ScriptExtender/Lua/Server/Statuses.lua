@@ -1,5 +1,5 @@
 STAT = {}
-STAT.Max = 50000
+STAT.Max = 50
 
 function STAT.GetAll(search)
     search = search or ""
