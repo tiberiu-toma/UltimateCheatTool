@@ -1,3 +1,5 @@
+local Pagination = Ext.Require("Client/Pagination.lua")
+
 ---@class PassiveTab
 ---@field Tab ExtuiTabItem
 ---@field Description ExtuiGroup
@@ -64,7 +66,13 @@ function PassiveTab:SetPassives(payload)
     local maxTableWidth = 5
     local tableWidth = math.min(shownCount, maxTableWidth)
     
-    self:CreatePaginationControls(self.PaginationAreaTop, "Top")
+    Pagination:CreateControls({
+        parent = self.PaginationAreaTop,
+        idSuffix = "Top",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:GetAllPassives(page) end
+    })
 
     self.PassivesArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
 
@@ -125,36 +133,13 @@ function PassiveTab:SetPassives(payload)
         ::continue::
     end
 
-    self:CreatePaginationControls(self.PaginationAreaBottom, "Bottom")
-end
-
-function PassiveTab:CreatePaginationControls(paginationArea, idSuffix)
-    if self.TotalPages <= 1 then
-        return
-    end
-
-    local paginationGroup = paginationArea:AddGroup("Pagination")
-
-    local prevBtn = paginationGroup:AddButton("<##Prev" .. idSuffix)
-    prevBtn.SameLine = false
-    if self.CurrentPage <= 1 then
-        prevBtn.Disabled = true
-    end
-    prevBtn.OnClick = function()
-        self:GetAllPassives(self.CurrentPage - 1)
-    end
-
-    local paginationText = paginationGroup:AddText("Page " .. self.CurrentPage .. " of " .. self.TotalPages)
-    paginationText.SameLine = true
-
-    local nextBtn = paginationGroup:AddButton(">##Next" .. idSuffix)
-    nextBtn.SameLine = true
-    if self.CurrentPage >= self.TotalPages then
-        nextBtn.Disabled = true
-    end
-    nextBtn.OnClick = function()
-        self:GetAllPassives(self.CurrentPage + 1)
-    end
+    Pagination:CreateControls({
+        parent = self.PaginationAreaBottom,
+        idSuffix = "Bottom",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:GetAllPassives(page) end
+    })
 end
 
 function PassiveTab:GetLearnedPassives()
