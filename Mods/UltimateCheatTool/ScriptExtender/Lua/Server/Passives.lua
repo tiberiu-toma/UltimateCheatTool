@@ -1,13 +1,14 @@
 PASSV = {}
 PASSV.Max = 50
 
-function PASSV.GetAll(search)
+function PASSV.GetAll(search, page)
     search = search or ""
+    page = page or 1
+    local pageSize = PASSV.Max
 
     local itemData = Ext.Stats.GetStats("PassiveData")
 
-    local passiveCount = 0
-    local passives = {}
+    local allMatchingPassives = {}
 
     for k,v in pairs(itemData) do 
         local id = v
@@ -18,32 +19,35 @@ function PASSV.GetAll(search)
 
         local displayName = Ext.Loca.GetTranslatedString(handle)
 
-        local matchesSearch = true
+        local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName))
 
-        if search ~= "" then
-            matchesSearch = HLP.StrContains(search, displayName)
+        if matchesSearch and displayName and displayName ~= "" then
+            table.insert(allMatchingPassives, {
+                id = id,
+                name = name,
+                icon = icon,
+                displayName = displayName,
+            })
         end
-
-        if matchesSearch then
-
-            local isPassive = true
-
-            if isPassive and displayName and displayName ~= "" then
-                passiveCount = passiveCount + 1
-                
-                passives[id] = {
-                    id = id,
-                    name = name,
-                    icon = icon,
-                    displayName = displayName,
-                }
-            end
-        end
-            
-        if HLP.Count(passives) >= PASSV.Max then break end 
     end
 
-    return passives
+    table.sort(allMatchingPassives, function(a, b) return a.displayName < b.displayName end)
+
+    local totalItems = #allMatchingPassives
+    local totalPages = math.ceil(totalItems / pageSize)
+    if page > totalPages and totalPages > 0 then page = totalPages end
+    if page < 1 then page = 1 end
+
+    local startIndex = (page - 1) * pageSize + 1
+    local endIndex = math.min(startIndex + pageSize - 1, totalItems)
+
+    local passivesForPage = {}
+    for i = startIndex, endIndex do
+        local passive = allMatchingPassives[i]
+        passivesForPage[passive.id] = passive
+    end
+
+    return passivesForPage, totalItems, totalPages, page
 end
 
 function PASSV.Learn(passiveId, unlearn)

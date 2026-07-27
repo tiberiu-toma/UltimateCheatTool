@@ -70,13 +70,17 @@ end)
 
 SMS.FetchPassives:SetHandler(function(payload)
     local search = HLP.GetAttr(payload, "search") or ""
-
-    local Passives = PASSV.GetAll(search)
+    local page = HLP.GetAttr(payload, "page") or 1
+ 
+    local passives, totalItems, totalPages, currentPage = PASSV.GetAll(search, page)
 
     HLP.ToClient(
         SMS.SendPassives,
         {
-            data = Passives
+            data = passives,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
         },
         payload.ID
     )

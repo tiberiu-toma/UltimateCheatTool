@@ -27,11 +27,8 @@ SMS.SendSpells:SetHandler(function (payload)
 end)
 SMS.SendPassives:SetHandler(function (payload)
     if UI then
-        local Passives = payload.data
-        
         local tab = UI.PassiveTab
-
-        tab:SetPassives(Passives)
+        tab:SetPassives(payload)
     end
 end)
 SMS.SendStatuses:SetHandler(function (payload)

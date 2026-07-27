@@ -8,13 +8,19 @@
 ---@field LearnedPassives table
 ---@field LearnedPassivesArea ExtuiGroup
 ---@field AmountOptions table
+---@field CurrentPage number
+---@field TotalPages number
+---@field TotalItems number
+---@field SearchText string
+---@field PaginationAreaTop ExtuiGroup
+---@field PaginationAreaBottom ExtuiGroup
 PassiveTab = {}
 PassiveTab.__index = PassiveTab
 
 ---@param holder ExtuiTabBar
-function PassiveTab:GetAllPassives(search)
-    search = search or ""
-    SMS.FetchPassives:SendToServer({ ID=USERID, search=search })
+function PassiveTab:GetAllPassives(page)
+    self.CurrentPage = page or 1
+    SMS.FetchPassives:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
 end
 
 function PassiveTab:New(holder)
@@ -25,28 +31,42 @@ function PassiveTab:New(holder)
         AllPassives = {},
         ResultCount = 0,
         LearnedPassives = {},
-        AmountOptions = {1}
+        AmountOptions = {1},
+        CurrentPage = 1,
+        TotalPages = 1,
+        TotalItems = 0,
+        SearchText = ""
+        -- PaginationAreaTop and PaginationAreaBottom will be initialized in Init()
     }, PassiveTab)
     return instance
 end
 
-function PassiveTab:SetPassives(items)
+function PassiveTab:SetPassives(payload)
     UI.DestroyChildren(self.PassivesArea)
+    UI.DestroyChildren(self.PaginationAreaTop)
+    UI.DestroyChildren(self.PaginationAreaBottom)
 
+    local items = payload.data
     self.AllPassives = items
     self.ResultCount = HLP.Count(items)
 
-    local shownCount = HLP.Count(self.AllPassives)
+    self.TotalItems = payload.totalItems or 0
+    self.TotalPages = payload.totalPages or 1
+    self.CurrentPage = payload.currentPage or 1
 
-    if shownCount == 0 then
+    if self.TotalItems == 0 then
         self.PassivesArea:AddText("No passives found.")
+        -- No pagination controls needed if there are no items.
         return
     end
 
+    local shownCount = HLP.Count(self.AllPassives)
     local maxTableWidth = 5
     local tableWidth = math.min(shownCount, maxTableWidth)
+    
+    self:CreatePaginationControls(self.PaginationAreaTop, "Top")
 
-    self.PassivesArea:AddText("Showing " .. shownCount .. " items (max: 50)")
+    self.PassivesArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
 
     local t = self.PassivesArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
@@ -103,6 +123,37 @@ function PassiveTab:SetPassives(items)
         i = i + 1
 
         ::continue::
+    end
+
+    self:CreatePaginationControls(self.PaginationAreaBottom, "Bottom")
+end
+
+function PassiveTab:CreatePaginationControls(paginationArea, idSuffix)
+    if self.TotalPages <= 1 then
+        return
+    end
+
+    local paginationGroup = paginationArea:AddGroup("Pagination")
+
+    local prevBtn = paginationGroup:AddButton("<##Prev" .. idSuffix)
+    prevBtn.SameLine = false
+    if self.CurrentPage <= 1 then
+        prevBtn.Disabled = true
+    end
+    prevBtn.OnClick = function()
+        self:GetAllPassives(self.CurrentPage - 1)
+    end
+
+    local paginationText = paginationGroup:AddText("Page " .. self.CurrentPage .. " of " .. self.TotalPages)
+    paginationText.SameLine = true
+
+    local nextBtn = paginationGroup:AddButton(">##Next" .. idSuffix)
+    nextBtn.SameLine = true
+    if self.CurrentPage >= self.TotalPages then
+        nextBtn.Disabled = true
+    end
+    nextBtn.OnClick = function()
+        self:GetAllPassives(self.CurrentPage + 1)
     end
 end
 
@@ -180,8 +231,8 @@ function PassiveTab:AddPassiveSearch()
     local btn = self.PassiveSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
 
     btn.OnClick = function()
-        local txt = search.Text
-        self:GetAllPassives(txt)
+        self.SearchText = search.Text
+        self:GetAllPassives(1)
     end
 end
 
@@ -192,12 +243,14 @@ function PassiveTab:Init()
     self:GetLearnedPassives()
 
     self.PassiveSearch = self.Tab:AddGroup("PassiveSearch")
+    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
     self.PassivesArea = self.Tab:AddGroup("AllPassives")
+    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
 
     self:AddPassiveSearch()
 
     self.AllPassives = {}
-    self:GetAllPassives()
+    self:GetAllPassives(1)
 end
 
 return PassiveTab
