@@ -50,23 +50,7 @@ function EKP.GetAll(search, page)
 
     table.sort(allMatchingEquipment, function(a, b) return a.displayName < b.displayName end)
 
-    local totalItems = #allMatchingEquipment
-    local totalPages = math.ceil(totalItems / pageSize)
-    if page > totalPages and totalPages > 0 then page = totalPages end
-    if page < 1 then page = 1 end
-
-    local startIndex = (page - 1) * pageSize + 1
-    local endIndex = math.min(startIndex + pageSize - 1, totalItems)
-
-    local equipmentForPage = {}
-    for i = startIndex, endIndex do
-        local item = allMatchingEquipment[i]
-        if item then
-            equipmentForPage[item.id] = item
-        end
-    end
-
-    return equipmentForPage, totalItems, totalPages, page
+    return UTL.Paginate(allMatchingEquipment, page, pageSize)
 end
 
 function EKP.IsEquipable(uuid)

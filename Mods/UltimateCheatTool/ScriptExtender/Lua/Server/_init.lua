@@ -1,3 +1,4 @@
+Ext.Require("Shared/_init.lua")
 Ext.Require("Server/Helpers.lua")
 Ext.Require("Server/RegisterVars.lua")
 Ext.Require("Server/Equipment.lua")

@@ -32,23 +32,7 @@ function STAT.GetAll(search, page)
 
     table.sort(allMatchingStatuses, function(a, b) return a.displayName < b.displayName end)
 
-    local totalItems = #allMatchingStatuses
-    local totalPages = math.ceil(totalItems / pageSize)
-    if page > totalPages and totalPages > 0 then page = totalPages end
-    if page < 1 then page = 1 end
-
-    local startIndex = (page - 1) * pageSize + 1
-    local endIndex = math.min(startIndex + pageSize - 1, totalItems)
-
-    local statusesForPage = {}
-    for i = startIndex, endIndex do
-        local status = allMatchingStatuses[i]
-        if status then
-            statusesForPage[status.id] = status
-        end
-    end
-
-    return statusesForPage, totalItems, totalPages, page
+    return UTL.Paginate(allMatchingStatuses, page, pageSize)
 end
 
 function STAT.Apply(char, statusId, remove)

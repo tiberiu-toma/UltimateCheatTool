@@ -33,21 +33,5 @@ function SPLL.GetAll(search, page)
 
     table.sort(allMatchingSpells, function(a, b) return a.displayName < b.displayName end)
 
-    local totalItems = #allMatchingSpells
-    local totalPages = math.ceil(totalItems / pageSize)
-    if page > totalPages and totalPages > 0 then page = totalPages end
-    if page < 1 then page = 1 end
-
-    local startIndex = (page - 1) * pageSize + 1
-    local endIndex = math.min(startIndex + pageSize - 1, totalItems)
-
-    local spellsForPage = {}
-    for i = startIndex, endIndex do
-        local spell = allMatchingSpells[i]
-        if spell then
-            spellsForPage[spell.id] = spell
-        end
-    end
-
-    return spellsForPage, totalItems, totalPages, page
+    return UTL.Paginate(allMatchingSpells, page, pageSize)
 end

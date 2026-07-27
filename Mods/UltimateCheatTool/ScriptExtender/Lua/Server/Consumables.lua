@@ -38,23 +38,7 @@ function CONS.GetAll(search, page)
 
     table.sort(allMatchingConsumables, function(a, b) return a.displayName < b.displayName end)
 
-    local totalItems = #allMatchingConsumables
-    local totalPages = math.ceil(totalItems / pageSize)
-    if page > totalPages and totalPages > 0 then page = totalPages end
-    if page < 1 then page = 1 end
-
-    local startIndex = (page - 1) * pageSize + 1
-    local endIndex = math.min(startIndex + pageSize - 1, totalItems)
-
-    local consumablesForPage = {}
-    for i = startIndex, endIndex do
-        local item = allMatchingConsumables[i]
-        if item then
-            consumablesForPage[item.id] = item
-        end
-    end
-
-    return consumablesForPage, totalItems, totalPages, page
+    return UTL.Paginate(allMatchingConsumables, page, pageSize)
 end
 
 function CONS.IsConsumable(uuid)

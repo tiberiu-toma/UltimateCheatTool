@@ -33,21 +33,7 @@ function PASSV.GetAll(search, page)
 
     table.sort(allMatchingPassives, function(a, b) return a.displayName < b.displayName end)
 
-    local totalItems = #allMatchingPassives
-    local totalPages = math.ceil(totalItems / pageSize)
-    if page > totalPages and totalPages > 0 then page = totalPages end
-    if page < 1 then page = 1 end
-
-    local startIndex = (page - 1) * pageSize + 1
-    local endIndex = math.min(startIndex + pageSize - 1, totalItems)
-
-    local passivesForPage = {}
-    for i = startIndex, endIndex do
-        local passive = allMatchingPassives[i]
-        passivesForPage[passive.id] = passive
-    end
-
-    return passivesForPage, totalItems, totalPages, page
+    return UTL.Paginate(allMatchingPassives, page, pageSize)
 end
 
 function PASSV.Learn(passiveId, unlearn)
