@@ -266,6 +266,42 @@ SMS.RecruitCompanion:SetHandler(function(payload)
     Osi.PROC_GLO_PartyMembers_Add(char, GetHostCharacter());
     Osi.TeleportTo(char,GetHostCharacter(),"", 0,0,0,0,0)
 end)
+
+-- Generic Cheats Handlers
+SMS.AddGold:SetHandler(function(payload)
+    local character = payload.ID
+    local amount = payload.Amount
+    if character and amount then
+        Osi.AddGold(character, amount)
+    end
+end)
+
+SMS.AddExperience:SetHandler(function(payload)
+    local amount = payload.Amount
+    if amount then
+        -- Note: Osi.AddExplorationExperience typically gives XP to the entire party.
+        -- The payload.ID is received from the client but not used by this specific Osi function.
+        Osi.AddExplorationExperience(GetHostCharacter(), amount)
+    end
+end)
+
+SMS.AddTadpoles:SetHandler(function(payload)
+    local character = payload.ID
+    local amount = payload.Amount
+    if character and amount then
+        Osi.AddTadpole(character, amount)
+    end
+end)
+
+SMS.AddInspiration:SetHandler(function(payload)
+    local character = payload.ID
+    local amount = payload.Amount
+    if character and amount then
+        -- The last two parameters for GiveInspirationPoints are usually for source and reason,
+        -- which are not provided by the current client payload.
+        Osi.GiveInspirationPoints(character, amount, "", "")
+    end
+end)
 SMS.CompanionApproval:SetHandler(function(payload)
     local companion = payload.data 
     local approval = payload.approval

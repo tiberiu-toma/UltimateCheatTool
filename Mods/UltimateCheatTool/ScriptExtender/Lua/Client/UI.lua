@@ -20,6 +20,7 @@ MCMActive = Mods and Mods.BG3MCM -- true or false depending on if MCM is active 
 ---@field PassiveTab PassiveTab
 ---@field StatusTab StatusTab
 UI = {
+---@field GenericTab GenericTab
     Ready = false,
 }
 UI.__index = UI
@@ -32,6 +33,7 @@ local StatusTab = Ext.Require("Client/StatusTab.lua")
 local ConsumableTab = Ext.Require("Client/ConsumableTab.lua")
 local WaypointTab = Ext.Require("Client/WaypointTab.lua")
 local RecruitTab = Ext.Require("Client/RecruitTab.lua")
+local GenericTab = Ext.Require("Client/GenericTab.lua")
 
 --------------------------------------------------
 --------------------------------------------------
@@ -67,6 +69,7 @@ function UI:Init()
     self.ConsumableTab = ConsumableTab:New(self.TabBar)
     self.WaypointTab = WaypointTab:New(self.TabBar)
     self.RecruitTab = RecruitTab:New(self.TabBar)
+    self.GenericTab = GenericTab:New(self.TabBar)
 
     self.EquipmentTab:Init()
     self.NPCTab:Init()
@@ -76,6 +79,7 @@ function UI:Init()
     self.ConsumableTab:Init()
     self.WaypointTab:Init()
     self.RecruitTab:Init()
+    self.GenericTab:Init()
 
     
     self.Ready = true
