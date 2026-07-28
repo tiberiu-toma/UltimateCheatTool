@@ -35,7 +35,7 @@ function EKP.GetAll(search, page)
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
 
         if matchesSearch and displayName and displayName ~= "" and icon and icon ~= "" then
-            local isEquipment = EKP.IsEquipable(id)
+            local isEquipment = EKP.IsEquipable(v)
             if isEquipment then
                 table.insert(allMatchingEquipment, {
                     id = id,
@@ -53,6 +53,15 @@ function EKP.GetAll(search, page)
     return UTL.Paginate(allMatchingEquipment, page, pageSize)
 end
 
-function EKP.IsEquipable(uuid)
-    return true
+function EKP.IsEquipable(template)
+    local stats = Ext.Stats.Get(template.Stats)
+
+    if stats == nil then
+        return false
+    end
+
+    if stats.ModifierList == "Armor" or stats.ModifierList == "Weapon" then
+        return true
+    end
+    return false
 end
