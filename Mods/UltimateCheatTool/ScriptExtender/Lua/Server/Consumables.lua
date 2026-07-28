@@ -23,7 +23,7 @@ function CONS.GetAll(search, page)
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
 
         if matchesSearch and displayName and displayName ~= "" and icon and icon ~= "" then
-            local isConsumable = CONS.IsConsumable(id)
+            local isConsumable = CONS.IsConsumable(v)
             if isConsumable then
                 table.insert(allMatchingConsumables, {
                     id = id,
@@ -41,6 +41,15 @@ function CONS.GetAll(search, page)
     return UTL.Paginate(allMatchingConsumables, page, pageSize)
 end
 
-function CONS.IsConsumable(uuid)
-    return true
+function CONS.IsConsumable(template)
+    local stats = Ext.Stats.Get(template.Stats)
+
+    if stats == nil then
+        return false
+    end
+
+    if stats.ModifierList == "Object" then
+        return true
+    end
+    return false
 end
