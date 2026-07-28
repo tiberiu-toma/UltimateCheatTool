@@ -14,13 +14,16 @@ MCMActive = Mods and Mods.BG3MCM -- true or false depending on if MCM is active 
 ---@field ControllerInputHandler LuaEventBase|nil
 ---@field ControllerAxisHandler LuaEventBase|nil
 ---@field TabBar ExtuiTabBar
+---@field GenericTab GenericTab
 ---@field EquipmentTab EquipmentTab
----@field NPCTab NPCTab
+---@field ConsumableTab ConsumableTab
 ---@field SpellTab SpellTab
 ---@field PassiveTab PassiveTab
 ---@field StatusTab StatusTab
+---@field RecruitTab RecruitTab
+---@field NPCTab NPCTab
+---@field WaypointTab WaypointTab
 UI = {
----@field GenericTab GenericTab
     Ready = false,
 }
 UI.__index = UI
@@ -61,25 +64,25 @@ function UI:Init()
 
     self.TabBar = self.Window:AddTabBar("")
     
+    self.GenericTab = GenericTab:New(self.TabBar)
     self.EquipmentTab = EquipmentTab:New(self.TabBar)
-    self.NPCTab = NPCTab:New(self.TabBar)
+    self.ConsumableTab = ConsumableTab:New(self.TabBar)
     self.SpellTab = SpellTab:New(self.TabBar)
     self.PassiveTab = PassiveTab:New(self.TabBar)
     self.StatusTab = StatusTab:New(self.TabBar)
-    self.ConsumableTab = ConsumableTab:New(self.TabBar)
-    self.WaypointTab = WaypointTab:New(self.TabBar)
     self.RecruitTab = RecruitTab:New(self.TabBar)
-    self.GenericTab = GenericTab:New(self.TabBar)
+    self.NPCTab = NPCTab:New(self.TabBar)
+    self.WaypointTab = WaypointTab:New(self.TabBar)
 
+    self.GenericTab:Init()
     self.EquipmentTab:Init()
-    self.NPCTab:Init()
+    self.ConsumableTab:Init()
     self.SpellTab:Init()
     self.PassiveTab:Init()
     self.StatusTab:Init()
-    self.ConsumableTab:Init()
-    self.WaypointTab:Init()
     self.RecruitTab:Init()
-    self.GenericTab:Init()
+    self.NPCTab:Init()
+    self.WaypointTab:Init()
 
     
     self.Ready = true

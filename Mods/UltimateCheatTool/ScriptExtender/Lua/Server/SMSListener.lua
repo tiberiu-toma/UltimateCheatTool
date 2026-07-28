@@ -279,8 +279,6 @@ end)
 SMS.AddExperience:SetHandler(function(payload)
     local amount = payload.Amount
     if amount then
-        -- Note: Osi.AddExplorationExperience typically gives XP to the entire party.
-        -- The payload.ID is received from the client but not used by this specific Osi function.
         Osi.AddExplorationExperience(GetHostCharacter(), amount)
     end
 end)
@@ -297,11 +295,35 @@ SMS.AddInspiration:SetHandler(function(payload)
     local character = payload.ID
     local amount = payload.Amount
     if character and amount then
-        -- The last two parameters for GiveInspirationPoints are usually for source and reason,
-        -- which are not provided by the current client payload.
         Osi.GiveInspirationPoints(character, amount, "", "")
     end
 end)
+
+SMS.RestoreParty:SetHandler(function(payload)
+    Osi.RestoreParty(GetHostCharacter())
+end)
+
+SMS.ResetCooldowns:SetHandler(function(payload)
+    local character = payload.ID
+    if character then
+        Osi.ResetCooldowns(character)
+    end
+end)
+
+SMS.StartRespec:SetHandler(function(payload)
+    local character = payload.ID
+    if character then
+        Osi.StartRespec(character)
+    end
+end)
+
+SMS.StartChangeAppearance:SetHandler(function(payload)
+    local character = payload.ID
+    if character then
+        Osi.StartChangeAppearance(character)
+    end
+end)
+
 SMS.CompanionApproval:SetHandler(function(payload)
     local companion = payload.data 
     local approval = payload.approval

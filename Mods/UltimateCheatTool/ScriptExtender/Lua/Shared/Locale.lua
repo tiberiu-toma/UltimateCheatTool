@@ -21,5 +21,11 @@ LocaleText = {
 	hb1787db13e1747e681ca4bad56e73bb76 = "Search",
 	hb1787db13e1747e681ca4bad56e73bb77 = "Refresh",
 	hb1787db13e1747e681ca4bad56e73bb78 = "Recruit",
-	hb1787db13e1747e681ca4bad56e73bb79 = "Teleport"
+	hb1787db13e1747e681ca4bad56e73bb79 = "Teleport",
+
+	UCT_GenericTab_CharacterActions = "Character Actions",
+	UCT_GenericTab_RestoreParty = "Restore Party",
+	UCT_GenericTab_ResetCooldowns = "Reset Cooldowns",
+	UCT_GenericTab_StartRespec = "Respec Character",
+	UCT_GenericTab_ChangeAppearance = "Change Appearance"
 }

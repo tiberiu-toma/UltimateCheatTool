@@ -14,6 +14,38 @@ function GenericTab:New(holder)
 end
 
 function GenericTab:Init()
+    -- Character Actions
+    local actionsGroup = self.Tab:AddGroup("CharacterActions")
+    actionsGroup:AddSeparatorText(LCL.Get("UCT_GenericTab_CharacterActions", "Character Actions"))
+    local actionsTable = actionsGroup:AddTable("ActionsTable", 2)
+    actionsTable.SizingFixedSame = true
+    actionsTable.NoHostExtendX = true
+    
+    local actionsRow1 = actionsTable:AddRow()
+    
+    local restorePartyBtn = actionsRow1:AddCell():AddButton(LCL.Get("UCT_GenericTab_RestoreParty", "Restore Party"))
+    restorePartyBtn.OnClick = function()
+        SMS.RestoreParty:SendToServer({ ID = USERID })
+    end
+
+    local resetCooldownsBtn = actionsRow1:AddCell():AddButton(LCL.Get("UCT_GenericTab_ResetCooldowns", "Reset Cooldowns"))
+    resetCooldownsBtn.OnClick = function()
+        SMS.ResetCooldowns:SendToServer({ ID = USERID })
+    end
+
+    local actionsRow2 = actionsTable:AddRow()
+
+    local respecBtn = actionsRow2:AddCell():AddButton(LCL.Get("UCT_GenericTab_StartRespec", "Respec Character"))
+    respecBtn.OnClick = function()
+        SMS.StartRespec:SendToServer({ ID = USERID })
+    end
+
+    local appearanceBtn = actionsRow2:AddCell():AddButton(LCL.Get("UCT_GenericTab_ChangeAppearance", "Change Appearance"))
+    appearanceBtn.OnClick = function()
+        SMS.StartChangeAppearance:SendToServer({ ID = USERID })
+    end
+    self.Tab:AddSeparator()
+
     -- Gold
     local goldGroup = self.Tab:AddGroup("Gold")
     goldGroup:AddSeparatorText(LCL.Get("UCT_GenericTab_AddGold", "Add Gold"))
