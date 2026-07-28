@@ -89,7 +89,7 @@ function StatusTab:SetStatuses(payload)
 
         local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
-        if not icon or icon == "unknown" then
+        if not icon or icon == "unknown" or icon == "" then
             icon = "EC_Portrait_Generic"
         end
         local name = HLP.GetAttr(data, "displayName")
@@ -170,7 +170,7 @@ function StatusTab:GetAppliedStatuses()
 
         local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
-        if not icon or icon == "unknown" then
+        if not icon or icon == "unknown" or icon == "" then
             icon = "EC_Portrait_Generic"
         end
         local name = HLP.GetAttr(data, "displayName")

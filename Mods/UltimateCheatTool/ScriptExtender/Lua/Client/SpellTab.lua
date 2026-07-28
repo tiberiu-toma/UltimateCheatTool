@@ -89,8 +89,8 @@ function SpellTab:SetSpells(payload)
         
         local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
-        if not icon or icon == "unknown" then
-            goto continue
+        if not icon or icon == "unknown" or icon == "" then
+            icon = "EC_Portrait_Generic"
         end
         local name = HLP.GetAttr(data, "displayName")
 
