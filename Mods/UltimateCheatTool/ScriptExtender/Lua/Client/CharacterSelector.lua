@@ -47,7 +47,7 @@ end
 function CharacterSelector:Draw()
     UI.DestroyChildren(self.Container)
 
-    self.Container:AddSeparatorText("Selected Character")
+    self.Container:AddText("Select Character to Apply Cheats To:")
     
     local selectedName = "None"
     for _, member in ipairs(self.PartyMembers) do
@@ -58,10 +58,17 @@ function CharacterSelector:Draw()
     end
 
     local comboButton = self.Container:AddButton(selectedName)
+    comboButton.SameLine = true
     local popup = self.Container:AddPopup("CharacterSelectPopup")
 
     comboButton.OnClick = function()
         popup:Open()
+    end
+
+    local refreshButton = self.Container:AddButton("Refresh Character List")
+    refreshButton.SameLine = true
+    refreshButton.OnClick = function()
+        SMS.FetchPartyMembers:SendToServer({ ID = USERID })
     end
 
     for _, member in ipairs(self.PartyMembers) do
@@ -73,7 +80,6 @@ function CharacterSelector:Draw()
 end
 
 function CharacterSelector:Init()
-    SMS.FetchPartyMembers:SendToServer({ ID = USERID })
     self:Draw()
 end
 
