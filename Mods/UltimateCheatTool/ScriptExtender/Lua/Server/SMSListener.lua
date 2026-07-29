@@ -120,6 +120,24 @@ SMS.FetchStatuses:SetHandler(function(payload)
     )
 end)
 
+SMS.FetchTags:SetHandler(function(payload)
+    local search = HLP.GetAttr(payload, "search") or ""
+    local page = HLP.GetAttr(payload, "page") or 1
+
+    local tags, totalItems, totalPages, currentPage = TAGS.GetAll(search, page)
+
+    HLP.ToClient(
+        SMS.SendTags,
+        {
+            data = tags,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
+        },
+        payload.ID
+    )
+end)
+
 SMS.LearnSpell:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
@@ -169,6 +187,24 @@ SMS.LearnPassive:SetHandler(function(payload)
         passives[uuid] = data
         
         Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives = passives
+    end
+end)
+
+SMS.ManageTag:SetHandler(function(payload)
+    local tagId = payload.uuid
+    local data = payload.data
+
+    if HLP.GetAttr(payload, "unlearn") then
+        TAGS.Clear(tagId)
+
+        local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
+        tags[tagId] = nil
+        Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
+    else
+        TAGS.Set(tagId)
+        local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
+        tags[tagId] = data
+        Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
     end
 end)
 

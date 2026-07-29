@@ -44,11 +44,31 @@ end
 function CONS.IsConsumable(template)
     local stats = Ext.Stats.Get(template.Stats)
 
-    if stats == nil then
+    if stats == nil or stats.ModifierList ~= "Object" then
         return false
     end
 
-    if stats.ModifierList == "Object" then
+    if stats.InventoryTab ~= nil and stats.InventoryTab == "Consumable" then
+        return true
+    end
+
+    if stats.ItemUseType ~= nil and stats.ItemUseType == "Arrow" then
+        return true
+    end
+
+    if stats.DefaultBoosts ~= nil and stats.DefaultBoosts == "Tag(CAMPSUPPLIES)" then
+        return true
+    end
+
+    if stats.ObjectCategory ~= nil and stats.ObjectCategory == "Dye" then
+        return true
+    end
+
+    if stats.ItemUseType ~= nil and stats.ItemUseType == "Grenade" then
+        return true
+    end
+
+    if stats.ItemUseType ~= nil and stats.ItemUseType == "Scroll" then
         return true
     end
     return false

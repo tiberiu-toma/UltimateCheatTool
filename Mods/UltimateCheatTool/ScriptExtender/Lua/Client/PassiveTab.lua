@@ -38,7 +38,6 @@ function PassiveTab:New(holder)
         TotalPages = 1,
         TotalItems = 0,
         SearchText = ""
-        -- PaginationAreaTop and PaginationAreaBottom will be initialized in Init()
     }, PassiveTab)
     return instance
 end

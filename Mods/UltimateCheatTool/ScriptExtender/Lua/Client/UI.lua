@@ -14,6 +14,7 @@ MCMActive = Mods and Mods.BG3MCM -- true or false depending on if MCM is active 
 ---@field ControllerInputHandler LuaEventBase|nil
 ---@field ControllerAxisHandler LuaEventBase|nil
 ---@field TabBar ExtuiTabBar
+---@field TagTab TagTab
 ---@field GenericTab GenericTab
 ---@field EquipmentTab EquipmentTab
 ---@field ConsumableTab ConsumableTab
@@ -36,6 +37,7 @@ local StatusTab = Ext.Require("Client/StatusTab.lua")
 local ConsumableTab = Ext.Require("Client/ConsumableTab.lua")
 local WaypointTab = Ext.Require("Client/WaypointTab.lua")
 local RecruitTab = Ext.Require("Client/RecruitTab.lua")
+local TagTab = Ext.Require("Client/TagTab.lua")
 local GenericTab = Ext.Require("Client/GenericTab.lua")
 
 --------------------------------------------------
@@ -69,6 +71,7 @@ function UI:Init()
     self.StatusTab = StatusTab:New(self.TabBar)
     self.RecruitTab = RecruitTab:New(self.TabBar)
     self.NPCTab = NPCTab:New(self.TabBar)
+    self.TagTab = TagTab:New(self.TabBar)
     self.WaypointTab = WaypointTab:New(self.TabBar)
 
     self.GenericTab:Init()
@@ -79,6 +82,7 @@ function UI:Init()
     self.StatusTab:Init()
     self.RecruitTab:Init()
     self.NPCTab:Init()
+    self.TagTab:Init()
     self.WaypointTab:Init()
 
     

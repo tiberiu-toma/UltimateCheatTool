@@ -23,6 +23,12 @@ SMS.SendPassives:SetHandler(function (payload)
         tab:SetPassives(payload)
     end
 end)
+SMS.SendTags:SetHandler(function (payload)
+    if UI then
+        local tab = UI.TagTab
+        tab:SetTags(payload)
+    end
+end)
 SMS.SendStatuses:SetHandler(function (payload)
     if UI then
         local tab = UI.StatusTab
