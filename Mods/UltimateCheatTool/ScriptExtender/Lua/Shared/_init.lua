@@ -1,8 +1,6 @@
 Ext.Require("Shared/config.lua")
 Ext.Require("Shared/SMS.lua")
-Ext.Require("Shared/MapKeys.lua")
 Ext.Require("Shared/Equipment.lua")
 Ext.Require("Shared/Helpers.lua")
-Ext.Require("Shared/Anims.lua")
 Ext.Require("Shared/Locale.lua")
 Ext.Require("Shared/Utils.lua")
