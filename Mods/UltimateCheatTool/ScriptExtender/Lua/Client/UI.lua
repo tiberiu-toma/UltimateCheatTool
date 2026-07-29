@@ -45,9 +45,6 @@ function UI:New(mcm)
     local window
     if mcm then
         window = mcm:AddChildWindow("UltimateCheatTool")
-    -- else
-    --     window = Ext.IMGUI.NewWindow("BG3SX")
-    --     window:SetSize({500*ViewPortScale, 500*ViewPortScale}, "FirstUseEver")
     end
 
     self.Window = window

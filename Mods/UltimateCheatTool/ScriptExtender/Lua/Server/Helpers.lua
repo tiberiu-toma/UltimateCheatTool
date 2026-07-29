@@ -75,17 +75,14 @@ end
 function HLP.GetClientIdForEntity(uuid)
     local entity = Ext.Entity.Get(uuid)
     if not entity then
-        -- Debug.--print("[BG3SX] GetClientIdForEntity: Entity not found for UUID: " .. tostring(uuid))
         return nil
     end
 
     -- Check if entity has UserReservedFor component (for player avatars)
     if entity.UserReservedFor and entity.UserReservedFor.UserID then
-        -- Debug.--print("[BG3SX] GetClientIdForEntity: Found UserReservedFor.UserID for " .. tostring(uuid))
         return entity.UserReservedFor.UserID
     end
-    
-    -- Debug.--print("[BG3SX] GetClientIdForEntity: No valid client found for " .. tostring(uuid))
+
     return nil
 end
 
