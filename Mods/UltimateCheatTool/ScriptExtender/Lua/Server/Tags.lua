@@ -30,10 +30,10 @@ function TAGS.GetAll(search, page)
     return UTL.Paginate(allMatchingTags, page, pageSize)
 end
 
-function TAGS.Set(tagId)
-    Osi.SetTag(GetHostCharacter(), tagId)
+function TAGS.Set(character, tagId)
+    Osi.SetTag(character, tagId)
 end
 
-function TAGS.Clear(tagId)
-    Osi.ClearTag(GetHostCharacter(), tagId)
+function TAGS.Clear(character, tagId)
+    Osi.ClearTag(character, tagId)
 end

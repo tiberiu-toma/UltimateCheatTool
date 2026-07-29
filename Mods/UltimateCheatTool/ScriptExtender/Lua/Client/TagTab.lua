@@ -107,14 +107,17 @@ function TagTab:SetTags(payload)
         local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
 
         removeButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ uuid=uuid, unlearn=1 })
-            self.AppliedTags[uuid] = nil
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
+            if self.AppliedTags[charUUID] then self.AppliedTags[charUUID][uuid] = nil end
             self:GetAppliedTags()
         end
 
         addButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ uuid=uuid, data=data })
-            self.AppliedTags[uuid] = data
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, data=data })
+            if not self.AppliedTags[charUUID] then self.AppliedTags[charUUID] = {} end
+            self.AppliedTags[charUUID][uuid] = data
             self:GetAppliedTags()
         end
 
@@ -134,8 +137,14 @@ end
 function TagTab:GetAppliedTags()
     UI.DestroyChildren(self.AppliedTagsArea)
 
-    local totalApplied = HLP.Count(self.AppliedTags)
+    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
+    if not charUUID then
+        self.AppliedTagsArea:AddText("Select a character to see their tags.")
+        return
+    end
 
+    local appliedForChar = self.AppliedTags[charUUID] or {}
+    local totalApplied = HLP.Count(appliedForChar)
     if totalApplied == 0 then
         self.AppliedTagsArea:AddText("You don't have any custom tags applied.")
         return
@@ -153,7 +162,7 @@ function TagTab:GetAppliedTags()
     local i = 1
     local row = t:AddRow()
 
-    for uuid,data in kpairs(self.AppliedTags) do
+    for uuid,data in kpairs(appliedForChar) do
         if i % maxTableWidth == 1 then
             row = t:AddRow()
         end
@@ -180,8 +189,9 @@ function TagTab:GetAppliedTags()
         local descriptionText = popup:AddText(description)
         local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
         removeButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ uuid=uuid, unlearn=1 })
-            self.AppliedTags[uuid] = nil
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
+            if self.AppliedTags[charUUID] then self.AppliedTags[charUUID][uuid] = nil end
             self:GetAppliedTags()
         end
 

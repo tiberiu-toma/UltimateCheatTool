@@ -46,7 +46,6 @@ function SPLL.Learn(character, spellId, unlearn)
     if unlearn then
         Osi.RemoveSpell(character, spellId, 1)
     else
-        -- The 1, 1 arguments are for `addAsPermanent` and `ignoreHasSpell`
         Osi.AddSpell(character, spellId, 1, 1)
     end
 end

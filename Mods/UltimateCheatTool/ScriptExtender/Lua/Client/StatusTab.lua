@@ -115,14 +115,17 @@ function StatusTab:SetStatuses(payload)
         local removeStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove"))
 
         removeStatus.OnClick = function()
-            SMS.ApplyStatus:SendToServer({ uuid=uuid, remove=1 })
-            self.AppliedStatuses[uuid] = nil
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.ApplyStatus:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
+            if self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID][uuid] = nil end
             self:GetAppliedStatuses()
         end
 
         applyStatus.OnClick = function()
-            SMS.ApplyStatus:SendToServer({ uuid=uuid, amount=1, data=data })
-            self.AppliedStatuses[uuid] = data
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.ApplyStatus:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
+            if not self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID] = {} end
+            self.AppliedStatuses[charUUID][uuid] = data
             self:GetAppliedStatuses()
         end
 
@@ -143,8 +146,14 @@ end
 function StatusTab:GetAppliedStatuses()
     UI.DestroyChildren(self.AppliedStatusesArea)
 
-    local totalSpawned = HLP.Count(self.AppliedStatuses)
+    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
+    if not charUUID then
+        self.AppliedStatusesArea:AddText("Select a character to see their statuses.")
+        return
+    end
 
+    local appliedForChar = self.AppliedStatuses[charUUID] or {}
+    local totalSpawned = HLP.Count(appliedForChar)
     if totalSpawned == 0 then
         self.AppliedStatusesArea:AddText("You don't have any custom statuses applied.")
         return
@@ -163,7 +172,7 @@ function StatusTab:GetAppliedStatuses()
 
     local row = t:AddRow()
 
-    for uuid,data in kpairs(self.AppliedStatuses) do
+    for uuid,data in kpairs(appliedForChar) do
         if i % maxTableWidth == 1 then
             row = t:AddRow()
         end
@@ -194,8 +203,9 @@ function StatusTab:GetAppliedStatuses()
 
         local removeStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove"))
         removeStatus.OnClick = function()
-            SMS.ApplyStatus:SendToServer({ uuid=uuid, remove=1 })
-            self.AppliedStatuses[uuid] = nil
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.ApplyStatus:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
+            if self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID][uuid] = nil end
             self:GetAppliedStatuses()
         end
 

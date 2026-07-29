@@ -195,17 +195,23 @@ end)
 SMS.ManageTag:SetHandler(function(payload)
     local tagId = payload.uuid
     local data = payload.data
+    local character = payload.character
+
+    if not character then return end
 
     if HLP.GetAttr(payload, "unlearn") then
-        TAGS.Clear(tagId)
+        TAGS.Clear(character, tagId)
 
         local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
-        tags[tagId] = nil
+        if tags[character] then
+            tags[character][tagId] = nil
+        end
         Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
     else
-        TAGS.Set(tagId)
+        TAGS.Set(character, tagId)
         local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
-        tags[tagId] = data
+        if not tags[character] then tags[character] = {} end
+        tags[character][tagId] = data
         Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
     end
 end)
@@ -213,18 +219,24 @@ end)
 SMS.ApplyStatus:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
+    local character = payload.character
+
+    if not character then return end
     
     if HLP.GetAttr(payload, "remove") then
-        STAT.Apply(Osi.GetHostCharacter(), uuid, true)
+        STAT.Apply(character, uuid, true)
 
         local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
-        statuses[uuid] = nil
+        if statuses[character] then
+            statuses[character][uuid] = nil
+        end
         Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
     else
-        STAT.Apply(Osi.GetHostCharacter(), uuid)
+        STAT.Apply(character, uuid)
 
         local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
-        statuses[uuid] = data
+        if not statuses[character] then statuses[character] = {} end
+        statuses[character][uuid] = data
         Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
     end
 end)
