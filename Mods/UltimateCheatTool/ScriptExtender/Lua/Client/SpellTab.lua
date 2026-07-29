@@ -124,16 +124,17 @@ function SpellTab:SetSpells(payload)
         local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         
         removeSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ uuid=uuid,unlearn=1 })
-
-            self.LearnedSpells[uuid] = nil
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
+            if self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID][uuid] = nil end
             self:GetLearnedSpells()
         end
 
         selectSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ uuid=uuid, amount=1, data=data })
-
-            self.LearnedSpells[uuid] = data
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
+            if not self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID] = {} end
+            self.LearnedSpells[charUUID][uuid] = data
             self:GetLearnedSpells()
         end
 
@@ -154,8 +155,14 @@ end
 function SpellTab:GetLearnedSpells()
     UI.DestroyChildren(self.LearnedSpellsArea)
 
-    local totalSpawned = HLP.Count(self.LearnedSpells)
+    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
+    if not charUUID then
+        self.LearnedSpellsArea:AddText("Select a character to see their spells.")
+        return
+    end
 
+    local learnedForChar = self.LearnedSpells[charUUID] or {}
+    local totalSpawned = HLP.Count(learnedForChar)
     if totalSpawned == 0 then
         self.LearnedSpellsArea:AddText("You haven't learned any spells.")
         return
@@ -174,7 +181,7 @@ function SpellTab:GetLearnedSpells()
 
     local row = t:AddRow()
 
-    for uuid,data in kpairs(self.LearnedSpells) do
+    for uuid,data in kpairs(learnedForChar) do
         if i % maxTableWidth == 1 then
             row = t:AddRow()
         end
@@ -203,19 +210,11 @@ function SpellTab:GetLearnedSpells()
 
         local idPopup = popup:AddText(uuid)
         local namePopup = popup:AddText(name)
-        local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
         local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         removeSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ uuid=uuid,unlearn=1 })
-
-            self.LearnedSpells[uuid] = nil
-            self:GetLearnedSpells()
-        end
-
-        selectSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ uuid=uuid, amount=1, data=data })
-
-            self.LearnedSpells[uuid] = data
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
+            if self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID][uuid] = nil end
             self:GetLearnedSpells()
         end
 

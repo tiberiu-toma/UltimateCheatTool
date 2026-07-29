@@ -141,29 +141,25 @@ end)
 SMS.LearnSpell:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
+    local character = payload.character
 
-    local allChars = HLP.GetAllChars()
+    if not character then return end
     
     if HLP.GetAttr(payload, "unlearn") then
-        for _,char in pairs(allChars) do
-            if Osi.IsPlayer(char) == 1 then
-                Osi.RemoveSpell(char, uuid, 1)
-            end
-        end
+        SPLL.Learn(character, uuid, true)
 
         local spells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
-        spells[uuid] = nil
+        if spells[character] then
+            spells[character][uuid] = nil
+        end
         
         Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
     else
-        for _,char in pairs(allChars) do
-            if Osi.IsPlayer(char) == 1 then
-                Osi.AddSpell(char, uuid, 1, 1)
-            end
-        end
+        SPLL.Learn(character, uuid)
 
         local spells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
-        spells[uuid] = data
+        if not spells[character] then spells[character] = {} end
+        spells[character][uuid] = data
         
         Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
     end
