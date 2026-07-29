@@ -23,7 +23,7 @@ function ENPC.GetAll(search, page)
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
 
         if matchesSearch and displayName and displayName ~= "" then
-            local isNPC = true--ENPC.IsNPC(id)
+            local isNPC = true
             if isNPC then
                 table.insert(allMatchingNPCs, {
                     id = id,
@@ -39,10 +39,4 @@ function ENPC.GetAll(search, page)
     table.sort(allMatchingNPCs, function(a, b) return a.displayName < b.displayName end)
 
     return UTL.Paginate(allMatchingNPCs, page, pageSize)
-end
-
-function ENPC.IsNPC(uuid)
-    -- TO DO: Find a way of checking if a template is a character --
-    
-    return true;
 end
