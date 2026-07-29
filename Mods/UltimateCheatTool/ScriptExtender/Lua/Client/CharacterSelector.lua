@@ -46,34 +46,53 @@ end
 function CharacterSelector:Draw()
     UI.DestroyChildren(self.Container)
 
-    self.Container:AddText("Select Character to Apply Cheats To:")
-    
     local selectedName = "None"
+    local selectedIcon = "EC_Portrait_Generic"
     for _, member in ipairs(self.PartyMembers) do
         if member.uuid == self.SelectedCharacter then
             selectedName = member.name
+            selectedIcon = member.icon or "EC_Portrait_Generic"
             break
         end
     end
 
-    local comboButton = self.Container:AddButton(selectedName)
-    comboButton.SameLine = true
-    local popup = self.Container:AddPopup("CharacterSelectPopup")
+    local layoutTable = self.Container:AddTable("CharacterSelectorLayout", 2)
+    layoutTable.SizingFixedSame = true
+    layoutTable.NoHostExtendX = true
 
-    comboButton.OnClick = function()
-        popup:Open()
-    end
+    local row1 = layoutTable:AddRow()
+    row1:AddCell():AddText("Select Character to Apply Cheats To:")
+    local imageCell = row1:AddCell()
+    local comboImageButton = imageCell:AddImageButton("char_select_img", selectedIcon, {100 * ViewPortScale, 100 * ViewPortScale})
 
-    local refreshButton = self.Container:AddButton("Refresh Character List")
-    refreshButton.SameLine = true
+    local row2 = layoutTable:AddRow()
+    local refreshCell = row2:AddCell()
+    local refreshButton = refreshCell:AddButton("Refresh Party")
     refreshButton.OnClick = function()
         SMS.FetchPartyMembers:SendToServer({ ID = USERID })
         self:SetSelectedCharacter(_C().Uuid.EntityUuid)
     end
+    local nameCell = row2:AddCell()
+    nameCell:AddText(selectedName)
+
+    local popup = self.Container:AddPopup("CharacterSelectPopup")
+
+    -- Clicking the image opens the selection popup.
+    comboImageButton.OnClick = function()
+        popup:Open()
+    end
 
     for _, member in ipairs(self.PartyMembers) do
-        local itemButton = popup:AddButton(member.name)
-        itemButton.OnClick = function()
+        local memberGroup = popup:AddGroup("popup_member_"..member.uuid)
+        
+        local icon = member.icon or "EC_Portrait_Generic"
+        -- Use a smaller icon in the dropdown for better spacing.
+        local itemImageButton = memberGroup:AddImageButton("popup_char_img_"..member.uuid, icon, {60 * ViewPortScale, 60 * ViewPortScale})
+
+        -- Center the text in the dropdown item.
+        memberGroup:AddText(member.name)
+
+        itemImageButton.OnClick = function()
             self:SetSelectedCharacter(member.uuid) -- This will trigger a redraw, effectively closing the old popup
         end
     end
