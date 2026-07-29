@@ -36,10 +36,10 @@ function PASSV.GetAll(search, page)
     return UTL.Paginate(allMatchingPassives, page, pageSize)
 end
 
-function PASSV.Learn(passiveId, unlearn)
+function PASSV.Learn(character, passiveId, unlearn)
     if unlearn then
-        Osi.RemovePassive(GetHostCharacter(), passiveId)
+        Osi.RemovePassive(character, passiveId)
     else
-        Osi.AddPassive(GetHostCharacter(), passiveId)
+        Osi.AddPassive(character, passiveId)
     end
 end

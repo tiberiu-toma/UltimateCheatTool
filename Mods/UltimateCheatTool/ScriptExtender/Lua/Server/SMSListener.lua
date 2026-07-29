@@ -172,19 +172,25 @@ end)
 SMS.LearnPassive:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
+    local character = payload.character
+
+    if not character then return end
     
     if HLP.GetAttr(payload, "unlearn") then
-        PASSV.Learn(uuid, true)
+        PASSV.Learn(character, uuid, true)
 
         local passives = Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives or {}
-        passives[uuid] = nil
+        if passives[character] then
+            passives[character][uuid] = nil
+        end
         
         Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives = passives
     else
-        PASSV.Learn(uuid)
+        PASSV.Learn(character, uuid)
    
         local passives = Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives or {}
-        passives[uuid] = data
+        if not passives[character] then passives[character] = {} end
+        passives[character][uuid] = data
         
         Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives = passives
     end
@@ -395,4 +401,13 @@ SMS.CompanionApproval:SetHandler(function(payload)
         Osi.ChangeApprovalRating(char, GetHostCharacter(), 1, -10)
     end
 
+end)
+
+SMS.FetchPartyMembers:SetHandler(function(payload)
+    local members = PARTY.GetMembers()
+    HLP.ToClient(
+        SMS.SendPartyMembers,
+        { data = members },
+        payload.ID
+    )
 end)

@@ -14,6 +14,7 @@ MCMActive = Mods and Mods.BG3MCM -- true or false depending on if MCM is active 
 ---@field ControllerInputHandler LuaEventBase|nil
 ---@field ControllerAxisHandler LuaEventBase|nil
 ---@field TabBar ExtuiTabBar
+---@field CharSelector CharacterSelector
 ---@field TagTab TagTab
 ---@field GenericTab GenericTab
 ---@field EquipmentTab EquipmentTab
@@ -38,6 +39,7 @@ local ConsumableTab = Ext.Require("Client/ConsumableTab.lua")
 local WaypointTab = Ext.Require("Client/WaypointTab.lua")
 local RecruitTab = Ext.Require("Client/RecruitTab.lua")
 local TagTab = Ext.Require("Client/TagTab.lua")
+local CharacterSelector = Ext.Require("Client/CharacterSelector.lua")
 local GenericTab = Ext.Require("Client/GenericTab.lua")
 
 --------------------------------------------------
@@ -57,9 +59,22 @@ function UI:New(mcm)
     return self
 end
 
+function UI:OnCharacterChange(charUUID)
+    -- This function will be called when the character selection changes.
+    -- We can trigger a refresh of the active tab here if needed.
+    -- For now, the tabs will read the selected character when they perform actions.
+    -- Let's force a redraw of the learned/applied sections for relevant tabs.
+    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetLearnedPassives() end
+    if self.SpellTab and self.SpellTab.Tab.Visible then self.SpellTab:GetLearnedSpells() end
+    if self.TagTab and self.TagTab.Tab.Visible then self.TagTab:GetAppliedTags() end
+    if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
+end
+
 function UI:Init()
    -- self.PartyInterface = PartyInterface:New(self.Window)
    -- self.PartyInterface:Init()
+
+    self.CharSelector = CharacterSelector:New(self.Window, function(charUUID) self:OnCharacterChange(charUUID) end)
 
     self.TabBar = self.Window:AddTabBar("")
     
@@ -74,6 +89,7 @@ function UI:Init()
     self.TagTab = TagTab:New(self.TabBar)
     self.WaypointTab = WaypointTab:New(self.TabBar)
 
+    self.CharSelector:Init()
     self.GenericTab:Init()
     self.EquipmentTab:Init()
     self.ConsumableTab:Init()

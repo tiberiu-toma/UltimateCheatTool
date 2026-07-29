@@ -51,3 +51,10 @@ SMS.SendWaypoints:SetHandler(function (payload)
         tab:SetWaypoints(Waypoints)
     end
 end)
+
+SMS.SendPartyMembers:SetHandler(function (payload)
+    if UI and UI.CharSelector then
+        local members = payload.data
+        UI.CharSelector:SetPartyMembers(members)
+    end
+end)

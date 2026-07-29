@@ -116,14 +116,17 @@ function PassiveTab:SetPassives(payload)
         local removePassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
 
         removePassive.OnClick = function()
-            SMS.LearnPassive:SendToServer({ uuid=uuid, unlearn=1})
-            self.LearnedPassives[uuid] = nil
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.LearnPassive:SendToServer({ character = charUUID, uuid=uuid, unlearn=1})
+            if self.LearnedPassives[charUUID] then self.LearnedPassives[charUUID][uuid] = nil end
             self:GetLearnedPassives()
         end
 
         selectPassive.OnClick = function()
-            SMS.LearnPassive:SendToServer({ uuid=uuid, amount=1, data=data })
-            self.LearnedPassives[uuid] = data
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.LearnPassive:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
+            if not self.LearnedPassives[charUUID] then self.LearnedPassives[charUUID] = {} end
+            self.LearnedPassives[charUUID][uuid] = data
             self:GetLearnedPassives()
         end
 
@@ -144,8 +147,14 @@ end
 function PassiveTab:GetLearnedPassives()
     UI.DestroyChildren(self.LearnedPassivesArea)
 
-    local totalSpawned = HLP.Count(self.LearnedPassives)
+    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
+    if not charUUID then
+        self.LearnedPassivesArea:AddText("Select a character to see their passives.")
+        return
+    end
 
+    local learnedForChar = self.LearnedPassives[charUUID] or {}
+    local totalSpawned = HLP.Count(learnedForChar)
     if totalSpawned == 0 then
         self.LearnedPassivesArea:AddText("You haven't learned any passives.")
         return
@@ -164,7 +173,7 @@ function PassiveTab:GetLearnedPassives()
 
     local row = t:AddRow()
 
-    for uuid,data in kpairs(self.LearnedPassives) do
+    for uuid,data in kpairs(learnedForChar) do
         if i % maxTableWidth == 1 then
             row = t:AddRow()
         end
@@ -195,8 +204,9 @@ function PassiveTab:GetLearnedPassives()
 
         local removePassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         removePassive.OnClick = function()
-            SMS.LearnPassive:SendToServer({ uuid=uuid,unlearn=1 })
-            self.LearnedPassives[uuid] = nil
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.LearnPassive:SendToServer({ character = charUUID, uuid=uuid,unlearn=1 })
+            if self.LearnedPassives[charUUID] then self.LearnedPassives[charUUID][uuid] = nil end
             self:GetLearnedPassives()
         end
 

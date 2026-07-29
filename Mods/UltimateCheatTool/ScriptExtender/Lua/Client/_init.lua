@@ -1,5 +1,6 @@
 Ext.Require("Client/RegisterVars.lua")
 Ext.Require("Client/LocaleOverride.lua")
 Ext.Require("Client/Movement.lua")
+Ext.Require("Client/CharacterSelector.lua")
 Ext.Require("Client/UI.lua")
 Ext.Require("Client/UIListener.lua")
