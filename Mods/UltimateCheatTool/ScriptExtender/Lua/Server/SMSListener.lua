@@ -237,6 +237,17 @@ SMS.SpawnTemplate:SetHandler(function(payload)
         Osi.TemplateAddTo(uuid, GetHostCharacter(), 1, 0)
     end
 end)
+
+SMS.SpawnAllEquipment:SetHandler(function(payload)
+    local allItems = EKP.GetAllNonStoryItems()
+    local character = payload.ID
+    if not character then return end
+
+    for _,uuid in ipairs(allItems) do
+        Osi.TemplateAddTo(uuid, character, 1, 0)
+    end
+end)
+
 SMS.SpawnCharacter:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data

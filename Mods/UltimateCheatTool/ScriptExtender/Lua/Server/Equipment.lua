@@ -53,6 +53,29 @@ function EKP.GetAll(search, page)
     return UTL.Paginate(allMatchingEquipment, page, pageSize)
 end
 
+function EKP.GetAllNonStoryItems()
+    local itemData = Ext.Template.GetAllRootTemplates()
+    local allNonStoryEquipment = {}
+
+    for k,v in pairs(itemData) do
+        local isItem = HLP.GetAttr(v, "TemplateType") == "item"
+        if not isItem then goto continue end
+
+        if HLP.GetAttr(v, "StoryItem") then goto continue end
+
+        local isEquipment = EKP.IsEquipable(v)
+        if isEquipment then
+            local id = HLP.GetAttr(v, "Id")
+            if id then
+                table.insert(allNonStoryEquipment, id)
+            end
+        end
+        ::continue::
+    end
+
+    return allNonStoryEquipment
+end
+
 function EKP.IsEquipable(template)
     local stats = Ext.Stats.Get(template.Stats)
 

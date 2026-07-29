@@ -140,6 +140,11 @@ function EquipmentTab:AddEquipmentSearch()
         self.SearchText = search.Text 
         self:GetEquipmentItems(1)
     end
+
+    local spawnAllBtn = self.EquipmentSearch:AddButton(LCL.Get("", "Spawn All (Non-Story)"))
+    spawnAllBtn.OnClick = function()
+        SMS.SpawnAllEquipment:SendToServer({ ID = USERID })
+    end
 end
 
 function EquipmentTab:Init()
