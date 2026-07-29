@@ -10,8 +10,7 @@ function CharacterSelector:New(parent, onChange)
     local instance = setmetatable({
         Container = parent:AddGroup("CharacterSelector"),
         PartyMembers = {},
-        SelectedCharacter = USERID, -- Default to host character
-        OnChange = onChange
+        SelectedCharacter = _C().Uuid.EntityUuid,
     }, CharacterSelector)
     return instance
 end
@@ -69,6 +68,7 @@ function CharacterSelector:Draw()
     refreshButton.SameLine = true
     refreshButton.OnClick = function()
         SMS.FetchPartyMembers:SendToServer({ ID = USERID })
+        self:SetSelectedCharacter(_C().Uuid.EntityUuid)
     end
 
     for _, member in ipairs(self.PartyMembers) do
@@ -80,6 +80,8 @@ function CharacterSelector:Draw()
 end
 
 function CharacterSelector:Init()
+    SMS.FetchPartyMembers:SendToServer({ ID = USERID })
+    self:SetSelectedCharacter(_C().Uuid.EntityUuid)
     self:Draw()
 end
 
