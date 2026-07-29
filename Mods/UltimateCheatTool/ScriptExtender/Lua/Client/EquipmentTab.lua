@@ -110,7 +110,8 @@ function EquipmentTab:SetEquipment(payload)
             local selectEquipment = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num)
 
             selectEquipment.OnClick = function()
-                SMS.SpawnTemplate:SendToServer({ uuid=uuid, amount=num })
+                local charUUID = UI.CharSelector.SelectedCharacter
+                SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
             end
         end
 
@@ -143,7 +144,8 @@ function EquipmentTab:AddEquipmentSearch()
 
     local spawnAllBtn = self.EquipmentSearch:AddButton(LCL.Get("", "Spawn All (Non-Story)"))
     spawnAllBtn.OnClick = function()
-        SMS.SpawnAllEquipment:SendToServer({ ID = USERID })
+        local charUUID = UI.CharSelector.SelectedCharacter
+        SMS.SpawnAllEquipment:SendToServer({ ID = charUUID })
     end
 end
 

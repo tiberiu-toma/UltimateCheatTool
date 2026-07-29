@@ -110,7 +110,8 @@ function ConsumableTab:SetConsumables(payload)
             local selectConsumable = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num)
 
             selectConsumable.OnClick = function()
-                SMS.SpawnTemplate:SendToServer({ uuid=uuid, amount=num })
+                local charUUID = UI.CharSelector.SelectedCharacter
+                SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
             end
         end
 

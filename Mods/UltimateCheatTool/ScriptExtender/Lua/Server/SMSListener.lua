@@ -245,10 +245,13 @@ end)
 SMS.SpawnTemplate:SetHandler(function(payload)
     local uuid = payload.uuid
     local amount = payload.amount
+    local character = payload.character
+
+    if not character then return end
 
     --print("Spawning " .. amount .. " " .. uuid)
     for i=1,amount do
-        Osi.TemplateAddTo(uuid, GetHostCharacter(), 1, 0)
+        Osi.TemplateAddTo(uuid, character, 1, 0)
     end
 end)
 

@@ -25,24 +25,27 @@ function GenericTab:Init()
     
     local restorePartyBtn = actionsRow1:AddCell():AddButton(LCL.Get("UCT_GenericTab_RestoreParty", "Restore Party"))
     restorePartyBtn.OnClick = function()
-        SMS.RestoreParty:SendToServer({ ID = USERID })
+        SMS.RestoreParty:SendToServer({})
     end
 
     local resetCooldownsBtn = actionsRow1:AddCell():AddButton(LCL.Get("UCT_GenericTab_ResetCooldowns", "Reset Cooldowns"))
     resetCooldownsBtn.OnClick = function()
-        SMS.ResetCooldowns:SendToServer({ ID = USERID })
+        local charUUID = UI.CharSelector.SelectedCharacter
+        SMS.ResetCooldowns:SendToServer({ ID = charUUID })
     end
 
     local actionsRow2 = actionsTable:AddRow()
 
     local respecBtn = actionsRow2:AddCell():AddButton(LCL.Get("UCT_GenericTab_StartRespec", "Respec Character"))
     respecBtn.OnClick = function()
-        SMS.StartRespec:SendToServer({ ID = USERID })
+        local charUUID = UI.CharSelector.SelectedCharacter
+        SMS.StartRespec:SendToServer({ ID = charUUID })
     end
 
     local appearanceBtn = actionsRow2:AddCell():AddButton(LCL.Get("UCT_GenericTab_ChangeAppearance", "Change Appearance"))
     appearanceBtn.OnClick = function()
-        SMS.StartChangeAppearance:SendToServer({ ID = USERID })
+        local charUUID = UI.CharSelector.SelectedCharacter
+        SMS.StartChangeAppearance:SendToServer({ ID = charUUID })
     end
     self.Tab:AddSeparator()
 
@@ -57,7 +60,8 @@ function GenericTab:Init()
     for _, amount in ipairs(goldAmounts) do
         local btn = goldRow:AddCell():AddButton("Add " .. amount)
         btn.OnClick = function()
-            SMS.AddGold:SendToServer({ ID = USERID, Amount = amount })
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.AddGold:SendToServer({ ID = charUUID, Amount = amount })
         end
     end
     self.Tab:AddSeparator()
@@ -73,7 +77,8 @@ function GenericTab:Init()
     for _, amount in ipairs(expAmounts) do
         local btn = expRow:AddCell():AddButton("Add " .. amount .. " XP")
         btn.OnClick = function()
-            SMS.AddExperience:SendToServer({ ID = USERID, Amount = amount })
+            -- This is a party-wide action, no character needed
+            SMS.AddExperience:SendToServer({ Amount = amount })
         end
     end
     self.Tab:AddSeparator()
@@ -89,7 +94,8 @@ function GenericTab:Init()
     for _, amount in ipairs(tadpoleAmounts) do
         local btn = tadpoleRow:AddCell():AddButton("Add " .. amount)
         btn.OnClick = function()
-            SMS.AddTadpoles:SendToServer({ ID = USERID, Amount = amount })
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.AddTadpoles:SendToServer({ ID = charUUID, Amount = amount })
         end
     end
     self.Tab:AddSeparator()
@@ -105,7 +111,8 @@ function GenericTab:Init()
     for _, amount in ipairs(inspirationAmounts) do
         local btn = inspirationRow:AddCell():AddButton("Add " .. amount)
         btn.OnClick = function()
-            SMS.AddInspiration:SendToServer({ ID = USERID, Amount = amount })
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.AddInspiration:SendToServer({ ID = charUUID, Amount = amount })
         end
     end
 end
