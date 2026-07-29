@@ -16,6 +16,9 @@ function SPLL.GetAll(search, page)
         local icon = HLP.GetAttr(v, "Icon")
         local name = HLP.GetAttr(v, "Name")
         local handle = HLP.GetAttr(v, "DisplayName")
+        local useCosts = HLP.GetAttr(v, "UseCosts")
+        local level = HLP.GetAttr(v, "Level")
+        local cooldown = HLP.GetAttr(v, "Cooldown")
 
         local displayName = Ext.Loca.GetTranslatedString(handle, name)
 
@@ -27,6 +30,9 @@ function SPLL.GetAll(search, page)
                 name = name,
                 icon = icon,
                 displayName = displayName,
+                useCosts = useCosts,
+                level = level,
+                cooldown = cooldown
             })
         end
     end
