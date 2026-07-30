@@ -199,7 +199,19 @@ SMS.LearnPassiveOnItem:SetHandler(function(payload)
 
     if not character then return end
     
+    -- Apply the passive to the item for the current session
     PASSV.LearnOnItem(character, itemTemplateUUID, passiveUUID)
+
+    -- Save the modification for persistence
+    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    if not modifiedEquipment[itemTemplateUUID] then
+        modifiedEquipment[itemTemplateUUID] = {}
+    end
+    if not modifiedEquipment[itemTemplateUUID].passives then
+        modifiedEquipment[itemTemplateUUID].passives = {}
+    end
+    modifiedEquipment[itemTemplateUUID].passives[passiveUUID] = true
+    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
 end)
 
 SMS.ManageTag:SetHandler(function(payload)
@@ -258,7 +270,19 @@ SMS.ApplyStatusToItem:SetHandler(function(payload)
 
     if not character then return end
     
+    -- Apply the status to the item for the current session
     STAT.ApplyToItem(character, itemTemplateUUID, statusUUID)
+
+    -- Save the modification for persistence
+    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    if not modifiedEquipment[itemTemplateUUID] then
+        modifiedEquipment[itemTemplateUUID] = {}
+    end
+    if not modifiedEquipment[itemTemplateUUID].statuses then
+        modifiedEquipment[itemTemplateUUID].statuses = {}
+    end
+    modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = true
+    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
 end)
 
 
