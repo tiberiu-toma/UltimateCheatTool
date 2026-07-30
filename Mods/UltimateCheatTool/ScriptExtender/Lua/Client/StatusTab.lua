@@ -116,6 +116,12 @@ function StatusTab:SetStatuses(payload)
         local applyStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432083", "Apply"))
         local removeStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove"))
         removeStatus.SameLine = true
+        local applyToWeapon = popup:AddButton(LCL.Get("UCT_StatusTab_ApplyToWeapon", "Apply to Weapon"))
+
+        applyToWeapon.OnClick = function()
+            local charUUID = UI.CharSelector.SelectedCharacter
+            SMS.ApplyStatusToWeapon:SendToServer({ character = charUUID, uuid = uuid })
+        end
 
         data.fullName = fullName
         local statusInfoFields = {

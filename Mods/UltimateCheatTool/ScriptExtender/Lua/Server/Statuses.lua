@@ -42,3 +42,14 @@ function STAT.Apply(char, statusId, remove)
         Osi.ApplyStatus(char, statusId, -1, 1)
     end
 end
+
+function STAT.ApplyToWeapon(character, statusId)
+    local weaponHandle = Osi.GetEquippedWeapon(character)
+    if weaponHandle ~= 0 then
+        local weapon = Ext.Entity.Get(weaponHandle)
+        if weapon and weapon.Uuid then
+            local weaponGuid = weapon.Uuid.EntityUuid
+            Osi.ApplyStatus(weaponGuid, statusId, -1, 1)
+        end
+    end
+end

@@ -192,6 +192,15 @@ SMS.LearnPassive:SetHandler(function(payload)
     end
 end)
 
+SMS.LearnPassiveOnWeapon:SetHandler(function(payload)
+    local uuid = payload.uuid
+    local character = payload.character
+
+    if not character then return end
+    
+    PASSV.LearnOnWeapon(character, uuid)
+end)
+
 SMS.ManageTag:SetHandler(function(payload)
     local tagId = payload.uuid
     local data = payload.data
@@ -239,6 +248,15 @@ SMS.ApplyStatus:SetHandler(function(payload)
         statuses[character][uuid] = data
         Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
     end
+end)
+
+SMS.ApplyStatusToWeapon:SetHandler(function(payload)
+    local uuid = payload.uuid
+    local character = payload.character
+
+    if not character then return end
+    
+    STAT.ApplyToWeapon(character, uuid)
 end)
 
 

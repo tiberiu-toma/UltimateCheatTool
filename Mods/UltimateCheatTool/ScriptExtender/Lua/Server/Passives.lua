@@ -55,3 +55,14 @@ function PASSV.Learn(character, passiveId, unlearn)
         Osi.AddPassive(character, passiveId)
     end
 end
+
+function PASSV.LearnOnWeapon(character, passiveId)
+    local weaponHandle = Osi.GetEquippedWeapon(character)
+    if weaponHandle ~= 0 then
+        local weapon = Ext.Entity.Get(weaponHandle)
+        if weapon and weapon.Uuid then
+            local weaponGuid = weapon.Uuid.EntityUuid
+            Osi.AddPassive(weaponGuid, passiveId)
+        end
+    end
+end
