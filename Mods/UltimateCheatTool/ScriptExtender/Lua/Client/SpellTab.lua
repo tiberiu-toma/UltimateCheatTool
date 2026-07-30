@@ -115,13 +115,13 @@ function SpellTab:SetSpells(payload)
             popup:Open()
         end
 
+        local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
+        local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         local idPopup = popup:AddText(uuid)
         local namePopup = popup:AddText(name)
         local useCosts = popup:AddText("Use Costs: " .. (useCosts or "N/A"))
         local level = popup:AddText("Level: " .. (level or "N/A"))
         local cooldown = popup:AddText("Cooldown: " .. (cooldown or "N/A"))
-        local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
-        local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         
         removeSpell.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
