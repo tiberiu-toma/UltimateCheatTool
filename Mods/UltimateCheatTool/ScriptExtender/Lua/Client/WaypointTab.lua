@@ -1,3 +1,5 @@
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+
 ---@class WaypointTab
 ---@field Tab ExtuiTabItem
 ---@field Description ExtuiGroup
@@ -84,6 +86,16 @@ function WaypointTab:SetWaypoints(items)
         end
 
         local selectWaypoint = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb79", "Teleport"))
+
+        local waypointInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "name", label = "Name" },
+            { key = "trigger", label = "Trigger" },
+            { key = "pos", label = "Position", formatter = function(pos)
+                return string.format("X: %.2f, Y: %.2f, Z: %.2f", pos.x or 0, pos.y or 0, pos.z or 0)
+            end },
+        }
+        InfoPopup:AddInfo(popup, data, waypointInfoFields)
 
         selectWaypoint.OnClick = function()
             SMS.TeleportToWaypoint:SendToServer({ data=trigger })

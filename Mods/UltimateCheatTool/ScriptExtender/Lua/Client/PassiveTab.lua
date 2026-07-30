@@ -1,4 +1,5 @@
 local Pagination = Ext.Require("Client/Pagination.lua")
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class PassiveTab
 ---@field Tab ExtuiTabItem
@@ -121,20 +122,25 @@ function PassiveTab:SetPassives(payload)
         local selectPassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
         local removePassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         removePassive.SameLine = true
-        local idPopup = popup:AddText(uuid)
-        local namePopup = popup:AddText(fullName)
-        if description ~= nil and description ~= "" then
-            local cleanDescription = description:gsub("</?LSTag[^>]*>", ""):gsub("<[Bb][Rr]>", "\n")
-            local descriptionPopup = popup:AddText("Description: ".. "\n\t" .. cleanDescription:gsub(";", "\n\t"))
-        end
-        if boosts ~= nil and boosts ~= "" then
-            local boostsPopup = popup:AddText("Boosts: ".. "\n\t" .. boosts:gsub(";", "\n\t"))
-        end
-        if conditions ~= nil and conditions ~= "" then
-            local conditionsPopup = popup:AddText("Conditions: ".. "\n\t" .. conditions:gsub(";", "\n\t"))
-        end
-        local modNamePopup = popup:AddText("Mod Name: " .. modName)
 
+        data.fullName = fullName
+        local passiveInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+            { key = "description", label = "Description", formatter = function(value)
+                local cleanDescription = value:gsub("</?LSTag[^>]*>", ""):gsub("<[Bb][Rr]>", "\n")
+                return "\n\t" .. cleanDescription:gsub(";", "\n\t"):gsub("%. ", ".\n\t")
+            end },
+            { key = "boosts", label = "Boosts", formatter = function(value)
+                return "\n\t" .. value:gsub(";", "\n\t")
+            end },
+            { key = "conditions", label = "Conditions", formatter = function(value)
+                return "\n\t" .. value:gsub(";", "\n\t")
+            end },
+            { key = "modName", label = "Mod Name" },
+        }
+        InfoPopup:AddInfo(popup, data, passiveInfoFields)
+        
         removePassive.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.LearnPassive:SendToServer({ character = charUUID, uuid=uuid, unlearn=1})
@@ -203,12 +209,13 @@ function PassiveTab:GetLearnedPassives()
         if not icon or icon == "unknown" or icon == "" then
             icon = "EC_Portrait_Generic"
         end
-        local name = HLP.GetAttr(data, "displayName")
+        local fullName = HLP.GetAttr(data, "displayName")
 
-        if not name then
+        if not fullName then
             goto continue
         end
 
+        local name = fullName
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -221,6 +228,13 @@ function PassiveTab:GetLearnedPassives()
         PassiveItem.OnClick = function()
             popup:Open()
         end
+
+        data.fullName = fullName
+        local learnedPassiveInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+        }
+        InfoPopup:AddInfo(popup, data, learnedPassiveInfoFields)
 
         local removePassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         removePassive.OnClick = function()

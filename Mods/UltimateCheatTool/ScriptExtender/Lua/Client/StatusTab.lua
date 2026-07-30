@@ -1,4 +1,5 @@
 local Pagination = Ext.Require("Client/Pagination.lua")
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class StatusTab
 ---@field Tab ExtuiTabItem
@@ -93,11 +94,12 @@ function StatusTab:SetStatuses(payload)
             icon = "EC_Portrait_Generic"
         end
         local name = HLP.GetAttr(data, "displayName")
-
+        
         if not name then
             goto continue
         end
 
+        local fullName = name
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -113,6 +115,14 @@ function StatusTab:SetStatuses(payload)
 
         local applyStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432083", "Apply"))
         local removeStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove"))
+        removeStatus.SameLine = true
+
+        data.fullName = fullName
+        local statusInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+        }
+        InfoPopup:AddInfo(popup, data, statusInfoFields)
 
         removeStatus.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
@@ -182,12 +192,13 @@ function StatusTab:GetAppliedStatuses()
         if not icon or icon == "unknown" or icon == "" then
             icon = "EC_Portrait_Generic"
         end
-        local name = HLP.GetAttr(data, "displayName")
+        local fullName = HLP.GetAttr(data, "displayName")
 
-        if not name then
+        if not fullName then
             goto continue
         end
 
+        local name = fullName
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -200,6 +211,13 @@ function StatusTab:GetAppliedStatuses()
         StatusItem.OnClick = function()
             popup:Open()
         end
+
+        data.fullName = fullName
+        local appliedStatusInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+        }
+        InfoPopup:AddInfo(popup, data, appliedStatusInfoFields)
 
         local removeStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove"))
         removeStatus.OnClick = function()

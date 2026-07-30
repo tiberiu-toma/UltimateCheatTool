@@ -1,4 +1,5 @@
 local Pagination = Ext.Require("Client/Pagination.lua")
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class SpellTab
 ---@field Tab ExtuiTabItem
@@ -121,15 +122,21 @@ function SpellTab:SetSpells(payload)
 
         local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
         local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
-        local idPopup = popup:AddText(uuid)
-        local namePopup = popup:AddText(fullName)
-        local spellType = popup:AddText("Spell Type: " .. (spellType or "N/A"))
-        local spellSchool = popup:AddText("Spell School: " .. (spellSchool or "N/A"))
-        local useCosts = popup:AddText("Use Costs: " .. (useCosts or "N/A"))
-        local level = popup:AddText("Level: " .. (level or "N/A"))
-        local cooldown = popup:AddText("Cooldown: " .. (cooldown or "N/A"))
-        local modName = popup:AddText("Mod Name: " .. (modName or "N/A"))
+        removeSpell.SameLine = true
 
+        data.fullName = fullName
+        local spellInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+            { key = "spellType", label = "Spell Type" },
+            { key = "spellSchool", label = "Spell School" },
+            { key = "useCosts", label = "Use Costs" },
+            { key = "level", label = "Level" },
+            { key = "cooldown", label = "Cooldown" },
+            { key = "modName", label = "Mod Name" },
+        }
+        InfoPopup:AddInfo(popup, data, spellInfoFields)
+        
         removeSpell.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
@@ -195,13 +202,14 @@ function SpellTab:GetLearnedSpells()
         
         local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
-        local name = HLP.GetAttr(data, "displayName")
+        local fullName = HLP.GetAttr(data, "displayName")
 
-        if not name then
+        if not fullName then
             --print("Skipping invalid entry:", uuid)
             goto continue
         end
 
+        local name = fullName
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -215,8 +223,13 @@ function SpellTab:GetLearnedSpells()
             popup:Open()
         end
 
-        local idPopup = popup:AddText(uuid)
-        local namePopup = popup:AddText(name)
+        data.fullName = fullName
+        local learnedSpellInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+        }
+        InfoPopup:AddInfo(popup, data, learnedSpellInfoFields)
+
         local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         removeSpell.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter

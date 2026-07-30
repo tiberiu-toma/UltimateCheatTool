@@ -1,4 +1,5 @@
 local Pagination = Ext.Require("Client/Pagination.lua")
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class NPCTab
 ---@field Tab ExtuiTabItem
@@ -93,13 +94,14 @@ function NPCTab:SetNPCs(payload)
             --icon = icon:match("%((.-)%)")
             icon = "EC_Portrait_Generic"
         end
-        local name = HLP.GetAttr(data, "displayName")
+        local fullName = HLP.GetAttr(data, "displayName")
 
-        if not name then
+        if not fullName then
             --print("Skipping invalid entry:", uuid)
             goto continue
         end
 
+        local name = fullName
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -114,6 +116,13 @@ function NPCTab:SetNPCs(payload)
         end
 
         local selectNPC = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn"))
+
+        data.fullName = fullName
+        local npcInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+        }
+        InfoPopup:AddInfo(popup, data, npcInfoFields)
 
         selectNPC.OnClick = function()
             SMS.SpawnCharacter:SendToServer({ uuid=uuid, amount=1, data=data })
@@ -170,13 +179,14 @@ function NPCTab:GetSpawnedNPCs()
             --icon = icon:match("%((.-)%)")
             icon = "EC_Portrait_Generic"
         end
-        local name = HLP.GetAttr(data, "displayName")
+        local fullName = HLP.GetAttr(data, "displayName")
 
-        if not name then
+        if not fullName then
             --print("Skipping invalid entry:", uuid)
             goto continue
         end
 
+        local name = fullName
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -189,6 +199,13 @@ function NPCTab:GetSpawnedNPCs()
         NPCItem.OnClick = function()
             popup:Open()
         end
+
+        data.fullName = fullName
+        local spawnedNpcInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+        }
+        InfoPopup:AddInfo(popup, data, spawnedNpcInfoFields)
 
         local removeNPC = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
         local enableCombat = popup:AddButton(LCL.Get("h684797ebd2ea4495b56dcc96c031bf261", "Enable Combat"))

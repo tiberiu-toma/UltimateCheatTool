@@ -1,4 +1,5 @@
 local Pagination = Ext.Require("Client/Pagination.lua")
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class ConsumableTab
 ---@field Tab ExtuiTabItem
@@ -86,13 +87,14 @@ function ConsumableTab:SetConsumables(payload)
         
         local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
-        local name = HLP.GetAttr(data, "displayName")
+        local fullName = HLP.GetAttr(data, "displayName")
 
-        if not name then
+        if not fullName then
             --print("Skipping invalid entry:", uuid)
             goto continue
         end
 
+        local name = fullName
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -108,12 +110,20 @@ function ConsumableTab:SetConsumables(payload)
 
         for _,num in kpairs(self.AmountOptions) do
             local selectConsumable = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num)
+            selectConsumable.SameLine = true
 
             selectConsumable.OnClick = function()
                 local charUUID = UI.CharSelector.SelectedCharacter
                 SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
             end
         end
+
+        data.fullName = fullName
+        local consumableInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "fullName", label = "Name" },
+        }
+        InfoPopup:AddInfo(popup, data, consumableInfoFields)
 
         i = i + 1
 

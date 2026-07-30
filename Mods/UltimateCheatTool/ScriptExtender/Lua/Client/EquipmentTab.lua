@@ -1,4 +1,5 @@
 local Pagination = Ext.Require("Client/Pagination.lua")
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class EquipmentTab
 ---@field Tab ExtuiTabItem
@@ -128,47 +129,33 @@ function EquipmentTab:SetEquipment(payload)
                 SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
             end
         end
-        local idPopup = popup:AddText(uuid)
-        idPopup.SameLine = false
-        local namePopup = popup:AddText(fullName)
 
-        if rarity ~= nil and rarity ~= "" then
-            local rarityPopup = popup:AddText("Rarity: " .. rarity)
-        end
-
-        if armorClass ~= nil and armorClass ~= "" then
-            local armorClassPopup = popup:AddText("Armor Class: " .. armorClass)
-        end
-
-        if armorType ~= nil and armorType ~= "" then
-            local armorTypePopup = popup:AddText("Armor Type: " .. armorType)
-        end
-
-        if slot ~= nil and slot ~= "" then
-            local slotPopup = popup:AddText("Slot: " .. slot)
-        end
-
-        if defaultBoosts ~= nil and defaultBoosts ~= "" then
-            local defaultBoostsPopup = popup:AddText("Default Boosts: " .. "\n\t" .. defaultBoosts:gsub(";", "\n\t"))
-        end
-
-        if boosts ~= nil and boosts ~= "" then
-            local boostsPopup = popup:AddText("Boosts: " .. "\n\t" .. boosts:gsub(";", "\n\t"))
-        end
-
-        if boostsOnEquipMainHand ~= nil and boostsOnEquipMainHand ~= "" then
-            local boostsOnEquipMainHandPopup = popup:AddText("Boosts on Equip (Main Hand): " .. "\n\t" .. boostsOnEquipMainHand:gsub(";", "\n\t"))
-        end
-
-        if boostsOnEquipOffHand ~= nil and boostsOnEquipOffHand ~= "" then
-            local boostsOnEquipOffHandPopup = popup:AddText("Boosts on Equip (Off Hand): " .. "\n\t" .. boostsOnEquipOffHand:gsub(";", "\n\t"))
-        end
-
-        if passivesOnEquip ~= nil and passivesOnEquip ~= "" then
-            local passivesOnEquipPopup = popup:AddText("Passives on Equip: " .. "\n\t" .. passivesOnEquip:gsub(";", "\n\t"))
-        end
-
-        local modName = popup:AddText("Mod Name: " .. (modName or "N/A"))
+        data.fullName = fullName
+        local equipmentInfoFields = {
+            { key = "id", label = "ID", sameLine = false },
+            { key = "fullName", label = "Name" },
+            { key = "rarity", label = "Rarity" },
+            { key = "armorClass", label = "Armor Class" },
+            { key = "armorType", label = "Armor Type" },
+            { key = "slot", label = "Slot" },
+            { key = "defaultBoosts", label = "Default Boosts", formatter = function(value)
+                return "\n\t" .. value:gsub(";", "\n\t")
+            end },
+            { key = "boosts", label = "Boosts", formatter = function(value)
+                return "\n\t" .. value:gsub(";", "\n\t")
+            end },
+            { key = "boostsOnEquipMainHand", label = "Boosts on Equip (Main Hand)", formatter = function(value)
+                return "\n\t" .. value:gsub(";", "\n\t")
+            end },
+            { key = "boostsOnEquipOffHand", label = "Boosts on Equip (Off Hand)", formatter = function(value)
+                return "\n\t" .. value:gsub(";", "\n\t")
+            end },
+            { key = "passivesOnEquip", label = "Passives on Equip", formatter = function(value)
+                return "\n\t" .. value:gsub(";", "\n\t")
+            end },
+            { key = "modName", label = "Mod Name" },
+        }
+        InfoPopup:AddInfo(popup, data, equipmentInfoFields)
 
         i = i + 1
 

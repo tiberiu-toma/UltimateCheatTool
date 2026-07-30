@@ -1,3 +1,5 @@
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+
 ---@class RecruitTab
 ---@field Tab ExtuiTabItem
 ---@field Description ExtuiGroup
@@ -66,6 +68,12 @@ function RecruitTab:ShowCompanions()
         approvalMinus.OnClick = function()
             SMS.CompanionApproval:SendToServer({ data=name,approval="-10" })
         end
+
+        local companionInfoFields = {
+            { key = "uuid", label = "UUID" },
+        }
+        -- The data is just the uuid, so we create a small table for InfoPopup
+        InfoPopup:AddInfo(popup, { uuid = uuid }, companionInfoFields)
 
         i = i + 1
 

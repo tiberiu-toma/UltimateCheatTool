@@ -1,4 +1,5 @@
 local Pagination = Ext.Require("Client/Pagination.lua")
+local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class TagTab
 ---@field Tab ExtuiTabItem
@@ -102,9 +103,16 @@ function TagTab:SetTags(payload)
             popup:Open()
         end
 
-        local descriptionText = popup:AddText(description)
         local addButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add"))
         local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
+        removeButton.SameLine = true
+
+        local tagInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "displayName", label = "Name" },
+            { key = "displayDescription", label = "Description" },
+        }
+        InfoPopup:AddInfo(popup, data, tagInfoFields)
 
         removeButton.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
@@ -186,7 +194,13 @@ function TagTab:GetAppliedTags()
             popup:Open()
         end
 
-        local descriptionText = popup:AddText(description)
+        local appliedTagInfoFields = {
+            { key = "id", label = "ID" },
+            { key = "displayName", label = "Name" },
+            { key = "displayDescription", label = "Description" },
+        }
+        InfoPopup:AddInfo(popup, data, appliedTagInfoFields)
+
         local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
         removeButton.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
