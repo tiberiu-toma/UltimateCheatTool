@@ -130,6 +130,13 @@ function EquipmentTab:SetEquipment(payload)
             end
         end
 
+        local setAsSelectedBtn = popup:AddButton("Set as Selected")
+        setAsSelectedBtn.OnClick = function()
+            if UI and UI.EquipmentSelector then
+                UI.EquipmentSelector:SetSelectedEquipment(data)
+            end
+        end
+
         data.fullName = fullName
         local equipmentInfoFields = {
             { key = "id", label = "ID", sameLine = false },

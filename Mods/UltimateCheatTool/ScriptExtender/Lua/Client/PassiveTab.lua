@@ -122,11 +122,18 @@ function PassiveTab:SetPassives(payload)
         local selectPassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
         local removePassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         removePassive.SameLine = true
-        local addToWeapon = popup:AddButton(LCL.Get("UCT_PassiveTab_AddToWeapon", "Add to Weapon"))
+        local addToSelectedItem = popup:AddButton(LCL.Get("UCT_PassiveTab_AddToSelectedItem", "Add to Selected Item"))
 
-        addToWeapon.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.LearnPassiveOnWeapon:SendToServer({ character = charUUID, uuid = uuid })
+        local equipmentData = UI.EquipmentSelector.SelectedEquipment
+        if not equipmentData then
+            addToSelectedItem.Disabled = true
+        else
+            addToSelectedItem.OnClick = function()
+                if equipmentData and equipmentData.id then
+                    local charUUID = UI.CharSelector.SelectedCharacter
+                    SMS.LearnPassiveOnItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
+                end
+            end
         end
 
         data.fullName = fullName

@@ -56,13 +56,16 @@ function PASSV.Learn(character, passiveId, unlearn)
     end
 end
 
-function PASSV.LearnOnWeapon(character, passiveId)
-    local weaponHandle = Osi.GetEquippedWeapon(character)
-    if weaponHandle ~= 0 then
-        local weapon = Ext.Entity.Get(weaponHandle)
-        if weapon and weapon.Uuid then
-            local weaponGuid = weapon.Uuid.EntityUuid
-            Osi.AddPassive(weaponGuid, passiveId)
-        end
+function PASSV.LearnOnItem(character, itemTemplateUUID, passiveId)
+    local template = Ext.Template.GetTemplate(itemTemplateUUID)
+    if not template or not template.Stats then return end
+    local stats = Ext.Stats.Get(template.Stats)
+    if not stats then return end
+
+    local passivesOnEquip = HLP.GetAttr(stats, "PassivesOnEquip") or ""
+    if not string.find(passivesOnEquip, passiveId, 1, true) then
+        passivesOnEquip = (passivesOnEquip == "" and passiveId) or (passivesOnEquip .. ";" .. passiveId)
+        stats.PassivesOnEquip = passivesOnEquip
+        stats:Sync()
     end
 end

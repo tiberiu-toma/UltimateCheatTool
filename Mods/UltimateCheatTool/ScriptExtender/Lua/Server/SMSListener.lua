@@ -192,13 +192,14 @@ SMS.LearnPassive:SetHandler(function(payload)
     end
 end)
 
-SMS.LearnPassiveOnWeapon:SetHandler(function(payload)
-    local uuid = payload.uuid
+SMS.LearnPassiveOnItem:SetHandler(function(payload)
+    local itemTemplateUUID = payload.itemTemplateUUID
+    local passiveUUID = payload.passiveUUID
     local character = payload.character
 
     if not character then return end
     
-    PASSV.LearnOnWeapon(character, uuid)
+    PASSV.LearnOnItem(character, itemTemplateUUID, passiveUUID)
 end)
 
 SMS.ManageTag:SetHandler(function(payload)
@@ -250,13 +251,14 @@ SMS.ApplyStatus:SetHandler(function(payload)
     end
 end)
 
-SMS.ApplyStatusToWeapon:SetHandler(function(payload)
-    local uuid = payload.uuid
+SMS.ApplyStatusToItem:SetHandler(function(payload)
+    local itemTemplateUUID = payload.itemTemplateUUID
+    local statusUUID = payload.statusUUID
     local character = payload.character
 
     if not character then return end
     
-    STAT.ApplyToWeapon(character, uuid)
+    STAT.ApplyToItem(character, itemTemplateUUID, statusUUID)
 end)
 
 

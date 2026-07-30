@@ -15,6 +15,7 @@ MCMActive = Mods and Mods.BG3MCM -- true or false depending on if MCM is active 
 ---@field ControllerAxisHandler LuaEventBase|nil
 ---@field TabBar ExtuiTabBar
 ---@field CharSelector CharacterSelector
+---@field EquipmentSelector EquipmentSelector
 ---@field TagTab TagTab
 ---@field GenericTab GenericTab
 ---@field EquipmentTab EquipmentTab
@@ -40,6 +41,7 @@ local WaypointTab = Ext.Require("Client/WaypointTab.lua")
 local RecruitTab = Ext.Require("Client/RecruitTab.lua")
 local TagTab = Ext.Require("Client/TagTab.lua")
 local CharacterSelector = Ext.Require("Client/CharacterSelector.lua")
+local EquipmentSelector = Ext.Require("Client/EquipmentSelector.lua")
 local GenericTab = Ext.Require("Client/GenericTab.lua")
 
 --------------------------------------------------
@@ -70,11 +72,17 @@ function UI:OnCharacterChange(charUUID)
     if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
 end
 
+function UI:OnEquipmentChange(eqData)
+    -- Placeholder for future logic when selected equipment changes
+end
+
 function UI:Init()
    -- self.PartyInterface = PartyInterface:New(self.Window)
    -- self.PartyInterface:Init()
 
     self.CharSelector = CharacterSelector:New(self.Window, function(charUUID) self:OnCharacterChange(charUUID) end)
+     self.EquipmentSelector = EquipmentSelector:New(self.Window, function(eqData) self:OnEquipmentChange(eqData) end)
+    self.EquipmentSelector.Container.SameLine = true
 
     self.TabBar = self.Window:AddTabBar("")
     
@@ -90,6 +98,7 @@ function UI:Init()
     self.WaypointTab = WaypointTab:New(self.TabBar)
 
     self.CharSelector:Init()
+    self.EquipmentSelector:Init()
     self.GenericTab:Init()
     self.EquipmentTab:Init()
     self.ConsumableTab:Init()

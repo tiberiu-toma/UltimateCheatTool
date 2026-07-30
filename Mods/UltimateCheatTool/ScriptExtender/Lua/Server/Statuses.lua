@@ -43,13 +43,16 @@ function STAT.Apply(char, statusId, remove)
     end
 end
 
-function STAT.ApplyToWeapon(character, statusId)
-    local weaponHandle = Osi.GetEquippedWeapon(character)
-    if weaponHandle ~= 0 then
-        local weapon = Ext.Entity.Get(weaponHandle)
-        if weapon and weapon.Uuid then
-            local weaponGuid = weapon.Uuid.EntityUuid
-            Osi.ApplyStatus(weaponGuid, statusId, -1, 1)
-        end
+function STAT.ApplyToItem(character, itemTemplateUUID, statusId)
+    local template = Ext.Template.GetTemplate(itemTemplateUUID)
+    if not template or not template.Stats then return end
+    local stats = Ext.Stats.Get(template.Stats)
+    if not stats then return end
+
+    local statusOnEquip = HLP.GetAttr(stats, "StatusOnEquip") or ""
+    if not string.find(statusOnEquip, statusId, 1, true) then
+        statusOnEquip = (statusOnEquip == "" and statusId) or (statusOnEquip .. ";" .. statusId)
+        stats.StatusOnEquip = statusOnEquip
+        stats:Sync()
     end
 end
