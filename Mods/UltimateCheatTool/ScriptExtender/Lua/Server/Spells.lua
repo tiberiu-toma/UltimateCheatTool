@@ -16,9 +16,13 @@ function SPLL.GetAll(search, page)
         local icon = HLP.GetAttr(v, "Icon")
         local name = HLP.GetAttr(v, "Name")
         local handle = HLP.GetAttr(v, "DisplayName")
+        
+        local spellType = HLP.GetAttr(v, "SpellType")
+        local spellSchool = HLP.GetAttr(v, "SpellSchool")
         local useCosts = HLP.GetAttr(v, "UseCosts")
         local level = HLP.GetAttr(v, "Level")
         local cooldown = HLP.GetAttr(v, "Cooldown")
+
         local modId = HLP.GetAttr(v, "ModId")
         local mod = Ext.Mod.GetMod(modId)
         local modName = mod ~= nil and mod.Info ~= nil and mod.Info.Name ~= nil and mod.Info.Name or "Unknown"
@@ -33,6 +37,8 @@ function SPLL.GetAll(search, page)
                 name = name,
                 icon = icon,
                 displayName = displayName,
+                spellType = spellType,
+                spellSchool = spellSchool,
                 useCosts = useCosts,
                 level = level,
                 cooldown = cooldown,

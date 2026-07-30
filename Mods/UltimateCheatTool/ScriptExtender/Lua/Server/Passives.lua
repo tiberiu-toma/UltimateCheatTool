@@ -17,6 +17,14 @@ function PASSV.GetAll(search, page)
         local name = HLP.GetAttr(v, "Name")
         local handle = HLP.GetAttr(v, "DisplayName")
 
+        local description = Ext.Loca.GetTranslatedString(HLP.GetAttr(v, "Description"))
+        local boosts = HLP.GetAttr(v, "Boosts")
+        local conditions = HLP.GetAttr(v, "Conditions")
+
+        local modId = HLP.GetAttr(v, "ModId")
+        local mod = Ext.Mod.GetMod(modId)
+        local modName = mod ~= nil and mod.Info ~= nil and mod.Info.Name ~= nil and mod.Info.Name or "Unknown"
+
         local displayName = Ext.Loca.GetTranslatedString(handle)
 
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName))
@@ -27,6 +35,10 @@ function PASSV.GetAll(search, page)
                 name = name,
                 icon = icon,
                 displayName = displayName,
+                description = description,
+                boosts = boosts,
+                conditions = conditions,
+                modName = modName
             })
         end
     end

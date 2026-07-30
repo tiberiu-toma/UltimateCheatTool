@@ -95,10 +95,16 @@ function PassiveTab:SetPassives(payload)
         end
         local name = HLP.GetAttr(data, "displayName")
 
+        local description = HLP.GetAttr(data, "description")
+        local boosts = HLP.GetAttr(data, "boosts")
+        local conditions = HLP.GetAttr(data, "conditions")
+        local modName = HLP.GetAttr(data, "modName")
+
         if not name then
             goto continue
         end
 
+        local fullName = name
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -114,6 +120,20 @@ function PassiveTab:SetPassives(payload)
 
         local selectPassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
         local removePassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
+        removePassive.SameLine = true
+        local idPopup = popup:AddText(uuid)
+        local namePopup = popup:AddText(fullName)
+        if description ~= nil and description ~= "" then
+            local cleanDescription = description:gsub("</?LSTag[^>]*>", ""):gsub("<[Bb][Rr]>", "\n")
+            local descriptionPopup = popup:AddText("Description: ".. "\n\t" .. cleanDescription:gsub(";", "\n\t"))
+        end
+        if boosts ~= nil and boosts ~= "" then
+            local boostsPopup = popup:AddText("Boosts: ".. "\n\t" .. boosts:gsub(";", "\n\t"))
+        end
+        if conditions ~= nil and conditions ~= "" then
+            local conditionsPopup = popup:AddText("Conditions: ".. "\n\t" .. conditions:gsub(";", "\n\t"))
+        end
+        local modNamePopup = popup:AddText("Mod Name: " .. modName)
 
         removePassive.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter

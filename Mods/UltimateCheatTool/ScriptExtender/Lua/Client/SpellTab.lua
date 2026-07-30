@@ -93,6 +93,8 @@ function SpellTab:SetSpells(payload)
             icon = "EC_Portrait_Generic"
         end
         local name = HLP.GetAttr(data, "displayName")
+        local spellType = HLP.GetAttr(data, "spellType")
+        local spellSchool = HLP.GetAttr(data, "spellSchool")
         local useCosts = HLP.GetAttr(data, "useCosts")
         local level = HLP.GetAttr(data, "level")
         local cooldown = HLP.GetAttr(data, "cooldown")
@@ -103,6 +105,7 @@ function SpellTab:SetSpells(payload)
             goto continue
         end
 
+        local fullName = name
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -119,7 +122,9 @@ function SpellTab:SetSpells(payload)
         local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
         local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
         local idPopup = popup:AddText(uuid)
-        local namePopup = popup:AddText(name)
+        local namePopup = popup:AddText(fullName)
+        local spellType = popup:AddText("Spell Type: " .. (spellType or "N/A"))
+        local spellSchool = popup:AddText("Spell School: " .. (spellSchool or "N/A"))
         local useCosts = popup:AddText("Use Costs: " .. (useCosts or "N/A"))
         local level = popup:AddText("Level: " .. (level or "N/A"))
         local cooldown = popup:AddText("Cooldown: " .. (cooldown or "N/A"))
