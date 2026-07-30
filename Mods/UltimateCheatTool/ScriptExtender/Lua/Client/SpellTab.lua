@@ -96,6 +96,7 @@ function SpellTab:SetSpells(payload)
         local useCosts = HLP.GetAttr(data, "useCosts")
         local level = HLP.GetAttr(data, "level")
         local cooldown = HLP.GetAttr(data, "cooldown")
+        local modName = HLP.GetAttr(data, "modName")
 
         if not name then
             --print("Skipping invalid entry:", uuid)
@@ -122,7 +123,8 @@ function SpellTab:SetSpells(payload)
         local useCosts = popup:AddText("Use Costs: " .. (useCosts or "N/A"))
         local level = popup:AddText("Level: " .. (level or "N/A"))
         local cooldown = popup:AddText("Cooldown: " .. (cooldown or "N/A"))
-        
+        local modName = popup:AddText("Mod Name: " .. (modName or "N/A"))
+
         removeSpell.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })

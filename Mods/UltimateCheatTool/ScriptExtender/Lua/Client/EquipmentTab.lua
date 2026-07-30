@@ -88,11 +88,24 @@ function EquipmentTab:SetEquipment(payload)
         local icon = HLP.GetAttr(data, "icon")
         local name = HLP.GetAttr(data, "displayName")
 
+        local rarity = HLP.GetAttr(data, "rarity", nil)
+        local armorClass = HLP.GetAttr(data, "armorClass", nil)
+        local armorType = HLP.GetAttr(data, "armorType", nil)
+        local slot = HLP.GetAttr(data, "slot", nil)
+        local defaultBoosts = HLP.GetAttr(data, "defaultBoosts", nil)
+        local boosts = HLP.GetAttr(data, "boosts", nil)
+        local boostsOnEquipMainHand = HLP.GetAttr(data, "boostsOnEquipMainHand", nil)
+        local boostsOnEquipOffHand = HLP.GetAttr(data, "boostsOnEquipOffHand", nil)
+        local passivesOnEquip = HLP.GetAttr(data, "passivesOnEquip", nil)
+
+        local modName = HLP.GetAttr(data, "modName")
+
         if not name then
             --print("Skipping invalid entry:", uuid)
             goto continue
         end
 
+        local fullName = name
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
         end
@@ -105,15 +118,57 @@ function EquipmentTab:SetEquipment(payload)
         equipmentItem.OnClick = function()
             popup:Open()
         end
-
+        
         for _,num in kpairs(self.AmountOptions) do
             local selectEquipment = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num)
+            selectEquipment.SameLine = true
 
             selectEquipment.OnClick = function()
                 local charUUID = UI.CharSelector.SelectedCharacter
                 SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
             end
         end
+        local idPopup = popup:AddText(uuid)
+        idPopup.SameLine = false
+        local namePopup = popup:AddText(fullName)
+
+        if rarity ~= nil and rarity ~= "" then
+            local rarityPopup = popup:AddText("Rarity: " .. rarity)
+        end
+
+        if armorClass ~= nil and armorClass ~= "" then
+            local armorClassPopup = popup:AddText("Armor Class: " .. armorClass)
+        end
+
+        if armorType ~= nil and armorType ~= "" then
+            local armorTypePopup = popup:AddText("Armor Type: " .. armorType)
+        end
+
+        if slot ~= nil and slot ~= "" then
+            local slotPopup = popup:AddText("Slot: " .. slot)
+        end
+
+        if defaultBoosts ~= nil and defaultBoosts ~= "" then
+            local defaultBoostsPopup = popup:AddText("Default Boosts: " .. "\n\t" .. defaultBoosts:gsub(";", "\n\t"))
+        end
+
+        if boosts ~= nil and boosts ~= "" then
+            local boostsPopup = popup:AddText("Boosts: " .. "\n\t" .. boosts:gsub(";", "\n\t"))
+        end
+
+        if boostsOnEquipMainHand ~= nil and boostsOnEquipMainHand ~= "" then
+            local boostsOnEquipMainHandPopup = popup:AddText("Boosts on Equip (Main Hand): " .. "\n\t" .. boostsOnEquipMainHand:gsub(";", "\n\t"))
+        end
+
+        if boostsOnEquipOffHand ~= nil and boostsOnEquipOffHand ~= "" then
+            local boostsOnEquipOffHandPopup = popup:AddText("Boosts on Equip (Off Hand): " .. "\n\t" .. boostsOnEquipOffHand:gsub(";", "\n\t"))
+        end
+
+        if passivesOnEquip ~= nil and passivesOnEquip ~= "" then
+            local passivesOnEquipPopup = popup:AddText("Passives on Equip: " .. "\n\t" .. passivesOnEquip:gsub(";", "\n\t"))
+        end
+
+        local modName = popup:AddText("Mod Name: " .. (modName or "N/A"))
 
         i = i + 1
 
