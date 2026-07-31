@@ -41,13 +41,24 @@ function EquipmentSelector:Draw()
         selectedIcon = self.SelectedEquipment.icon or "EC_Portrait_Generic"
     end
 
-    self.Container:AddText("Select Equipment to Modify:")
+    local layoutTable = self.Container:AddTable("EquipmentSelectorLayout", 2)
+    layoutTable.SizingFixedSame = true
+    layoutTable.NoHostExtendX = true
 
-    local comboImageButton = self.Container:AddImageButton("eq_select_img", selectedIcon, {100 * ViewPortScale, 100 * ViewPortScale})
+    local row1 = layoutTable:AddRow()
+    row1:AddCell():AddText(LCL.Get("UCT_EquipmentSelector_Label", "Select Equipment to Modify:"))
+    local imageCell = row1:AddCell()
+    local comboImageButton = imageCell:AddImageButton("eq_select_img", selectedIcon, {100 * ViewPortScale, 100 * ViewPortScale})
 
-    self.Container:AddText(selectedName)
+    local row2 = layoutTable:AddRow()
+    local clearCell = row2:AddCell()
+    local clearButton = clearCell:AddButton(LCL.Get("UCT_EquipmentSelector_Clear", "Clear Selection"))
+    clearButton.OnClick = function()
+        self:SetSelectedEquipment(nil)
+    end
+    local nameCell = row2:AddCell()
+    nameCell:AddText(selectedName)
 
-    -- Clicking the image redirects to the Equipment tab.
     comboImageButton.OnClick = function()
         local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
         local uuids = {}
@@ -59,10 +70,6 @@ function EquipmentSelector:Draw()
             SMS.FetchModifiedItemsData:SendToServer({ ID = USERID, uuids = uuids })
         else
             self:ShowModifiedItemsPopup({})
-        end
-
-        if UI and UI.TabBar and UI.EquipmentTab then
-            UI.EquipmentTab.Tab:Activate()
         end
     end
 end

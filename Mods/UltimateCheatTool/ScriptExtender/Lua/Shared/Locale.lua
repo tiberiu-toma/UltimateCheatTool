@@ -28,12 +28,15 @@ LocaleText = {
 	UCT_GenericTab_ResetCooldowns = "Reset Cooldowns",
 	UCT_GenericTab_StartRespec = "Respec Character",
 	UCT_GenericTab_ChangeAppearance = "Change Appearance",
+	
+	UCT_PassiveTab_AddToSelectedItem = "Add to Selected Equipment",
+	UCT_PassiveTab_RemoveFromSelectedItem = "Remove from Selected Equipment",
+	UCT_StatusTab_ApplyToSelectedItem = "Apply to Selected Equipment",
+	UCT_StatusTab_RemoveFromSelectedItem = "Remove from Selected Equipment",
 
-	UCT_PassiveTab_AddToSelectedItem = "Add to Selected Equippment",
-	UCT_PassiveTab_RemoveFromSelectedItem = "Remove from Selected Equippment",
-	UCT_StatusTab_ApplyToSelectedItem = "Apply to Selected Equippment",
-	UCT_StatusTab_RemoveFromSelectedItem = "Remove from Selected Equippment",
+	UCT_PassiveTab_Add = "Add",
+	UCT_PassiveTab_Remove = "Remove",
 
-	UCT_PassiveTab_Add = "Add to Selected Character",
-	UCT_PassiveTab_Remove = "Remove from Selected Character",
+	UCT_EquipmentSelector_Label = "Select Equipment to Modify:",
+	UCT_EquipmentSelector_Clear = "Clear Selection",
 }

@@ -74,8 +74,16 @@ end
 
 function UI:OnEquipmentChange(eqData)
     -- This function will be called when the equipment selection changes.
-    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
-    if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
+    if self.PassiveTab and self.PassiveTab.Tab.Visible then
+        self.PassiveTab:GetAddedPassives()
+        -- Re-fetch the current page to update the button states in the main grid
+        self.PassiveTab:GetAllPassives(self.PassiveTab.CurrentPage)
+    end
+    if self.StatusTab and self.StatusTab.Tab.Visible then
+        self.StatusTab:GetAppliedStatuses()
+        -- Re-fetch the current page to update the button states in the main grid
+        self.StatusTab:GetAllStatuses(self.StatusTab.CurrentPage)
+    end
 end
 
 function UI:Init()
