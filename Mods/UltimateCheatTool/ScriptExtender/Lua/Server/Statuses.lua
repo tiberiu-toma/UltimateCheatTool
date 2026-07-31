@@ -54,10 +54,11 @@ function STAT.ApplyToItem(character, itemTemplateUUID, statusId)
         statusOnEquip = (statusOnEquip == "" and statusId) or (statusOnEquip .. ";" .. statusId)
         stats.StatusOnEquip = statusOnEquip
         stats:Sync()
+        HLP.RefreshEquippedItem(character, itemTemplateUUID)
     end
 end
 
-function STAT.RemoveFromItem(itemTemplateUUID, statusId)
+function STAT.RemoveFromItem(character, itemTemplateUUID, statusId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
     local stats = Ext.Stats.Get(template.Stats)
@@ -79,5 +80,6 @@ function STAT.RemoveFromItem(itemTemplateUUID, statusId)
     if found then
         stats.StatusOnEquip = table.concat(items, ";")
         stats:Sync()
+        HLP.RefreshEquippedItem(character, itemTemplateUUID)
     end
 end

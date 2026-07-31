@@ -56,7 +56,7 @@ function PASSV.Add(character, passiveId, remove)
     end
 end
 
-function PASSV.AddOnItem(itemTemplateUUID, passiveId)
+function PASSV.AddOnItem(character, itemTemplateUUID, passiveId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
     local stats = Ext.Stats.Get(template.Stats)
@@ -67,10 +67,11 @@ function PASSV.AddOnItem(itemTemplateUUID, passiveId)
         passivesOnEquip = (passivesOnEquip == "" and passiveId) or (passivesOnEquip .. ";" .. passiveId)
         stats.PassivesOnEquip = passivesOnEquip
         stats:Sync()
+        HLP.RefreshEquippedItem(character, itemTemplateUUID)
     end
 end
 
-function PASSV.RemoveFromItem(itemTemplateUUID, passiveId)
+function PASSV.RemoveFromItem(character, itemTemplateUUID, passiveId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
     local stats = Ext.Stats.Get(template.Stats)
@@ -92,5 +93,6 @@ function PASSV.RemoveFromItem(itemTemplateUUID, passiveId)
     if found then
         stats.PassivesOnEquip = table.concat(items, ";")
         stats:Sync()
+        HLP.RefreshEquippedItem(character, itemTemplateUUID)
     end
 end

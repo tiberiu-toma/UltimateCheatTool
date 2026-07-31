@@ -89,3 +89,31 @@ end
 function HLP.Export(data, file)
     Ext.IO.SaveFile(file .. ".json", Ext.DumpExport(data))
 end
+
+function HLP.RefreshEquippedItem(character, itemTemplateUUID)
+    local template = Ext.Template.GetTemplate(itemTemplateUUID)
+    if not template or not template.Stats then return end
+    local stats = Ext.Stats.Get(template.Stats)
+    if not stats then return end
+
+    local test = Ext.Entity.Get(itemTemplateUUID)
+
+    local slot = HLP.GetAttr(stats, "Slot")
+    if not slot then return end
+
+    local itemHandle = Osi.GetEquippedItem(character, slot)
+    if itemHandle ~= 0 then
+        local item = Ext.Entity.Get(itemHandle)
+        if item and item.GameObjectVisual and item.GameObjectVisual.RootTemplateId == itemTemplateUUID then
+            Osi.Unequip(character, itemHandle)
+            local ticks = 0
+            e = Ext.Events.Tick:Subscribe(function()
+                ticks = ticks + 1
+                if ticks >= 10 then
+                    Osi.Equip(character, itemHandle)
+                    Ext.Events.Tick:Unsubscribe(e)
+                end
+            end)
+        end
+    end
+end

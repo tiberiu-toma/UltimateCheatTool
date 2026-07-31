@@ -201,7 +201,7 @@ SMS.AddPassiveOnItem:SetHandler(function(payload)
     if not character then return end
     
     -- Apply the passive to the item for the current session
-    PASSV.AddOnItem(itemTemplateUUID, passiveUUID)
+    PASSV.AddOnItem(character, itemTemplateUUID, passiveUUID)
 
     -- Save the modification for persistence
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -223,7 +223,7 @@ SMS.RemovePassiveFromItem:SetHandler(function(payload)
     if not character then return end
 
     -- Remove the passive from the item for the current session
-    PASSV.RemoveFromItem(itemTemplateUUID, passiveUUID)
+    PASSV.RemoveFromItem(character, itemTemplateUUID, passiveUUID)
 
     -- Update saved modifications
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -315,7 +315,7 @@ SMS.RemoveStatusFromItem:SetHandler(function(payload)
     if not character then return end
 
     -- Remove the status from the item for the current session
-    STAT.RemoveFromItem(itemTemplateUUID, statusUUID)
+    STAT.RemoveFromItem(character, itemTemplateUUID, statusUUID)
 
     -- Update saved modifications
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
