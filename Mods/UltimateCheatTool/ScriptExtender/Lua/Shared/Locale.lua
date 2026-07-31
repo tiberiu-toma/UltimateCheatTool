@@ -29,8 +29,11 @@ LocaleText = {
 	UCT_GenericTab_StartRespec = "Respec Character",
 	UCT_GenericTab_ChangeAppearance = "Change Appearance",
 
-	UCT_PassiveTab_AddToSelectedItem = "Add to Selected Item",
-	UCT_PassiveTab_RemoveFromSelectedItem = "Remove from Selected",
-	UCT_StatusTab_ApplyToSelectedItem = "Apply to Selected Item",
-	UCT_StatusTab_RemoveFromSelectedItem = "Remove from Selected"
+	UCT_PassiveTab_AddToSelectedItem = "Add to Selected Equippment",
+	UCT_PassiveTab_RemoveFromSelectedItem = "Remove from Selected Equippment",
+	UCT_StatusTab_ApplyToSelectedItem = "Apply to Selected Equippment",
+	UCT_StatusTab_RemoveFromSelectedItem = "Remove from Selected Equippment",
+
+	UCT_PassiveTab_Add = "Add to Selected Character",
+	UCT_PassiveTab_Remove = "Remove from Selected Character",
 }

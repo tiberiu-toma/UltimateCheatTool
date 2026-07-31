@@ -130,7 +130,7 @@ function EquipmentTab:SetEquipment(payload)
             end
         end
 
-        local setAsSelectedBtn = popup:AddButton("Set as Selected")
+        local setAsSelectedBtn = popup:AddButton("Set as Selected Equipment")
         setAsSelectedBtn.OnClick = function()
             if UI and UI.EquipmentSelector then
                 UI.EquipmentSelector:SetSelectedEquipment(data)

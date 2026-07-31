@@ -116,7 +116,7 @@ function TagTab:SetTags(payload)
 
         removeButton.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
+            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
             if self.AppliedTags[charUUID] then self.AppliedTags[charUUID][uuid] = nil end
             self:GetAppliedTags()
         end

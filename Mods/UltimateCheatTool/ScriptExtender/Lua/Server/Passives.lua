@@ -48,15 +48,15 @@ function PASSV.GetAll(search, page)
     return UTL.Paginate(allMatchingPassives, page, pageSize)
 end
 
-function PASSV.Learn(character, passiveId, unlearn)
-    if unlearn then
+function PASSV.Add(character, passiveId, remove)
+    if remove then
         Osi.RemovePassive(character, passiveId)
     else
         Osi.AddPassive(character, passiveId)
     end
 end
 
-function PASSV.LearnOnItem(character, itemTemplateUUID, passiveId)
+function PASSV.AddOnItem(itemTemplateUUID, passiveId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
     local stats = Ext.Stats.Get(template.Stats)
@@ -70,7 +70,7 @@ function PASSV.LearnOnItem(character, itemTemplateUUID, passiveId)
     end
 end
 
-function PASSV.UnlearnOnItem(itemTemplateUUID, passiveId)
+function PASSV.RemoveFromItem(itemTemplateUUID, passiveId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
     local stats = Ext.Stats.Get(template.Stats)

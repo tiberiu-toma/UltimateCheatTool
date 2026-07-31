@@ -65,8 +65,8 @@ function UI:OnCharacterChange(charUUID)
     -- This function will be called when the character selection changes.
     -- We can trigger a refresh of the active tab here if needed.
     -- For now, the tabs will read the selected character when they perform actions.
-    -- Let's force a redraw of the learned/applied sections for relevant tabs.
-    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetLearnedPassives() end
+    -- Let's force a redraw of the added/applied sections for relevant tabs.
+    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
     if self.SpellTab and self.SpellTab.Tab.Visible then self.SpellTab:GetLearnedSpells() end
     if self.TagTab and self.TagTab.Tab.Visible then self.TagTab:GetAppliedTags() end
     if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
@@ -74,7 +74,7 @@ end
 
 function UI:OnEquipmentChange(eqData)
     -- This function will be called when the equipment selection changes.
-    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetLearnedPassives() end
+    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
     if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
 end
 

@@ -165,34 +165,34 @@ SMS.LearnSpell:SetHandler(function(payload)
     end
 end)
 
-SMS.LearnPassive:SetHandler(function(payload)
+SMS.AddPassive:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
     local character = payload.character
 
     if not character then return end
     
-    if HLP.GetAttr(payload, "unlearn") then
-        PASSV.Learn(character, uuid, true)
+    if HLP.GetAttr(payload, "remove") then
+        PASSV.Add(character, uuid, true)
 
-        local passives = Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives or {}
+        local passives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
         if passives[character] then
             passives[character][uuid] = nil
         end
         
-        Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives = passives
+        Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
     else
-        PASSV.Learn(character, uuid)
+        PASSV.Add(character, uuid)
    
-        local passives = Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives or {}
+        local passives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
         if not passives[character] then passives[character] = {} end
         passives[character][uuid] = data
         
-        Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives = passives
+        Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
     end
 end)
 
-SMS.LearnPassiveOnItem:SetHandler(function(payload)
+SMS.AddPassiveOnItem:SetHandler(function(payload)
     local itemTemplateUUID = payload.itemTemplateUUID
     local passiveUUID = payload.passiveUUID
     local data = payload.data
@@ -201,7 +201,7 @@ SMS.LearnPassiveOnItem:SetHandler(function(payload)
     if not character then return end
     
     -- Apply the passive to the item for the current session
-    PASSV.LearnOnItem(character, itemTemplateUUID, passiveUUID)
+    PASSV.AddOnItem(itemTemplateUUID, passiveUUID)
 
     -- Save the modification for persistence
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -215,7 +215,7 @@ SMS.LearnPassiveOnItem:SetHandler(function(payload)
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
 end)
 
-SMS.UnlearnPassiveOnItem:SetHandler(function(payload)
+SMS.RemovePassiveFromItem:SetHandler(function(payload)
     local itemTemplateUUID = payload.itemTemplateUUID
     local passiveUUID = payload.passiveUUID
     local character = payload.character
@@ -223,7 +223,7 @@ SMS.UnlearnPassiveOnItem:SetHandler(function(payload)
     if not character then return end
 
     -- Remove the passive from the item for the current session
-    PASSV.UnlearnOnItem(itemTemplateUUID, passiveUUID)
+    PASSV.RemoveFromItem(itemTemplateUUID, passiveUUID)
 
     -- Update saved modifications
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -242,7 +242,7 @@ SMS.ManageTag:SetHandler(function(payload)
 
     if not character then return end
 
-    if HLP.GetAttr(payload, "unlearn") then
+    if HLP.GetAttr(payload, "remove") then
         TAGS.Clear(character, tagId)
 
         local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
@@ -287,6 +287,7 @@ end)
 SMS.ApplyStatusToItem:SetHandler(function(payload)
     local itemTemplateUUID = payload.itemTemplateUUID
     local statusUUID = payload.statusUUID
+    local data = payload.data
     local character = payload.character
 
     if not character then return end
@@ -302,7 +303,7 @@ SMS.ApplyStatusToItem:SetHandler(function(payload)
     if not modifiedEquipment[itemTemplateUUID].statuses then
         modifiedEquipment[itemTemplateUUID].statuses = {}
     end
-    modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = true
+    modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = data
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
 end)
 

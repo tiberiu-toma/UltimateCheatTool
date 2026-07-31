@@ -8,8 +8,8 @@ local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 ---@field ResultCount int
 ---@field PassivesArea ExtuiCollapsingHeader
 ---@field PassiveSearch ExtuiGroup
----@field LearnedPassives table
----@field LearnedPassivesArea ExtuiGroup
+---@field AddedPassives table
+---@field AddedPassivesArea ExtuiGroup
 ---@field AmountOptions table
 ---@field CurrentPage number
 ---@field TotalPages number
@@ -33,7 +33,7 @@ function PassiveTab:New(holder)
         Tab = holder:AddTabItem(LCL.Get("", "Passives")),
         AllPassives = {},
         ResultCount = 0,
-        LearnedPassives = {},
+        AddedPassives = {},
         AmountOptions = {1},
         CurrentPage = 1,
         TotalPages = 1,
@@ -119,9 +119,9 @@ function PassiveTab:SetPassives(payload)
             popup:Open()
         end
 
-        local selectPassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
-        local removePassive = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
-        removePassive.SameLine = true
+        local addPassiveBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_Add", "Add"))
+        local removePassiveBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_Remove", "Remove"))
+        removePassiveBtn.SameLine = true
         local addToSelectedItem = popup:AddButton(LCL.Get("UCT_PassiveTab_AddToSelectedItem", "Add to Selected Item"))
         local removeFromSelectedItem = popup:AddButton(LCL.Get("UCT_PassiveTab_RemoveFromSelectedItem", "Remove from Selected"))
         removeFromSelectedItem.SameLine = true
@@ -134,25 +134,25 @@ function PassiveTab:SetPassives(payload)
             addToSelectedItem.OnClick = function()
                 if equipmentData and equipmentData.id then
                     local charUUID = UI.CharSelector.SelectedCharacter
-                    SMS.LearnPassiveOnItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
+                    SMS.AddPassiveOnItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
                     -- Optimistically update the local data and refresh the UI
                     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
                     if not modifiedEquipment[equipmentData.id] then modifiedEquipment[equipmentData.id] = {} end
                     if not modifiedEquipment[equipmentData.id].passives then modifiedEquipment[equipmentData.id].passives = {} end
                     modifiedEquipment[equipmentData.id].passives[uuid] = data
-                    self:GetLearnedPassives()
+                    self:GetAddedPassives()
                 end
             end
             removeFromSelectedItem.OnClick = function()
                 if equipmentData and equipmentData.id then
                     local charUUID = UI.CharSelector.SelectedCharacter
-                    SMS.UnlearnPassiveOnItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
+                    SMS.RemovePassiveFromItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
                     -- Optimistically update the local data and refresh the UI
                     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
                     if modifiedEquipment[equipmentData.id] and modifiedEquipment[equipmentData.id].passives then
                         modifiedEquipment[equipmentData.id].passives[uuid] = nil
                     end
-                    self:GetLearnedPassives()
+                    self:GetAddedPassives()
                 end
             end
         end
@@ -175,19 +175,19 @@ function PassiveTab:SetPassives(payload)
         }
         InfoPopup:AddInfo(popup, data, passiveInfoFields)
         
-        removePassive.OnClick = function()
+        removePassiveBtn.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.LearnPassive:SendToServer({ character = charUUID, uuid=uuid, unlearn=1})
-            if self.LearnedPassives[charUUID] then self.LearnedPassives[charUUID][uuid] = nil end
-            self:GetLearnedPassives()
+            SMS.AddPassive:SendToServer({ character = charUUID, uuid=uuid, remove=1})
+            if self.AddedPassives[charUUID] then self.AddedPassives[charUUID][uuid] = nil end
+            self:GetAddedPassives()
         end
 
-        selectPassive.OnClick = function()
+        addPassiveBtn.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.LearnPassive:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
-            if not self.LearnedPassives[charUUID] then self.LearnedPassives[charUUID] = {} end
-            self.LearnedPassives[charUUID][uuid] = data
-            self:GetLearnedPassives()
+            SMS.AddPassive:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
+            if not self.AddedPassives[charUUID] then self.AddedPassives[charUUID] = {} end
+            self.AddedPassives[charUUID][uuid] = data
+            self:GetAddedPassives()
         end
 
         i = i + 1
@@ -262,12 +262,12 @@ function PassiveTab:_DrawPassiveGrid(parent, passives, maxTableWidth, onRemove)
     end
 end
 
-function PassiveTab:GetLearnedPassives()
-    UI.DestroyChildren(self.LearnedPassivesArea)
+function PassiveTab:GetAddedPassives()
+    UI.DestroyChildren(self.AddedPassivesArea)
 
-    local header = self.LearnedPassivesArea:AddCollapsingHeader("Learned & Added Passives")
+    local header = self.AddedPassivesArea:AddCollapsingHeader("Added Passives")
 
-    local layoutTable = header:AddTable("LearnedPassivesLayout", 2)
+    local layoutTable = header:AddTable("AddedPassivesLayout", 2)
     layoutTable.SizingFixedSame = true
     layoutTable.NoHostExtendX = true
 
@@ -281,15 +281,15 @@ function PassiveTab:GetLearnedPassives()
     if not charUUID then
         charPassivesCell:AddText("Select a character.")
     else
-        local learnedForChar = self.LearnedPassives[charUUID] or {}
-        if HLP.Count(learnedForChar) == 0 then
+        local addedForChar = self.AddedPassives[charUUID] or {}
+        if HLP.Count(addedForChar) == 0 then
             charPassivesCell:AddText("No custom passives.")
         else
-            self:_DrawPassiveGrid(charPassivesCell, learnedForChar, 2, function(uuid, data)
+            self:_DrawPassiveGrid(charPassivesCell, addedForChar, 3, function(uuid, data)
                 local charUUID = UI.CharSelector.SelectedCharacter
-                SMS.LearnPassive:SendToServer({ character = charUUID, uuid = uuid, unlearn = 1 })
-                if self.LearnedPassives[charUUID] then self.LearnedPassives[charUUID][uuid] = nil end
-                self:GetLearnedPassives()
+                SMS.AddPassive:SendToServer({ character = charUUID, uuid = uuid, remove = 1 })
+                if self.AddedPassives[charUUID] then self.AddedPassives[charUUID][uuid] = nil end
+                self:GetAddedPassives()
             end)
         end
     end
@@ -308,10 +308,10 @@ function PassiveTab:GetLearnedPassives()
         if not itemPassives or HLP.Count(itemPassives) == 0 then
             itemPassivesCell:AddText("No custom passives.")
         else
-            self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 2, function(uuid, data)
+            self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 3, function(uuid, data)
                 local charUUID = UI.CharSelector.SelectedCharacter
-                SMS.UnlearnPassiveOnItem:SendToServer({ character = charUUID, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
-                self:GetLearnedPassives()
+                SMS.RemovePassiveFromItem:SendToServer({ character = charUUID, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
+                self:GetAddedPassives()
             end)
         end
     end
@@ -332,10 +332,10 @@ function PassiveTab:AddPassiveSearch()
 end
 
 function PassiveTab:Init()
-    self.LearnedPassives = Ext.Vars.GetModVariables(ModuleUUID).LearnedPassives or {}
-    self.LearnedPassivesArea = self.Tab:AddGroup("LearnedPassives")
+    self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
+    self.AddedPassivesArea = self.Tab:AddGroup("AddedPassives")
 
-    self:GetLearnedPassives()
+    self:GetAddedPassives()
 
     self.PassiveSearch = self.Tab:AddGroup("PassiveSearch")
     self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
