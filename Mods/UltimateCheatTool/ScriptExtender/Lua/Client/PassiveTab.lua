@@ -266,7 +266,6 @@ function PassiveTab:GetAddedPassives()
     UI.DestroyChildren(self.AddedPassivesArea)
 
     local header = self.AddedPassivesArea:AddCollapsingHeader("Added Passives")
-    header:Activate()
 
     local layoutTable = header:AddTable("AddedPassivesLayout", 2)
     layoutTable.SizingFixedSame = true

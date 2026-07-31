@@ -162,7 +162,6 @@ function TagTab:GetAppliedTags()
     local tableWidth = math.min(totalApplied, maxTableWidth)
 
     local header = self.AppliedTagsArea:AddCollapsingHeader("Applied Tags")
-    header:Activate()
 
     local t = header:AddTable("", tableWidth)
     t.SizingFixedSame = true

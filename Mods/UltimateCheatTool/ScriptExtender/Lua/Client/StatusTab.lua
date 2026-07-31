@@ -249,7 +249,6 @@ function StatusTab:GetAppliedStatuses()
     UI.DestroyChildren(self.AppliedStatusesArea)
 
     local header = self.AppliedStatusesArea:AddCollapsingHeader("Applied Statuses")
-    header:Activate()
 
     local layoutTable = header:AddTable("AppliedStatusesLayout", 2)
     layoutTable.SizingFixedSame = true
