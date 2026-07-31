@@ -195,6 +195,7 @@ end)
 SMS.LearnPassiveOnItem:SetHandler(function(payload)
     local itemTemplateUUID = payload.itemTemplateUUID
     local passiveUUID = payload.passiveUUID
+    local data = payload.data
     local character = payload.character
 
     if not character then return end
@@ -210,7 +211,7 @@ SMS.LearnPassiveOnItem:SetHandler(function(payload)
     if not modifiedEquipment[itemTemplateUUID].passives then
         modifiedEquipment[itemTemplateUUID].passives = {}
     end
-    modifiedEquipment[itemTemplateUUID].passives[passiveUUID] = true
+    modifiedEquipment[itemTemplateUUID].passives[passiveUUID] = data
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
 end)
 

@@ -11,6 +11,7 @@ function CharacterSelector:New(parent, onChange)
         Container = parent:AddGroup("CharacterSelector"),
         PartyMembers = {},
         SelectedCharacter = _C().Uuid.EntityUuid,
+        OnChange = onChange,
     }, CharacterSelector)
     return instance
 end

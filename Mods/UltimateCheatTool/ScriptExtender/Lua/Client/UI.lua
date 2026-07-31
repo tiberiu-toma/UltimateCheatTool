@@ -73,7 +73,9 @@ function UI:OnCharacterChange(charUUID)
 end
 
 function UI:OnEquipmentChange(eqData)
-    -- Placeholder for future logic when selected equipment changes
+    -- This function will be called when the equipment selection changes.
+    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetLearnedPassives() end
+    if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
 end
 
 function UI:Init()
