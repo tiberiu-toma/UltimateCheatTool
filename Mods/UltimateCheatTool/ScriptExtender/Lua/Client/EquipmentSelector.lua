@@ -1,8 +1,11 @@
 ---@class EquipmentSelector
 ---@field Container ExtuiGroup
+---@field SelectorContainer ExtuiGroup
+---@field QuickPickContainer ExtuiGroup
 ---@field SelectedEquipment table | nil
 ---@field OnChange function | nil
 ---@field ModifiedItemsPopup ExtuiPopup
+---@field QuickPickItems table
 EquipmentSelector = {}
 EquipmentSelector.__index = EquipmentSelector
 
@@ -15,7 +18,13 @@ function EquipmentSelector:New(parent, onChange)
         SelectedEquipment = nil,
         ModifiedItemsPopup = parent:AddPopup("ModifiedEquipmentPopup"),
         OnChange = onChange,
+        QuickPickItems = {}
     }, EquipmentSelector)
+
+    instance.SelectorContainer = instance.Container:AddGroup("SelectorContainer")
+    instance.QuickPickContainer = instance.Container:AddGroup("QuickPickContainer")
+    instance.QuickPickContainer.SameLine = true
+
     return instance
 end
 
@@ -26,12 +35,24 @@ function EquipmentSelector:SetSelectedEquipment(equipmentData)
         if self.OnChange then
             self.OnChange(self.SelectedEquipment)
         end
-        self:Draw() -- Redraw to update selection visual
+        self:DrawSelector() -- Redraw to update selection visual
     end
 end
 
-function EquipmentSelector:Draw()
-    UI.DestroyChildren(self.Container)
+function EquipmentSelector:FetchEquippedItems()
+    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
+    if charUUID then
+        SMS.FetchEquippedItems:SendToServer({ ID = USERID, character = charUUID })
+    end
+end
+
+function EquipmentSelector:SetQuickPickItems(items)
+    self.QuickPickItems = items or {}
+    self:DrawQuickPick()
+end
+
+function EquipmentSelector:DrawSelector()
+    UI.DestroyChildren(self.SelectorContainer)
 
     local selectedName = "None"
     local selectedIcon = "EC_Portrait_Generic"
@@ -41,7 +62,7 @@ function EquipmentSelector:Draw()
         selectedIcon = self.SelectedEquipment.icon or "EC_Portrait_Generic"
     end
 
-    local layoutTable = self.Container:AddTable("EquipmentSelectorLayout", 2)
+    local layoutTable = self.SelectorContainer:AddTable("EquipmentSelectorLayout", 2)
     layoutTable.SizingFixedSame = true
     layoutTable.NoHostExtendX = true
 
@@ -51,10 +72,10 @@ function EquipmentSelector:Draw()
     local comboImageButton = imageCell:AddImageButton("eq_select_img", selectedIcon, {100 * ViewPortScale, 100 * ViewPortScale})
 
     local row2 = layoutTable:AddRow()
-    local clearCell = row2:AddCell()
-    local clearButton = clearCell:AddButton(LCL.Get("UCT_EquipmentSelector_Clear", "Clear Selection"))
-    clearButton.OnClick = function()
-        self:SetSelectedEquipment(nil)
+    local buttonsCell = row2:AddCell()
+    local refreshButton = buttonsCell:AddButton(LCL.Get("UCT_EquipmentSelector_Refresh", "Refresh Inventory"))
+    refreshButton.OnClick = function()
+        self:FetchEquippedItems()
     end
     local nameCell = row2:AddCell()
     nameCell:AddText(selectedName)
@@ -71,6 +92,40 @@ function EquipmentSelector:Draw()
         else
             self:ShowModifiedItemsPopup({})
         end
+    end
+end
+
+function EquipmentSelector:DrawQuickPick()
+    UI.DestroyChildren(self.QuickPickContainer)
+
+    self.QuickPickContainer:AddSeparatorText("Quick Pick Item")
+
+    if #self.QuickPickItems == 0 then
+        self.QuickPickContainer:AddText("No items equipped.")
+        return
+    end
+
+    local maxTableWidth = 4
+    local tableWidth = math.min(#self.QuickPickItems, maxTableWidth)
+    local t = self.QuickPickContainer:AddTable("QuickPickTable", tableWidth)
+    t.SizingFixedSame = true
+    t.NoHostExtendX = true
+
+    local i = 1
+    local row = t:AddRow()
+
+    for _, data in ipairs(self.QuickPickItems) do
+        if i > 1 and (i - 1) % maxTableWidth == 0 then
+            row = t:AddRow()
+        end
+
+        local cell = row:AddCell()
+        local itemButton = cell:AddImageButton("quick_pick_btn_" .. (data.id or tostring(i)), data.icon, {60 * ViewPortScale, 60 * ViewPortScale})
+        
+        itemButton.OnClick = function()
+            self:SetSelectedEquipment(data)
+        end
+        i = i + 1
     end
 end
 
@@ -92,15 +147,21 @@ function EquipmentSelector:ShowModifiedItemsPopup(items)
 
         itemButton.OnClick = function()
             self:SetSelectedEquipment(data)
-            -- self.ModifiedItemsPopup:Close()
+            self.ModifiedItemsPopup:Close()
         end
     end
 
     self.ModifiedItemsPopup:Open()
 end
 
+function EquipmentSelector:Draw()
+    self:DrawSelector()
+    self:DrawQuickPick()
+end
+
 function EquipmentSelector:Init()
     self:Draw()
+    self:FetchEquippedItems()
 end
 
 return EquipmentSelector

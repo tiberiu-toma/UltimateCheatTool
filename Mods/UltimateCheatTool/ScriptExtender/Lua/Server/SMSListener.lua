@@ -520,3 +520,16 @@ SMS.FetchModifiedItemsData:SetHandler(function(payload)
         payload.ID
     )
 end)
+
+SMS.FetchEquippedItems:SetHandler(function(payload)
+    local characterUUID = payload.character
+    if not characterUUID then return end
+
+    local itemsData = EKP.GetEquippedItems(characterUUID)
+
+    HLP.ToClient(
+        SMS.SendEquippedItems,
+        { data = itemsData },
+        payload.ID
+    )
+end)

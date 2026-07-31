@@ -97,6 +97,33 @@ function EKP.GetAll(search, page)
     return UTL.Paginate(allMatchingEquipment, page, pageSize)
 end
 
+function EKP.GetEquippedItems(characterUUID)
+    local equippedItems = {}
+    local slots = {
+        "Helmet", "Breast", "Gloves", "Boots",
+        "Melee Main Weapon", "Melee Offhand Weapon", "Ranged Main Weapon", "Ranged Offhand Weapon",
+        "Amulet", "Ring", "Ring2", "Underwear", "Cloak",
+        "VanityBody", "VanityBoots", "MusicalInstrument", "Overhead"
+    }
+
+    for _, slot in ipairs(slots) do
+        local itemHandle = Osi.GetEquippedItem(characterUUID, slot)
+        if itemHandle ~= 0 then
+            local item = Ext.Entity.Get(itemHandle)
+            if item and item.GameObjectVisual and item.GameObjectVisual.RootTemplateId then
+                local template = Ext.Template.GetTemplate(item.GameObjectVisual.RootTemplateId)
+                if template then
+                    local itemData = EKP.GetTemplateData(template)
+                    if itemData then
+                        table.insert(equippedItems, itemData)
+                    end
+                end
+            end
+        end
+    end
+    return equippedItems
+end
+
 function EKP.GetByUUIDs(uuids)
     local items = {}
     for _, uuid in ipairs(uuids) do

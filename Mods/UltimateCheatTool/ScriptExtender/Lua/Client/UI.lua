@@ -66,7 +66,9 @@ function UI:OnCharacterChange(charUUID)
     -- We can trigger a refresh of the active tab here if needed.
     -- For now, the tabs will read the selected character when they perform actions.
     -- Let's force a redraw of the added/applied sections for relevant tabs.
+    self.EquipmentSelector:SetSelectedEquipment(nil) -- Clear selected equipment when character changes
     if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
+    if self.EquipmentSelector then self.EquipmentSelector:FetchEquippedItems() end
     if self.SpellTab and self.SpellTab.Tab.Visible then self.SpellTab:GetLearnedSpells() end
     if self.TagTab and self.TagTab.Tab.Visible then self.TagTab:GetAppliedTags() end
     if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
@@ -161,6 +163,7 @@ function UI:ShowWindows()
         if self.Window then
             self.Window.Open = true
         end
+        self.EquipmentSelector:FetchEquippedItems() -- Refresh quick picks when UI is opened
         for _,sceneControl in pairs(self.SceneControl.ActiveSceneControls) do
             if sceneControl.TempClosed == true then
                 sceneControl.Window.Open = true

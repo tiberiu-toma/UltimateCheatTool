@@ -38,5 +38,5 @@ LocaleText = {
 	UCT_PassiveTab_Remove = "Remove",
 
 	UCT_EquipmentSelector_Label = "Select Equipment to Modify:",
-	UCT_EquipmentSelector_Clear = "Clear Selection",
+	UCT_EquipmentSelector_Refresh = "Refresh Inventory",
 }

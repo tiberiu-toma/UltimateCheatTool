@@ -65,3 +65,10 @@ SMS.SendModifiedItemsData:SetHandler(function(payload)
         UI.EquipmentSelector:ShowModifiedItemsPopup(items)
     end
 end)
+
+SMS.SendEquippedItems:SetHandler(function(payload)
+    if UI and UI.EquipmentSelector then
+        local items = payload.data
+        UI.EquipmentSelector:SetQuickPickItems(items)
+    end
+end)
