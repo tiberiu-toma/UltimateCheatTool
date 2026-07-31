@@ -186,6 +186,7 @@ function SpellTab:GetLearnedSpells()
     local tableWidth = math.min(totalSpawned, maxTableWidth) 
 
     local header = self.LearnedSpellsArea:AddCollapsingHeader("Learned Spells")
+    header:Activate()
 
     local t = header:AddTable("", tableWidth)
     t.SizingFixedSame = true

@@ -159,6 +159,7 @@ function NPCTab:GetSpawnedNPCs()
     local tableWidth = math.min(totalSpawned, maxTableWidth) 
 
     local header = self.SpawnedNPCsArea:AddCollapsingHeader("Spawned NPCs")
+    header:Activate()
 
     local t = header:AddTable("", tableWidth)
     t.SizingFixedSame = true

@@ -96,24 +96,33 @@ function HLP.RefreshEquippedItem(character, itemTemplateUUID)
     local stats = Ext.Stats.Get(template.Stats)
     if not stats then return end
 
-    local test = Ext.Entity.Get(itemTemplateUUID)
+    local originalSlot = HLP.GetAttr(stats, "Slot")
+    if not originalSlot then return end
 
-    local slot = HLP.GetAttr(stats, "Slot")
-    if not slot then return end
+    local slotsToCheck = { originalSlot }
+    if originalSlot == "Melee Main Weapon" then
+        table.insert(slotsToCheck, "Melee Offhand Weapon")
+    elseif originalSlot == "Ranged Main Weapon" then
+        table.insert(slotsToCheck, "Ranged Offhand Weapon")
+    elseif originalSlot == "Ring" then
+        table.insert(slotsToCheck, "Ring2")
+    end
 
-    local itemHandle = Osi.GetEquippedItem(character, slot)
-    if itemHandle ~= 0 then
-        local item = Ext.Entity.Get(itemHandle)
-        if item and item.GameObjectVisual and item.GameObjectVisual.RootTemplateId == itemTemplateUUID then
-            Osi.Unequip(character, itemHandle)
-            local ticks = 0
-            e = Ext.Events.Tick:Subscribe(function()
-                ticks = ticks + 1
-                if ticks >= 10 then
-                    Osi.Equip(character, itemHandle)
-                    Ext.Events.Tick:Unsubscribe(e)
-                end
-            end)
+    for _, slot in ipairs(slotsToCheck) do
+        local itemHandle = Osi.GetEquippedItem(character, slot)
+        if itemHandle ~= 0 then
+            local item = Ext.Entity.Get(itemHandle)
+            if item and item.GameObjectVisual and item.GameObjectVisual.RootTemplateId == itemTemplateUUID then
+                Osi.Unequip(character, itemHandle)
+                local ticks = 0
+                e = Ext.Events.Tick:Subscribe(function()
+                    ticks = ticks + 1
+                    if ticks >= 10 then
+                        Osi.Equip(character, itemHandle)
+                        Ext.Events.Tick:Unsubscribe(e)
+                    end
+                end)                
+            end
         end
     end
 end
