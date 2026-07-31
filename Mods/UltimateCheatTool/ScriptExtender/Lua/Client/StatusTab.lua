@@ -117,15 +117,24 @@ function StatusTab:SetStatuses(payload)
         local removeStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove"))
         removeStatus.SameLine = true
         local applyToSelectedItem = popup:AddButton(LCL.Get("UCT_StatusTab_ApplyToSelectedItem", "Apply to Selected Item"))
+        local removeFromSelectedItem = popup:AddButton(LCL.Get("UCT_StatusTab_RemoveFromSelectedItem", "Remove from Selected"))
+        removeFromSelectedItem.SameLine = true
 
         local equipmentData = UI.EquipmentSelector.SelectedEquipment
         if not equipmentData then
             applyToSelectedItem.Disabled = true
+            removeFromSelectedItem.Disabled = true
         else
             applyToSelectedItem.OnClick = function()
                 if equipmentData and equipmentData.id then
                     local charUUID = UI.CharSelector.SelectedCharacter
                     SMS.ApplyStatusToItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
+                end
+            end
+            removeFromSelectedItem.OnClick = function()
+                if equipmentData and equipmentData.id then
+                    local charUUID = UI.CharSelector.SelectedCharacter
+                    SMS.RemoveStatusFromItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
                 end
             end
         end

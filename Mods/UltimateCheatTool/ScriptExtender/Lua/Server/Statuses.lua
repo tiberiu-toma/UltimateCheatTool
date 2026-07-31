@@ -56,3 +56,28 @@ function STAT.ApplyToItem(character, itemTemplateUUID, statusId)
         stats:Sync()
     end
 end
+
+function STAT.RemoveFromItem(itemTemplateUUID, statusId)
+    local template = Ext.Template.GetTemplate(itemTemplateUUID)
+    if not template or not template.Stats then return end
+    local stats = Ext.Stats.Get(template.Stats)
+    if not stats then return end
+
+    local statusOnEquip = HLP.GetAttr(stats, "StatusOnEquip") or ""
+    if statusOnEquip == "" then return end
+
+    local items = {}
+    local found = false
+    for item in string.gmatch(statusOnEquip, "([^;]+)") do
+        if item ~= statusId then
+            table.insert(items, item)
+        else
+            found = true
+        end
+    end
+
+    if found then
+        stats.StatusOnEquip = table.concat(items, ";")
+        stats:Sync()
+    end
+end

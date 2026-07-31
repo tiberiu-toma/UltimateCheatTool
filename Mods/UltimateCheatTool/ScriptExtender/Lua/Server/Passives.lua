@@ -69,3 +69,28 @@ function PASSV.LearnOnItem(character, itemTemplateUUID, passiveId)
         stats:Sync()
     end
 end
+
+function PASSV.UnlearnOnItem(itemTemplateUUID, passiveId)
+    local template = Ext.Template.GetTemplate(itemTemplateUUID)
+    if not template or not template.Stats then return end
+    local stats = Ext.Stats.Get(template.Stats)
+    if not stats then return end
+
+    local passivesOnEquip = HLP.GetAttr(stats, "PassivesOnEquip") or ""
+    if passivesOnEquip == "" then return end
+
+    local items = {}
+    local found = false
+    for item in string.gmatch(passivesOnEquip, "([^;]+)") do
+        if item ~= passiveId then
+            table.insert(items, item)
+        else
+            found = true
+        end
+    end
+
+    if found then
+        stats.PassivesOnEquip = table.concat(items, ";")
+        stats:Sync()
+    end
+end

@@ -214,6 +214,26 @@ SMS.LearnPassiveOnItem:SetHandler(function(payload)
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
 end)
 
+SMS.UnlearnPassiveOnItem:SetHandler(function(payload)
+    local itemTemplateUUID = payload.itemTemplateUUID
+    local passiveUUID = payload.passiveUUID
+    local character = payload.character
+
+    if not character then return end
+
+    -- Remove the passive from the item for the current session
+    PASSV.UnlearnOnItem(itemTemplateUUID, passiveUUID)
+
+    -- Update saved modifications
+    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    if modifiedEquipment[itemTemplateUUID] and modifiedEquipment[itemTemplateUUID].passives then
+        modifiedEquipment[itemTemplateUUID].passives[passiveUUID] = nil
+        if HLP.Count(modifiedEquipment[itemTemplateUUID].passives) == 0 then modifiedEquipment[itemTemplateUUID].passives = nil end
+        if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then modifiedEquipment[itemTemplateUUID] = nil end
+    end
+    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+end)
+
 SMS.ManageTag:SetHandler(function(payload)
     local tagId = payload.uuid
     local data = payload.data
@@ -285,6 +305,25 @@ SMS.ApplyStatusToItem:SetHandler(function(payload)
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
 end)
 
+SMS.RemoveStatusFromItem:SetHandler(function(payload)
+    local itemTemplateUUID = payload.itemTemplateUUID
+    local statusUUID = payload.statusUUID
+    local character = payload.character
+
+    if not character then return end
+
+    -- Remove the status from the item for the current session
+    STAT.RemoveFromItem(itemTemplateUUID, statusUUID)
+
+    -- Update saved modifications
+    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    if modifiedEquipment[itemTemplateUUID] and modifiedEquipment[itemTemplateUUID].statuses then
+        modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = nil
+        if HLP.Count(modifiedEquipment[itemTemplateUUID].statuses) == 0 then modifiedEquipment[itemTemplateUUID].statuses = nil end
+        if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then modifiedEquipment[itemTemplateUUID] = nil end
+    end
+    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+end)
 
 SMS.SpawnTemplate:SetHandler(function(payload)
     local uuid = payload.uuid

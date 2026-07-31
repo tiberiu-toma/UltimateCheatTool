@@ -27,5 +27,10 @@ LocaleText = {
 	UCT_GenericTab_RestoreParty = "Restore Party",
 	UCT_GenericTab_ResetCooldowns = "Reset Cooldowns",
 	UCT_GenericTab_StartRespec = "Respec Character",
-	UCT_GenericTab_ChangeAppearance = "Change Appearance"
+	UCT_GenericTab_ChangeAppearance = "Change Appearance",
+
+	UCT_PassiveTab_AddToSelectedItem = "Add to Selected Item",
+	UCT_PassiveTab_RemoveFromSelectedItem = "Remove from Selected",
+	UCT_StatusTab_ApplyToSelectedItem = "Apply to Selected Item",
+	UCT_StatusTab_RemoveFromSelectedItem = "Remove from Selected"
 }
