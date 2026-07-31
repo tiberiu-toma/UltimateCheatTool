@@ -58,3 +58,10 @@ SMS.SendPartyMembers:SetHandler(function (payload)
         UI.CharSelector:SetPartyMembers(members)
     end
 end)
+
+SMS.SendModifiedItemsData:SetHandler(function(payload)
+    if UI and UI.EquipmentSelector then
+        local items = payload.data
+        UI.EquipmentSelector:ShowModifiedItemsPopup(items)
+    end
+end)

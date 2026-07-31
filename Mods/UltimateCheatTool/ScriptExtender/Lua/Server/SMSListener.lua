@@ -466,3 +466,16 @@ SMS.FetchPartyMembers:SetHandler(function(payload)
         payload.ID
     )
 end)
+
+SMS.FetchModifiedItemsData:SetHandler(function(payload)
+    local uuids = payload.uuids
+    if not uuids then return end
+
+    local itemsData = EKP.GetByUUIDs(uuids)
+
+    HLP.ToClient(
+        SMS.SendModifiedItemsData,
+        { data = itemsData },
+        payload.ID
+    )
+end)
