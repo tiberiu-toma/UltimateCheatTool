@@ -91,7 +91,7 @@ function UI:Init()
    -- self.PartyInterface:Init()
 
     self.CharSelector = CharacterSelector:New(self.Window, function(charUUID) self:OnCharacterChange(charUUID) end)
-     self.EquipmentSelector = EquipmentSelector:New(self.Window, function(eqData) self:OnEquipmentChange(eqData) end)
+    self.EquipmentSelector = EquipmentSelector:New(self.Window, function(eqData) self:OnEquipmentChange(eqData) end)
     self.EquipmentSelector.Container.SameLine = true
 
     self.TabBar = self.Window:AddTabBar("")
@@ -190,5 +190,12 @@ if MCMActive then
         UI:New(mcm):Init()
     end)
 end
+
+Ext.Events.GameStateChanged:Subscribe(function(ev)
+    if UI and UI.Ready and UI.CharSelector and ev.ToState == "Running" then
+        USERID = _C().Uuid.EntityUuid
+        UI.CharSelector:Init()
+    end
+end)
 
 return UI
