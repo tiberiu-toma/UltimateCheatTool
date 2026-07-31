@@ -147,7 +147,6 @@ function EquipmentSelector:ShowModifiedItemsPopup(items)
 
         itemButton.OnClick = function()
             self:SetSelectedEquipment(data)
-            self.ModifiedItemsPopup:Close()
         end
     end
 

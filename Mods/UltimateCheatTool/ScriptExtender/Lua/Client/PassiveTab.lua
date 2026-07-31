@@ -312,6 +312,15 @@ function PassiveTab:GetAddedPassives()
             self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 3, function(uuid, data)
                 local charUUID = UI.CharSelector.SelectedCharacter
                 SMS.RemovePassiveFromItem:SendToServer({ character = charUUID, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
+                -- Optimistically update the client-side variable to avoid UI lag
+                local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment
+                if modifiedEquipment and modifiedEquipment[itemTemplateUUID] and modifiedEquipment[itemTemplateUUID].passives then
+                    modifiedEquipment[itemTemplateUUID].passives[uuid] = nil
+                    if HLP.Count(modifiedEquipment[itemTemplateUUID].passives) == 0 then modifiedEquipment[itemTemplateUUID].passives = nil end
+                    if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then modifiedEquipment[itemTemplateUUID] = nil end
+                    -- Set the modified table back to the variable
+                    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+                end
                 self:GetAddedPassives()
             end)
         end

@@ -295,6 +295,15 @@ function StatusTab:GetAppliedStatuses()
             self:_DrawStatusGrid(itemStatusesCell, itemStatuses, 3, function(uuid, data)
                 local charUUID = UI.CharSelector.SelectedCharacter
                 SMS.RemoveStatusFromItem:SendToServer({ character = charUUID, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
+                -- Optimistically update the client-side variable to avoid UI lag
+                local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment
+                if modifiedEquipment and modifiedEquipment[itemTemplateUUID] and modifiedEquipment[itemTemplateUUID].statuses then
+                    modifiedEquipment[itemTemplateUUID].statuses[uuid] = nil
+                    if HLP.Count(modifiedEquipment[itemTemplateUUID].statuses) == 0 then modifiedEquipment[itemTemplateUUID].statuses = nil end
+                    if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then modifiedEquipment[itemTemplateUUID] = nil end
+                    -- Set the modified table back to the variable
+                    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+                end
                 self:GetAppliedStatuses()
             end)
         end
