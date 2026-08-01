@@ -27,7 +27,6 @@ function TagTab:New(holder)
 end
 
 function TagTab:Init()
-    self.AppliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
     self.AppliedTagsArea = self.Tab:AddGroup("AppliedTags")
     self:GetAppliedTags()
 
@@ -85,7 +84,7 @@ function TagTab:DrawGrid()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
             if self.AppliedTags[charUUID] then self.AppliedTags[charUUID][uuid] = nil end
-            self:GetAppliedTags()
+            self:GetAppliedTags(true)
         end
 
         addButton.OnClick = function()
@@ -93,7 +92,7 @@ function TagTab:DrawGrid()
             SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, data=data })
             if not self.AppliedTags[charUUID] then self.AppliedTags[charUUID] = {} end
             self.AppliedTags[charUUID][uuid] = data
-            self:GetAppliedTags()
+            self:GetAppliedTags(true)
         end
 
         i = i + 1
@@ -101,7 +100,11 @@ function TagTab:DrawGrid()
     end
 end
 
-function TagTab:GetAppliedTags()
+function TagTab:GetAppliedTags(noRefetch)
+    if not noRefetch then
+        self.AppliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
+    end
+
     UI.DestroyChildren(self.AppliedTagsArea)
 
     local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
@@ -128,8 +131,15 @@ function TagTab:GetAppliedTags()
 
     local i = 1
     local row
+    local drawnCount = 0
+    local maxDrawn = 50 -- Performance cap
 
     for uuid,data in kpairs(appliedForChar) do
+        if drawnCount >= maxDrawn then
+            header:AddText("...and more (list truncated for performance).")
+            break
+        end
+
         if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
@@ -165,10 +175,11 @@ function TagTab:GetAppliedTags()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
             if self.AppliedTags[charUUID] then self.AppliedTags[charUUID][uuid] = nil end
-            self:GetAppliedTags()
+            self:GetAppliedTags(true)
         end
 
         i = i + 1
+        drawnCount = drawnCount + 1
         ::continue::
     end
 end

@@ -27,7 +27,6 @@ function NPCTab:New(holder)
 end
 
 function NPCTab:Init()
-    self.SpawnedNPCs = Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs or {}
     self.SpawnedNPCsArea = self.Tab:AddGroup("SpawnedNPCs")
     self:GetSpawnedNPCs()
 
@@ -86,7 +85,7 @@ function NPCTab:DrawGrid()
             SMS.SpawnCharacter:SendToServer({ uuid=uuid, amount=1, data=data })
 
             self.SpawnedNPCs[uuid] = data
-            self:GetSpawnedNPCs()
+            self:GetSpawnedNPCs(true)
         end
 
         i = i + 1
@@ -95,7 +94,11 @@ function NPCTab:DrawGrid()
     end
 end
 
-function NPCTab:GetSpawnedNPCs()
+function NPCTab:GetSpawnedNPCs(noRefetch)
+    if not noRefetch then
+        self.SpawnedNPCs = Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs or {}
+    end
+
     UI.DestroyChildren(self.SpawnedNPCsArea)
 
     local totalSpawned = HLP.Count(self.SpawnedNPCs)
@@ -116,8 +119,15 @@ function NPCTab:GetSpawnedNPCs()
 
     local i = 1
     local row
+    local drawnCount = 0
+    local maxDrawn = 50 -- Performance cap
 
     for uuid,data in kpairs(self.SpawnedNPCs) do
+        if drawnCount >= maxDrawn then
+            header:AddText("...and more (list truncated for performance).")
+            break
+        end
+
         if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
@@ -161,7 +171,7 @@ function NPCTab:GetSpawnedNPCs()
             SMS.DespawnCharacter:SendToServer({ uuid=uuid })
 
             self.SpawnedNPCs[uuid] = nil
-            self:GetSpawnedNPCs()
+            self:GetSpawnedNPCs(true)
         end
 
         enableCombat.OnClick = function()
@@ -172,6 +182,7 @@ function NPCTab:GetSpawnedNPCs()
         end
 
         i = i + 1
+        drawnCount = drawnCount + 1
 
         ::continue::
     end

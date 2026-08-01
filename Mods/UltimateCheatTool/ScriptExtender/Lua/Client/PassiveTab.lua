@@ -27,7 +27,6 @@ function PassiveTab:New(holder)
 end
 
 function PassiveTab:Init()
-    self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
     self.AddedPassivesArea = self.Tab:AddGroup("AddedPassives")
     self:GetAddedPassives()
 
@@ -95,7 +94,7 @@ function PassiveTab:DrawGrid()
                     if not modifiedEquipment[equipmentData.id] then modifiedEquipment[equipmentData.id] = {} end
                     if not modifiedEquipment[equipmentData.id].passives then modifiedEquipment[equipmentData.id].passives = {} end
                     modifiedEquipment[equipmentData.id].passives[uuid] = data
-                    self:GetAddedPassives()
+                    self:GetAddedPassives(true)
                 end
             end
             removeFromSelectedItem.OnClick = function()
@@ -107,7 +106,7 @@ function PassiveTab:DrawGrid()
                     if modifiedEquipment[equipmentData.id] and modifiedEquipment[equipmentData.id].passives then
                         modifiedEquipment[equipmentData.id].passives[uuid] = nil
                     end
-                    self:GetAddedPassives()
+                    self:GetAddedPassives(true)
                 end
             end
         end
@@ -134,7 +133,7 @@ function PassiveTab:DrawGrid()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.AddPassive:SendToServer({ character = charUUID, uuid=uuid, remove=1})
             if self.AddedPassives[charUUID] then self.AddedPassives[charUUID][uuid] = nil end
-            self:GetAddedPassives()
+            self:GetAddedPassives(true)
         end
 
         addPassiveBtn.OnClick = function()
@@ -142,7 +141,7 @@ function PassiveTab:DrawGrid()
             SMS.AddPassive:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
             if not self.AddedPassives[charUUID] then self.AddedPassives[charUUID] = {} end
             self.AddedPassives[charUUID][uuid] = data
-            self:GetAddedPassives()
+            self:GetAddedPassives(true)
         end
 
         i = i + 1
@@ -168,8 +167,15 @@ function PassiveTab:_DrawPassiveGrid(parent, passives, maxTableWidth, onRemove)
 
     local i = 1
     local row
+    local drawnCount = 0
+    local maxDrawn = 50 -- Performance cap
 
     for uuid, data in kpairs(passives) do
+        if drawnCount >= maxDrawn then
+            parent:AddText("...and more (list truncated for performance).")
+            break
+        end
+
         if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
@@ -205,11 +211,16 @@ function PassiveTab:_DrawPassiveGrid(parent, passives, maxTableWidth, onRemove)
         end
 
         i = i + 1
+        drawnCount = drawnCount + 1
         ::continue::
     end
 end
 
-function PassiveTab:GetAddedPassives()
+function PassiveTab:GetAddedPassives(noRefetch)
+    if not noRefetch then
+        self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
+    end
+
     UI.DestroyChildren(self.AddedPassivesArea)
 
     local header = self.AddedPassivesArea:AddCollapsingHeader("Added Passives")
@@ -236,7 +247,7 @@ function PassiveTab:GetAddedPassives()
                 local charUUID = UI.CharSelector.SelectedCharacter
                 SMS.AddPassive:SendToServer({ character = charUUID, uuid = uuid, remove = 1 })
                 if self.AddedPassives[charUUID] then self.AddedPassives[charUUID][uuid] = nil end
-                self:GetAddedPassives()
+                self:GetAddedPassives(true)
             end)
         end
     end
@@ -267,7 +278,7 @@ function PassiveTab:GetAddedPassives()
                     -- Set the modified table back to the variable
                     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
                 end
-                self:GetAddedPassives()
+                self:GetAddedPassives(true)
             end)
         end
     end

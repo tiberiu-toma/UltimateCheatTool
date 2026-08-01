@@ -27,7 +27,6 @@ function SpellTab:New(holder)
 end
 
 function SpellTab:Init()
-    self.LearnedSpells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
     self.LearnedSpellsArea = self.Tab:AddGroup("LearnedSpells")
     self:GetLearnedSpells()
 
@@ -96,7 +95,7 @@ function SpellTab:DrawGrid()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
             if self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID][uuid] = nil end
-            self:GetLearnedSpells()
+            self:GetLearnedSpells(true)
         end
 
         selectSpell.OnClick = function()
@@ -104,7 +103,7 @@ function SpellTab:DrawGrid()
             SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
             if not self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID] = {} end
             self.LearnedSpells[charUUID][uuid] = data
-            self:GetLearnedSpells()
+            self:GetLearnedSpells(true)
         end
 
         i = i + 1
@@ -113,7 +112,11 @@ function SpellTab:DrawGrid()
     end
 end
 
-function SpellTab:GetLearnedSpells()
+function SpellTab:GetLearnedSpells(noRefetch)
+    if not noRefetch then
+        self.LearnedSpells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
+    end
+
     UI.DestroyChildren(self.LearnedSpellsArea)
 
     local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
@@ -140,8 +143,15 @@ function SpellTab:GetLearnedSpells()
 
     local i = 1
     local row
+    local drawnCount = 0
+    local maxDrawn = 50 -- Performance cap
 
     for uuid,data in kpairs(learnedForChar) do
+        if drawnCount >= maxDrawn then
+            header:AddText("...and more (list truncated for performance).")
+            break
+        end
+
         if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
@@ -179,10 +189,11 @@ function SpellTab:GetLearnedSpells()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
             if self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID][uuid] = nil end
-            self:GetLearnedSpells()
+            self:GetLearnedSpells(true)
         end
 
         i = i + 1
+        drawnCount = drawnCount + 1
 
         ::continue::
     end

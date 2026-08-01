@@ -27,7 +27,6 @@ function StatusTab:New(holder)
 end
 
 function StatusTab:Init()
-    self.AppliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
     self.AppliedStatusesArea = self.Tab:AddGroup("AppliedStatuses")
     self:GetAppliedStatuses()
 
@@ -96,7 +95,7 @@ function StatusTab:DrawGrid()
                     if not modifiedEquipment[equipmentData.id] then modifiedEquipment[equipmentData.id] = {} end
                     if not modifiedEquipment[equipmentData.id].statuses then modifiedEquipment[equipmentData.id].statuses = {} end
                     modifiedEquipment[equipmentData.id].statuses[uuid] = data
-                    self:GetAppliedStatuses()
+                    self:GetAppliedStatuses(true)
                 end
             end
             removeFromSelectedItem.OnClick = function()
@@ -108,7 +107,7 @@ function StatusTab:DrawGrid()
                     if modifiedEquipment[equipmentData.id] and modifiedEquipment[equipmentData.id].statuses then
                         modifiedEquipment[equipmentData.id].statuses[uuid] = nil
                     end
-                    self:GetAppliedStatuses()
+                    self:GetAppliedStatuses(true)
                 end
             end
         end
@@ -124,7 +123,7 @@ function StatusTab:DrawGrid()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.ApplyStatus:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
             if self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID][uuid] = nil end
-            self:GetAppliedStatuses()
+            self:GetAppliedStatuses(true)
         end
 
         applyStatus.OnClick = function()
@@ -132,7 +131,7 @@ function StatusTab:DrawGrid()
             SMS.ApplyStatus:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
             if not self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID] = {} end
             self.AppliedStatuses[charUUID][uuid] = data
-            self:GetAppliedStatuses()
+            self:GetAppliedStatuses(true)
         end
 
         i = i + 1
@@ -158,8 +157,15 @@ function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove)
 
     local i = 1
     local row
+    local drawnCount = 0
+    local maxDrawn = 50 -- Performance cap
 
     for uuid, data in kpairs(statuses) do
+        if drawnCount >= maxDrawn then
+            parent:AddText("...and more (list truncated for performance).")
+            break
+        end
+
         if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
@@ -195,11 +201,16 @@ function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove)
         end
 
         i = i + 1
+        drawnCount = drawnCount + 1
         ::continue::
     end
 end
 
-function StatusTab:GetAppliedStatuses()
+function StatusTab:GetAppliedStatuses(noRefetch)
+    if not noRefetch then
+        self.AppliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+    end
+
     UI.DestroyChildren(self.AppliedStatusesArea)
 
     local header = self.AppliedStatusesArea:AddCollapsingHeader("Applied Statuses")
@@ -226,7 +237,7 @@ function StatusTab:GetAppliedStatuses()
                 local charUUID = UI.CharSelector.SelectedCharacter
                 SMS.ApplyStatus:SendToServer({ character = charUUID, uuid = uuid, remove = 1 })
                 if self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID][uuid] = nil end
-                self:GetAppliedStatuses()
+                self:GetAppliedStatuses(true)
             end)
         end
     end
@@ -257,7 +268,7 @@ function StatusTab:GetAppliedStatuses()
                     -- Set the modified table back to the variable
                     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
                 end
-                self:GetAppliedStatuses()
+                self:GetAppliedStatuses(true)
             end)
         end
     end
