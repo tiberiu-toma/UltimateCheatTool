@@ -1,8 +1,10 @@
 TELP = {}
 TELP.Max = 50
 
-function TELP.GetAll(search)
+function TELP.GetAll(search, page)
     search = search or ""
+    page = page or 1
+    local pageSize = TELP.Max
 
     local itemData = {
         ["blighted_village"] = {
@@ -304,20 +306,23 @@ function TELP.GetAll(search)
         
     }
 
-    local tbl = {}
+    local allMatchingWaypoints = {}
 
     if search and search ~= "" then
         for id,data in kpairs(itemData) do 
             local name = data.name 
 
             if HLP.StrContains(search, name) then 
-                tbl[id] = data 
+                table.insert(allMatchingWaypoints, data)
             end
         end
     else 
-        tbl = itemData
+        for id, data in kpairs(itemData) do
+            table.insert(allMatchingWaypoints, data)
+        end
     end
 
-    --print(HLP.Count(itemData) .. " Total Waypoints")
-    return tbl
+    table.sort(allMatchingWaypoints, function(a, b) return a.name < b.name end)
+
+    return UTL.Paginate(allMatchingWaypoints, page, pageSize)
 end

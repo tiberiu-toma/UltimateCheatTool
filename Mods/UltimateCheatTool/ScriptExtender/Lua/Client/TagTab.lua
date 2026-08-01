@@ -1,86 +1,53 @@
-local Pagination = Ext.Require("Client/Pagination.lua")
+local BaseTab = Ext.Require("Client/BaseTab.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
----@class TagTab
----@field Tab ExtuiTabItem
----@field AllTags table
----@field ResultCount int
----@field TagsArea ExtuiGroup
----@field TagSearch ExtuiGroup
+---@class TagTab : BaseTab
 ---@field AppliedTags table
 ---@field AppliedTagsArea ExtuiGroup
----@field CurrentPage number
----@field TotalPages number
----@field TotalItems number
----@field SearchText string
----@field PaginationAreaTop ExtuiGroup
----@field PaginationAreaBottom ExtuiGroup
 TagTab = {}
+setmetatable(TagTab, { __index = BaseTab })
 TagTab.__index = TagTab
-
----@param holder ExtuiTabBar
-function TagTab:GetAllTags(page)
-    self.CurrentPage = page or 1
-    SMS.FetchTags:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
-end
 
 function TagTab:New(holder)
     if UI.TagTab then return end
 
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("", "Tags")),
-        AllTags = {},
-        ResultCount = 0,
-        AppliedTags = {},
-        CurrentPage = 1,
-        TotalPages = 1,
-        TotalItems = 0,
-        SearchText = ""
-    }, TagTab)
+    local config = {
+        tabName = "Tags",
+        idPrefix = "Tag",
+        fetchMessage = SMS.FetchTags,
+        searchLabel = "Search Tags:",
+        noItemsText = "No tags found.",
+        maxTableWidth = 3
+    }
+
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, TagTab) -- Re-set metatable to the child class
+    instance.AppliedTags = {}
     return instance
 end
 
-function TagTab:SetTags(payload)
-    UI.DestroyChildren(self.TagsArea)
-    UI.DestroyChildren(self.PaginationAreaTop)
-    UI.DestroyChildren(self.PaginationAreaBottom)
+function TagTab:Init()
+    self.AppliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
+    self.AppliedTagsArea = self.Tab:AddGroup("AppliedTags")
+    self:GetAppliedTags()
 
-    local items = payload.data
-    self.AllTags = items
-    self.ResultCount = HLP.Count(items)
+    -- This will create the search, pagination, and main areas and fetch the first page of all tags
+    BaseTab.Init(self)
+end
 
-    self.TotalItems = payload.totalItems or 0
-    self.TotalPages = payload.totalPages or 1
-    self.CurrentPage = payload.currentPage or 1
+function TagTab:DrawGrid()
+    local shownCount = HLP.Count(self.Items)
+    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    if self.TotalItems == 0 then
-        self.TagsArea:AddText("No tags found.")
-        return
-    end
-
-    local shownCount = HLP.Count(self.AllTags)
-    local maxTableWidth = 3
-    local tableWidth = math.min(shownCount, maxTableWidth)
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaTop,
-        idSuffix = "Top",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllTags(page) end
-    })
-
-    self.TagsArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
-
-    local t = self.TagsArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
     local i = 1
     local row
 
-    for uuid,data in kpairs(self.AllTags) do
-        if (i - 1) % maxTableWidth == 0 then
+    for uuid,data in kpairs(self.Items) do
+        if (i - 1) % self.Config.maxTableWidth == 0 then
             row = t:AddRow()
         end
 
@@ -96,7 +63,7 @@ function TagTab:SetTags(payload)
 
         local cell = row:AddCell()
         local tagButton = cell:AddButton(shortName .. "##Tag" .. uuid)
-        local txt = cell:AddText(name)
+        cell:AddText(name)
         local popup = cell:AddPopup("AddTag" .. uuid)
 
         tagButton.OnClick = function()
@@ -132,14 +99,6 @@ function TagTab:SetTags(payload)
         i = i + 1
         ::continue::
     end
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaBottom,
-        idSuffix = "Bottom",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllTags(page) end
-    })
 end
 
 function TagTab:GetAppliedTags()
@@ -212,37 +171,6 @@ function TagTab:GetAppliedTags()
         i = i + 1
         ::continue::
     end
-end
-
-function TagTab:AddTagSearch()
-    UI.DestroyChildren(self.TagSearch)
-
-    local sep = self.TagSearch:AddSeparatorText(LCL.Get("", "Search Tags:"))
-
-    local search = self.TagSearch:AddInputText("", "")
-    local btn = self.TagSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
-
-    btn.OnClick = function()
-        self.SearchText = search.Text
-        self:GetAllTags(1)
-    end
-end
-
-function TagTab:Init()
-    self.AppliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
-    self.AppliedTagsArea = self.Tab:AddGroup("AppliedTags")
-
-    self:GetAppliedTags()
-
-    self.TagSearch = self.Tab:AddGroup("TagSearch")
-    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
-    self.TagsArea = self.Tab:AddGroup("AllTags")
-    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
-
-    self:AddTagSearch()
-
-    self.AllTags = {}
-    self:GetAllTags(1)
 end
 
 return TagTab

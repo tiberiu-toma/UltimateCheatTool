@@ -54,13 +54,17 @@ end)
 
 SMS.FetchWaypoints:SetHandler(function(payload)
     local search = HLP.GetAttr(payload, "search") or ""
+    local page = HLP.GetAttr(payload, "page") or 1
 
-    local Waypoints = TELP.GetAll(search)
+    local waypoints, totalItems, totalPages, currentPage = TELP.GetAll(search, page)
 
     HLP.ToClient(
         SMS.SendWaypoints,
         {
-            data = Waypoints
+            data = waypoints,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
         },
         payload.ID
     )

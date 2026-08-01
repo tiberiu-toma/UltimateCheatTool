@@ -31,6 +31,7 @@ UI = {
 }
 UI.__index = UI
 
+local BaseTab = Ext.Require("Client/BaseTab.lua")
 local EquipmentTab = Ext.Require("Client/EquipmentTab.lua")
 local NPCTab = Ext.Require("Client/NPCTab.lua")
 local SpellTab = Ext.Require("Client/SpellTab.lua")
@@ -79,12 +80,12 @@ function UI:OnEquipmentChange(eqData)
     if self.PassiveTab and self.PassiveTab.Tab.Visible then
         self.PassiveTab:GetAddedPassives()
         -- Re-fetch the current page to update the button states in the main grid
-        self.PassiveTab:GetAllPassives(self.PassiveTab.CurrentPage)
+        self.PassiveTab:FetchData(self.PassiveTab.CurrentPage)
     end
     if self.StatusTab and self.StatusTab.Tab.Visible then
         self.StatusTab:GetAppliedStatuses()
         -- Re-fetch the current page to update the button states in the main grid
-        self.StatusTab:GetAllStatuses(self.StatusTab.CurrentPage)
+        self.StatusTab:FetchData(self.StatusTab.CurrentPage)
     end
 end
 

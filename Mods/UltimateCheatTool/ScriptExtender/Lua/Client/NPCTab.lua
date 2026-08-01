@@ -1,103 +1,63 @@
-local Pagination = Ext.Require("Client/Pagination.lua")
+local BaseTab = Ext.Require("Client/BaseTab.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
----@class NPCTab
----@field Tab ExtuiTabItem
----@field Description ExtuiGroup
----@field AllNPCs table
----@field ResultCount int
----@field NPCArea ExtuiCollapsingHeader
----@field NPCSearch ExtuiGroup
+---@class NPCTab : BaseTab
 ---@field SpawnedNPCs table
 ---@field SpawnedNPCsArea ExtuiGroup
----@field AmountOptions table
----@field CurrentPage number
----@field TotalPages number
----@field TotalItems number
----@field SearchText string
----@field PaginationAreaTop ExtuiGroup
----@field PaginationAreaBottom ExtuiGroup
 NPCTab = {}
+setmetatable(NPCTab, { __index = BaseTab })
 NPCTab.__index = NPCTab
-
----@param holder ExtuiTabBar
-function NPCTab:GetAllNPCs(page)
-    self.CurrentPage = page or 1
-    SMS.FetchNPCs:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
-end
 
 function NPCTab:New(holder)
     if UI.NPCTab then return end 
 
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("", "NPCs")),
-        AllNPCs = {},
-        ResultCount = 0,
-        SpawnedNPCs = {},
-        AmountOptions = {1},
-        CurrentPage = 1,
-        TotalPages = 1,
-        TotalItems = 0,
-        SearchText = ""
-    }, NPCTab)
+    local config = {
+        tabName = "NPCs",
+        idPrefix = "NPC",
+        fetchMessage = SMS.FetchNPCs,
+        searchLabel = "Search NPCs:",
+        noItemsText = "No NPCs found.",
+        maxTableWidth = 5
+    }
+
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, NPCTab) -- Re-set metatable to the child class
+    instance.SpawnedNPCs = {}
     return instance
 end
 
-function NPCTab:SetNPCs(payload)
-    UI.DestroyChildren(self.NPCArea)
-    UI.DestroyChildren(self.PaginationAreaTop)
-    UI.DestroyChildren(self.PaginationAreaBottom)
+function NPCTab:Init()
+    self.SpawnedNPCs = Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs or {}
+    self.SpawnedNPCsArea = self.Tab:AddGroup("SpawnedNPCs")
+    self:GetSpawnedNPCs()
 
-    local items = payload.data
-    self.AllNPCs = items
-    self.ResultCount = HLP.Count(items)
+    -- This will create the search, pagination, and main areas and fetch the first page of all NPCs
+    BaseTab.Init(self)
+end
 
-    self.TotalItems = payload.totalItems or 0
-    self.TotalPages = payload.totalPages or 1
-    self.CurrentPage = payload.currentPage or 1
+function NPCTab:DrawGrid()
+    local shownCount = HLP.Count(self.Items)
+    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    if self.TotalItems == 0 then
-        self.NPCArea:AddText("No items found.")
-        return
-    end
-
-    local shownCount = HLP.Count(self.AllNPCs)
-    local maxTableWidth = 5
-    local tableWidth = math.min(shownCount, maxTableWidth) 
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaTop,
-        idSuffix = "Top",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllNPCs(page) end
-    })
-
-    self.NPCArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
-
-    local t = self.NPCArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
     local i = 1
     local row
 
-    for uuid,data in kpairs(self.AllNPCs) do
-        if (i - 1) % maxTableWidth == 0 then
+    for uuid,data in kpairs(self.Items) do
+        if (i - 1) % self.Config.maxTableWidth == 0 then
             row = t:AddRow()
         end
         
         local icon = HLP.GetAttr(data, "icon")
         if icon then
-            --icon = icon:match("%((.-)%)")
             icon = "EC_Portrait_Generic"
         end
         local fullName = HLP.GetAttr(data, "displayName")
 
-        if not fullName then
-            --print("Skipping invalid entry:", uuid)
-            goto continue
-        end
+        if not fullName then goto continue end
 
         local name = fullName
         if HLP.Strlen(name) > 20 then
@@ -105,11 +65,11 @@ function NPCTab:SetNPCs(payload)
         end
 
         local cell = row:AddCell()
-        local NPCItem = cell:AddImageButton("##NPC" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        local txt = cell:AddText(name)
+        local npcItem = cell:AddImageButton("##NPC" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+        cell:AddText(name)
         local popup = cell:AddPopup("AddItem" .. uuid)
 
-        NPCItem.OnClick = function()
+        npcItem.OnClick = function()
             popup:Open()
         end
 
@@ -133,14 +93,6 @@ function NPCTab:SetNPCs(payload)
 
         ::continue::
     end
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaBottom,
-        idSuffix = "Bottom",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllNPCs(page) end
-    })
 end
 
 function NPCTab:GetSpawnedNPCs()
@@ -153,8 +105,8 @@ function NPCTab:GetSpawnedNPCs()
         return
     end
 
-    local maxTableWidth = 5
-    local tableWidth = math.min(totalSpawned, maxTableWidth) 
+    local maxTableWidth = self.Config.maxTableWidth or 5
+    local tableWidth = math.min(totalSpawned, maxTableWidth)
 
     local header = self.SpawnedNPCsArea:AddCollapsingHeader("Spawned NPCs")
 
@@ -172,13 +124,11 @@ function NPCTab:GetSpawnedNPCs()
         
         local icon = HLP.GetAttr(data, "icon")
         if icon then
-            --icon = icon:match("%((.-)%)")
             icon = "EC_Portrait_Generic"
         end
         local fullName = HLP.GetAttr(data, "displayName")
 
         if not fullName then
-            --print("Skipping invalid entry:", uuid)
             goto continue
         end
 
@@ -188,11 +138,11 @@ function NPCTab:GetSpawnedNPCs()
         end
 
         local cell = row:AddCell()
-        local NPCItem = cell:AddImageButton("##SpawnedNPC" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        local txt = cell:AddText(name)
+        local npcItem = cell:AddImageButton("##SpawnedNPC" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+        cell:AddText(name)
         local popup = cell:AddPopup("ManageNPC" .. uuid)
 
-        NPCItem.OnClick = function()
+        npcItem.OnClick = function()
             popup:Open()
         end
 
@@ -225,39 +175,6 @@ function NPCTab:GetSpawnedNPCs()
 
         ::continue::
     end
-
-    --print(i .. " total cells added")
-end
-
-function NPCTab:AddNPCSearch()
-    UI.DestroyChildren(self.NPCSearch)
-
-    local sep = self.NPCSearch:AddSeparatorText(LCL.Get("hbea4aec9a88b4a34b615f347cb48d3ed1", "Search NPCs:"))
-
-    local search = self.NPCSearch:AddInputText("", "")
-    local btn = self.NPCSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
-
-    btn.OnClick = function()
-        self.SearchText = search.Text 
-        self:GetAllNPCs(1)
-    end
-end
-
-function NPCTab:Init()
-    self.SpawnedNPCs = Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs or {}
-    self.SpawnedNPCsArea = self.Tab:AddGroup("SpawnedNPCs")
-
-    self:GetSpawnedNPCs()
-
-    self.NPCSearch = self.Tab:AddGroup("NPCSearch")
-    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
-    self.NPCArea = self.Tab:AddGroup("AllNPCs")
-    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
-
-    self:AddNPCSearch()
-
-    self.AllNPCs = {}
-    self:GetAllNPCs(1)
 end
 
 return NPCTab

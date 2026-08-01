@@ -1,0 +1,111 @@
+local Pagination = Ext.Require("Client/Pagination.lua")
+
+---@class BaseTab
+---@field Tab ExtuiTabItem
+---@field Items table
+---@field SearchText string
+---@field CurrentPage number
+---@field TotalPages number
+---@field TotalItems number
+---@field SearchArea ExtuiGroup
+---@field PaginationAreaTop ExtuiGroup
+---@field MainArea ExtuiGroup
+---@field PaginationAreaBottom ExtuiGroup
+---@field Config table
+BaseTab = {}
+BaseTab.__index = BaseTab
+
+function BaseTab:New(holder, config)
+    local instance = setmetatable({
+        Tab = holder:AddTabItem(LCL.Get("", config.tabName)),
+        Items = {},
+        SearchText = "",
+        CurrentPage = 1,
+        TotalPages = 1,
+        TotalItems = 0,
+        Config = config,
+    }, BaseTab)
+    return instance
+end
+
+function BaseTab:FetchData(page)
+    self.CurrentPage = page or 1
+    local fetchMessage = self.Config.fetchMessage
+    if fetchMessage then
+        fetchMessage:SendToServer({ ID = USERID, search = self.SearchText, page = self.CurrentPage })
+    end
+end
+
+function BaseTab:SetData(payload)
+    UI.DestroyChildren(self.MainArea)
+    UI.DestroyChildren(self.PaginationAreaTop)
+    UI.DestroyChildren(self.PaginationAreaBottom)
+
+    self.Items = payload.data or {}
+    self.TotalItems = payload.totalItems or 0
+    self.TotalPages = payload.totalPages or 1
+    self.CurrentPage = payload.currentPage or 1
+
+    if self.TotalItems == 0 then
+        self.MainArea:AddText(self.Config.noItemsText or "No items found.")
+        return
+    end
+
+    local shownCount = HLP.Count(self.Items)
+
+    Pagination:CreateControls({
+        parent = self.PaginationAreaTop,
+        idSuffix = self.Config.idPrefix .. "Top",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:FetchData(page) end
+    })
+
+    self.MainArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
+
+    self:DrawGrid() -- This will be implemented by the child class
+
+    Pagination:CreateControls({
+        parent = self.PaginationAreaBottom,
+        idSuffix = self.Config.idPrefix .. "Bottom",
+        currentPage = self.CurrentPage,
+        totalPages = self.TotalPages,
+        onPageChange = function(page) self:FetchData(page) end
+    })
+end
+
+function BaseTab:AddSearch()
+    UI.DestroyChildren(self.SearchArea)
+
+    self.SearchArea:AddSeparatorText(LCL.Get("", self.Config.searchLabel or "Search:"))
+
+    local searchInput = self.SearchArea:AddInputText("##Search" .. self.Config.idPrefix, "")
+    local searchBtn = self.SearchArea:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search") .. "##" .. self.Config.idPrefix)
+
+    searchBtn.OnClick = function()
+        self.SearchText = searchInput.Text
+        self:FetchData(1)
+    end
+
+    -- Allow child classes to add more buttons to the search area
+    if self.AddExtraSearchButtons then
+        self:AddExtraSearchButtons(self.SearchArea)
+    end
+end
+
+function BaseTab:Init()
+    self.SearchArea = self.Tab:AddGroup(self.Config.idPrefix .. "Search")
+    self.PaginationAreaTop = self.Tab:AddGroup(self.Config.idPrefix .. "PaginationTop")
+    self.MainArea = self.Tab:AddGroup(self.Config.idPrefix .. "Items")
+    self.PaginationAreaBottom = self.Tab:AddGroup(self.Config.idPrefix .. "PaginationBottom")
+
+    self:AddSearch()
+    self:FetchData(1)
+end
+
+-- This function MUST be implemented by child classes
+function BaseTab:DrawGrid()
+    Ext.Utils.PrintError("BaseTab:DrawGrid() must be implemented by child class: " .. self.Config.tabName)
+end
+
+return BaseTab

@@ -1,89 +1,53 @@
-local Pagination = Ext.Require("Client/Pagination.lua")
+local BaseTab = Ext.Require("Client/BaseTab.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
----@class SpellTab
----@field Tab ExtuiTabItem
----@field Description ExtuiGroup
----@field AllSpells table
----@field ResultCount int
----@field SpellsArea ExtuiCollapsingHeader
----@field SpellSearch ExtuiGroup
+---@class SpellTab : BaseTab
 ---@field LearnedSpells table
 ---@field LearnedSpellsArea ExtuiGroup
----@field AmountOptions table
----@field CurrentPage number
----@field TotalPages number
----@field TotalItems number
----@field SearchText string
----@field PaginationAreaTop ExtuiGroup
----@field PaginationAreaBottom ExtuiGroup
 SpellTab = {}
+setmetatable(SpellTab, { __index = BaseTab })
 SpellTab.__index = SpellTab
-
----@param holder ExtuiTabBar
-function SpellTab:GetAllSpells(page)
-    self.CurrentPage = page or 1
-    SMS.FetchSpells:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
-end
 
 function SpellTab:New(holder)
     if UI.SpellTab then return end 
 
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("", "Spells")),
-        AllSpells = {},
-        ResultCount = 0,
-        LearnedSpells = {},
-        AmountOptions = {1},
-        CurrentPage = 1,
-        TotalPages = 1,
-        TotalItems = 0,
-        SearchText = ""
-    }, SpellTab)
+    local config = {
+        tabName = "Spells",
+        idPrefix = "Spell",
+        fetchMessage = SMS.FetchSpells,
+        searchLabel = "Search Spells:",
+        noItemsText = "No spells found.",
+        maxTableWidth = 5
+    }
+
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, SpellTab) -- Re-set metatable to the child class
+    instance.LearnedSpells = {}
     return instance
 end
 
-function SpellTab:SetSpells(payload)
-    UI.DestroyChildren(self.SpellsArea)
-    UI.DestroyChildren(self.PaginationAreaTop)
-    UI.DestroyChildren(self.PaginationAreaBottom)
+function SpellTab:Init()
+    self.LearnedSpells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
+    self.LearnedSpellsArea = self.Tab:AddGroup("LearnedSpells")
+    self:GetLearnedSpells()
 
-    local items = payload.data
-    self.AllSpells = items
-    self.ResultCount = HLP.Count(items)
+    -- This will create the search, pagination, and main areas and fetch the first page of all spells
+    BaseTab.Init(self)
+end
 
-    self.TotalItems = payload.totalItems or 0
-    self.TotalPages = payload.totalPages or 1
-    self.CurrentPage = payload.currentPage or 1
+function SpellTab:DrawGrid()
+    local shownCount = HLP.Count(self.Items)
+    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    if self.TotalItems == 0 then
-        self.SpellsArea:AddText("No items found.")
-        return
-    end
-
-    local shownCount = HLP.Count(self.AllSpells)
-    local maxTableWidth = 5
-    local tableWidth = math.min(shownCount, maxTableWidth) 
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaTop,
-        idSuffix = "Top",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllSpells(page) end
-    })
-
-    self.SpellsArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
-
-    local t = self.SpellsArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
     local i = 1
     local row
 
-    for uuid,data in kpairs(self.AllSpells) do
-        if (i - 1) % maxTableWidth == 0 then
+    for uuid,data in kpairs(self.Items) do
+        if (i - 1) % self.Config.maxTableWidth == 0 then
             row = t:AddRow()
         end
         
@@ -92,15 +56,8 @@ function SpellTab:SetSpells(payload)
             icon = "EC_Portrait_Generic"
         end
         local name = HLP.GetAttr(data, "displayName")
-        local spellType = HLP.GetAttr(data, "spellType")
-        local spellSchool = HLP.GetAttr(data, "spellSchool")
-        local useCosts = HLP.GetAttr(data, "useCosts")
-        local level = HLP.GetAttr(data, "level")
-        local cooldown = HLP.GetAttr(data, "cooldown")
-        local modName = HLP.GetAttr(data, "modName")
 
         if not name then
-            --print("Skipping invalid entry:", uuid)
             goto continue
         end
 
@@ -110,11 +67,11 @@ function SpellTab:SetSpells(payload)
         end
 
         local cell = row:AddCell()
-        local SpellItem = cell:AddImageButton("##Spell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        local txt = cell:AddText(name)
+        local spellItem = cell:AddImageButton("##Spell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+        cell:AddText(name)
         local popup = cell:AddPopup("AddItem" .. uuid)
 
-        SpellItem.OnClick = function()
+        spellItem.OnClick = function()
             popup:Open()
         end
 
@@ -154,14 +111,6 @@ function SpellTab:SetSpells(payload)
 
         ::continue::
     end
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaBottom,
-        idSuffix = "Bottom",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllSpells(page) end
-    })
 end
 
 function SpellTab:GetLearnedSpells()
@@ -180,8 +129,8 @@ function SpellTab:GetLearnedSpells()
         return
     end
 
-    local maxTableWidth = 5
-    local tableWidth = math.min(totalSpawned, maxTableWidth) 
+    local maxTableWidth = self.Config.maxTableWidth or 5
+    local tableWidth = math.min(totalSpawned, maxTableWidth)
 
     local header = self.LearnedSpellsArea:AddCollapsingHeader("Learned Spells")
 
@@ -201,7 +150,6 @@ function SpellTab:GetLearnedSpells()
         local fullName = HLP.GetAttr(data, "displayName")
 
         if not fullName then
-            --print("Skipping invalid entry:", uuid)
             goto continue
         end
 
@@ -211,11 +159,11 @@ function SpellTab:GetLearnedSpells()
         end
 
         local cell = row:AddCell()
-        local SpellItem = cell:AddImageButton("##LearnedSpell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        local txt = cell:AddText(name)
+        local spellItem = cell:AddImageButton("##LearnedSpell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+        cell:AddText(name)
         local popup = cell:AddPopup("ManageSpell" .. uuid)
 
-        SpellItem.OnClick = function()
+        spellItem.OnClick = function()
             popup:Open()
         end
 
@@ -238,39 +186,6 @@ function SpellTab:GetLearnedSpells()
 
         ::continue::
     end
-
-    --print(i .. " total cells added")
-end
-
-function SpellTab:AddSpellSearch()
-    UI.DestroyChildren(self.SpellSearch)
-
-    local sep = self.SpellSearch:AddSeparatorText(LCL.Get("hbea4aec9a88b4a34b615f347cb48d3ed1", "Search Spells:"))
-
-    local search = self.SpellSearch:AddInputText("", "")
-    local btn = self.SpellSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
-
-    btn.OnClick = function()
-        self.SearchText = search.Text
-        self:GetAllSpells(1)
-    end
-end
-
-function SpellTab:Init()
-    self.LearnedSpells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
-    self.LearnedSpellsArea = self.Tab:AddGroup("LearnedSpells")
-
-    self:GetLearnedSpells()
-
-    self.SpellSearch = self.Tab:AddGroup("SpellSearch")
-    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
-    self.SpellsArea = self.Tab:AddGroup("AllSpells")
-    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
-
-    self:AddSpellSearch()
-
-    self.AllSpells = {}
-    self:GetAllSpells(1)
 end
 
 return SpellTab

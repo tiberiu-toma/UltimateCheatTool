@@ -1,90 +1,53 @@
-local Pagination = Ext.Require("Client/Pagination.lua")
+local BaseTab = Ext.Require("Client/BaseTab.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
----@class PassiveTab
----@field Tab ExtuiTabItem
----@field Description ExtuiGroup
----@field AllPassives table
----@field ResultCount int
----@field PassivesArea ExtuiCollapsingHeader
----@field PassiveSearch ExtuiGroup
+---@class PassiveTab : BaseTab
 ---@field AddedPassives table
 ---@field AddedPassivesArea ExtuiGroup
----@field AmountOptions table
----@field CurrentPage number
----@field TotalPages number
----@field TotalItems number
----@field SearchText string
----@field PaginationAreaTop ExtuiGroup
----@field PaginationAreaBottom ExtuiGroup
 PassiveTab = {}
+setmetatable(PassiveTab, { __index = BaseTab })
 PassiveTab.__index = PassiveTab
-
----@param holder ExtuiTabBar
-function PassiveTab:GetAllPassives(page)
-    self.CurrentPage = page or 1
-    SMS.FetchPassives:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
-end
 
 function PassiveTab:New(holder)
     if UI.PassiveTab then return end
 
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("", "Passives")),
-        AllPassives = {},
-        ResultCount = 0,
-        AddedPassives = {},
-        AmountOptions = {1},
-        CurrentPage = 1,
-        TotalPages = 1,
-        TotalItems = 0,
-        SearchText = ""
-    }, PassiveTab)
+    local config = {
+        tabName = "Passives",
+        idPrefix = "Passive",
+        fetchMessage = SMS.FetchPassives,
+        searchLabel = "Search Passives:",
+        noItemsText = "No passives found.",
+        maxTableWidth = 5
+    }
+
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, PassiveTab) -- Re-set metatable to the child class
+    instance.AddedPassives = {}
     return instance
 end
 
-function PassiveTab:SetPassives(payload)
-    UI.DestroyChildren(self.PassivesArea)
-    UI.DestroyChildren(self.PaginationAreaTop)
-    UI.DestroyChildren(self.PaginationAreaBottom)
+function PassiveTab:Init()
+    self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
+    self.AddedPassivesArea = self.Tab:AddGroup("AddedPassives")
+    self:GetAddedPassives()
 
-    local items = payload.data
-    self.AllPassives = items
-    self.ResultCount = HLP.Count(items)
+    -- This will create the search, pagination, and main areas and fetch the first page of all passives
+    BaseTab.Init(self)
+end
 
-    self.TotalItems = payload.totalItems or 0
-    self.TotalPages = payload.totalPages or 1
-    self.CurrentPage = payload.currentPage or 1
+function PassiveTab:DrawGrid()
+    local shownCount = HLP.Count(self.Items)
+    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    if self.TotalItems == 0 then
-        self.PassivesArea:AddText("No passives found.")
-        -- No pagination controls needed if there are no items.
-        return
-    end
-
-    local shownCount = HLP.Count(self.AllPassives)
-    local maxTableWidth = 5
-    local tableWidth = math.min(shownCount, maxTableWidth)
-    
-    Pagination:CreateControls({
-        parent = self.PaginationAreaTop,
-        idSuffix = "Top",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllPassives(page) end
-    })
-
-    self.PassivesArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
-
-    local t = self.PassivesArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
     local i = 1
     local row
 
-    for uuid,data in kpairs(self.AllPassives) do
-        if (i - 1) % maxTableWidth == 0 then
+    for uuid,data in kpairs(self.Items) do
+        if (i - 1) % self.Config.maxTableWidth == 0 then
             row = t:AddRow()
         end
 
@@ -93,12 +56,6 @@ function PassiveTab:SetPassives(payload)
             icon = "EC_Portrait_Generic"
         end
         local name = HLP.GetAttr(data, "displayName")
-
-        local description = HLP.GetAttr(data, "description")
-        local boosts = HLP.GetAttr(data, "boosts")
-        local conditions = HLP.GetAttr(data, "conditions")
-        local modName = HLP.GetAttr(data, "modName")
-
         if not name then
             goto continue
         end
@@ -109,11 +66,11 @@ function PassiveTab:SetPassives(payload)
         end
 
         local cell = row:AddCell()
-        local PassiveItem = cell:AddImageButton("##Passive" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        local txt = cell:AddText(name)
+        local passiveItem = cell:AddImageButton("##Passive" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+        cell:AddText(name)
         local popup = cell:AddPopup("AddPassive" .. uuid)
 
-        PassiveItem.OnClick = function()
+        passiveItem.OnClick = function()
             popup:Open()
         end
 
@@ -192,14 +149,6 @@ function PassiveTab:SetPassives(payload)
 
         ::continue::
     end
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaBottom,
-        idSuffix = "Bottom",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllPassives(page) end
-    })
 end
 
 ---@param parent ExtuiGroup
@@ -322,37 +271,6 @@ function PassiveTab:GetAddedPassives()
             end)
         end
     end
-end
-
-function PassiveTab:AddPassiveSearch()
-    UI.DestroyChildren(self.PassiveSearch)
-
-    local sep = self.PassiveSearch:AddSeparatorText(LCL.Get("", "Search Passives:"))
-
-    local search = self.PassiveSearch:AddInputText("", "")
-    local btn = self.PassiveSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
-
-    btn.OnClick = function()
-        self.SearchText = search.Text
-        self:GetAllPassives(1)
-    end
-end
-
-function PassiveTab:Init()
-    self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
-    self.AddedPassivesArea = self.Tab:AddGroup("AddedPassives")
-
-    self:GetAddedPassives()
-
-    self.PassiveSearch = self.Tab:AddGroup("PassiveSearch")
-    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
-    self.PassivesArea = self.Tab:AddGroup("AllPassives")
-    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
-
-    self:AddPassiveSearch()
-
-    self.AllPassives = {}
-    self:GetAllPassives(1)
 end
 
 return PassiveTab

@@ -1,89 +1,53 @@
-local Pagination = Ext.Require("Client/Pagination.lua")
+local BaseTab = Ext.Require("Client/BaseTab.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
----@class StatusTab
----@field Tab ExtuiTabItem
----@field Description ExtuiGroup
----@field AllStatuses table
----@field ResultCount int
----@field StatusesArea ExtuiCollapsingHeader
----@field StatusSearch ExtuiGroup
+---@class StatusTab : BaseTab
 ---@field AppliedStatuses table
 ---@field AppliedStatusesArea ExtuiGroup
----@field AmountOptions table
----@field CurrentPage number
----@field TotalPages number
----@field TotalItems number
----@field SearchText string
----@field PaginationAreaTop ExtuiGroup
----@field PaginationAreaBottom ExtuiGroup
 StatusTab = {}
+setmetatable(StatusTab, { __index = BaseTab })
 StatusTab.__index = StatusTab
-
----@param holder ExtuiTabBar
-function StatusTab:GetAllStatuses(page)
-    self.CurrentPage = page or 1
-    SMS.FetchStatuses:SendToServer({ ID=USERID, search=self.SearchText, page=self.CurrentPage })
-end
 
 function StatusTab:New(holder)
     if UI.StatusTab then return end
 
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("", "Statuses")),
-        AllStatuses = {},
-        ResultCount = 0,
-        AppliedStatuses = {},
-        AmountOptions = {1},
-        CurrentPage = 1,
-        TotalPages = 1,
-        TotalItems = 0,
-        SearchText = ""
-    }, StatusTab)
+    local config = {
+        tabName = "Statuses",
+        idPrefix = "Status",
+        fetchMessage = SMS.FetchStatuses,
+        searchLabel = "Search Statuses:",
+        noItemsText = "No statuses found.",
+        maxTableWidth = 5
+    }
+
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, StatusTab) -- Re-set metatable to the child class
+    instance.AppliedStatuses = {}
     return instance
 end
 
-function StatusTab:SetStatuses(payload)
-    UI.DestroyChildren(self.StatusesArea)
-    UI.DestroyChildren(self.PaginationAreaTop)
-    UI.DestroyChildren(self.PaginationAreaBottom)
+function StatusTab:Init()
+    self.AppliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+    self.AppliedStatusesArea = self.Tab:AddGroup("AppliedStatuses")
+    self:GetAppliedStatuses()
 
-    local items = payload.data
-    self.AllStatuses = items
-    self.ResultCount = HLP.Count(items)
+    -- This will create the search, pagination, and main areas and fetch the first page of all statuses
+    BaseTab.Init(self)
+end
 
-    self.TotalItems = payload.totalItems or 0
-    self.TotalPages = payload.totalPages or 1
-    self.CurrentPage = payload.currentPage or 1
+function StatusTab:DrawGrid()
+    local shownCount = HLP.Count(self.Items)
+    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    if self.TotalItems == 0 then
-        self.StatusesArea:AddText("No statuses found.")
-        return
-    end
-
-    local shownCount = HLP.Count(self.AllStatuses)
-    local maxTableWidth = 5
-    local tableWidth = math.min(shownCount, maxTableWidth)
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaTop,
-        idSuffix = "Top",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllStatuses(page) end
-    })
-
-    self.StatusesArea:AddText("Showing " .. shownCount .. " of " .. self.TotalItems .. " items.")
-    
-    local t = self.StatusesArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
     local i = 1
     local row
 
-    for uuid,data in kpairs(self.AllStatuses) do
-        if (i - 1) % maxTableWidth == 0 then
+    for uuid,data in kpairs(self.Items) do
+        if (i - 1) % self.Config.maxTableWidth == 0 then
             row = t:AddRow()
         end
 
@@ -103,11 +67,11 @@ function StatusTab:SetStatuses(payload)
         end
 
         local cell = row:AddCell()
-        local StatusItem = cell:AddImageButton("##Status" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        local txt = cell:AddText(name)
+        local statusItem = cell:AddImageButton("##Status" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+        cell:AddText(name)
         local popup = cell:AddPopup("AddStatus" .. uuid)
 
-        StatusItem.OnClick = function()
+        statusItem.OnClick = function()
             popup:Open()
         end
 
@@ -175,14 +139,6 @@ function StatusTab:SetStatuses(payload)
 
         ::continue::
     end
-
-    Pagination:CreateControls({
-        parent = self.PaginationAreaBottom,
-        idSuffix = "Bottom",
-        currentPage = self.CurrentPage,
-        totalPages = self.TotalPages,
-        onPageChange = function(page) self:GetAllStatuses(page) end
-    })
 end
 
 ---@param parent ExtuiGroup
@@ -305,37 +261,6 @@ function StatusTab:GetAppliedStatuses()
             end)
         end
     end
-end
-
-function StatusTab:AddStatusSearch()
-    UI.DestroyChildren(self.StatusSearch)
-
-    local sep = self.StatusSearch:AddSeparatorText(LCL.Get("", "Search Statuses:"))
-
-    local search = self.StatusSearch:AddInputText("", "")
-    local btn = self.StatusSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
-
-    btn.OnClick = function()
-        self.SearchText = search.Text
-        self:GetAllStatuses(1)
-    end
-end
-
-function StatusTab:Init()
-    self.AppliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
-    self.AppliedStatusesArea = self.Tab:AddGroup("AppliedStatuses")
-
-    self:GetAppliedStatuses()
-
-    self.StatusSearch = self.Tab:AddGroup("StatusSearch")
-    self.PaginationAreaTop = self.Tab:AddGroup("PaginationAreaTop")
-    self.StatusesArea = self.Tab:AddGroup("AllStatuses")
-    self.PaginationAreaBottom = self.Tab:AddGroup("PaginationAreaBottom")
-
-    self:AddStatusSearch()
-
-    self.AllStatuses = {}
-    self:GetAllStatuses(1)
 end
 
 return StatusTab

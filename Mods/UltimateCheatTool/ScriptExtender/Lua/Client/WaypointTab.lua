@@ -1,62 +1,41 @@
+local BaseTab = Ext.Require("Client/BaseTab.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
----@class WaypointTab
----@field Tab ExtuiTabItem
----@field Description ExtuiGroup
----@field WaypointItems table
----@field ResultCount int
----@field WaypointArea ExtuiCollapsingHeader
----@field WaypointSearch ExtuiGroup
----@field AmountOptions table
+---@class WaypointTab : BaseTab
 WaypointTab = {}
+setmetatable(WaypointTab, { __index = BaseTab })
 WaypointTab.__index = WaypointTab
-
----@param holder ExtuiTabBar
-function WaypointTab:GetWaypointItems(search)    
-    search = search or ""
-    SMS.FetchWaypoints:SendToServer({ ID=USERID, search=search })
-end
 
 function WaypointTab:New(holder)
     if UI.WaypointTab then return end 
 
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("", "Waypoints")),
-        WaypointItems = {},
-        ResultCount = 0,
-        
-        AmountOptions = {1, 2, 5, 10, 99}
-    }, WaypointTab)
+    local config = {
+        tabName = "Waypoints",
+        idPrefix = "Waypoint",
+        fetchMessage = SMS.FetchWaypoints,
+        searchLabel = "Search Waypoints:",
+        noItemsText = "No waypoints found.",
+        maxTableWidth = 5
+    }
+
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, WaypointTab)
     return instance
 end
 
-function WaypointTab:SetWaypoints(items)
-    UI.DestroyChildren(self.WaypointArea)
-
-    self.WaypointItems = items
-    self.ResultCount = HLP.Count(items)
-
-    local shownCount = HLP.Count(self.WaypointItems)
-
-    if shownCount == 0 then
-        self.WaypointArea:AddText("No items found.")
-        return
-    end
-
-    local maxTableWidth = 5
-    local tableWidth = math.min(shownCount, maxTableWidth) 
-
-    self.WaypointArea:AddText("Showing " .. shownCount .. " items (max: 50)")
-
-    local t = self.WaypointArea:AddTable("", tableWidth)
+function WaypointTab:DrawGrid()
+    local shownCount = HLP.Count(self.Items)
+    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
+    
+    local t = self.MainArea:AddTable("", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
     local i = 1
     local row
 
-    for uuid,data in kpairs(self.WaypointItems) do
-        if (i - 1) % maxTableWidth == 0 then
+    for uuid,data in kpairs(self.Items) do
+        if (i - 1) % self.Config.maxTableWidth == 0 then
             row = t:AddRow()
         end
         
@@ -64,10 +43,7 @@ function WaypointTab:SetWaypoints(items)
         local name = HLP.GetAttr(data, "name")
         local trigger = HLP.GetAttr(data, "trigger")
 
-        if not name then
-            --print("Skipping invalid entry:", uuid)
-            goto continue
-        end
+        if not name then goto continue end
 
         if HLP.Strlen(name) > 20 then
             name = HLP.Cut(name, 1, 20) .. "..."
@@ -75,11 +51,11 @@ function WaypointTab:SetWaypoints(items)
 
         icon = "EC_Portrait_Generic"
         local cell = row:AddCell()
-        local WaypointItem = cell:AddImageButton("##Waypoint" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        local txt = cell:AddText(name)
+        local waypointItem = cell:AddImageButton("##Waypoint" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+        cell:AddText(name)
         local popup = cell:AddPopup("AddItem" .. uuid)
 
-        WaypointItem.OnClick = function()
+        waypointItem.OnClick = function()
             popup:Open()
         end
 
@@ -90,46 +66,24 @@ function WaypointTab:SetWaypoints(items)
             { key = "name", label = "Name" },
             { key = "trigger", label = "Trigger" },
             { key = "pos", label = "Position", formatter = function(pos)
+                if not pos then return "N/A" end
                 return string.format("X: %.2f, Y: %.2f, Z: %.2f", pos.x or 0, pos.y or 0, pos.z or 0)
             end },
         }
         InfoPopup:AddInfo(popup, data, waypointInfoFields)
 
         selectWaypoint.OnClick = function()
-            SMS.TeleportToWaypoint:SendToServer({ data=trigger })
+            if trigger then
+                SMS.TeleportToWaypoint:SendToServer({ data=trigger })
+            else
+                Ext.Utils.PrintError("Waypoint " .. name .. " has no trigger.")
+            end
         end
 
         i = i + 1
 
         ::continue::
     end
-
-    --print(i .. " total cells added")
-end
-
-function WaypointTab:AddWaypointSearch()
-    UI.DestroyChildren(self.WaypointSearch)
-
-    local sep = self.WaypointSearch:AddSeparatorText(LCL.Get("hbea4aec9a88b4a34b615f347cb48d3ed1", "Search Waypoint:"))
-
-    local search = self.WaypointSearch:AddInputText("", "")
-    local btn = self.WaypointSearch:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search"))
-
-    btn.OnClick = function()
-        local txt = search.Text 
-
-        self:GetWaypointItems(txt)
-    end
-end
-
-function WaypointTab:Init()
-    self.WaypointSearch = self.Tab:AddGroup("WaypointSearch")
-    self.WaypointArea = self.Tab:AddGroup("WaypointItems")
-
-    self:AddWaypointSearch()
-
-    self.WaypointItems = {}
-    self:GetWaypointItems()
 end
 
 return WaypointTab
