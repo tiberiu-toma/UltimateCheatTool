@@ -77,15 +77,13 @@ function ConsumableTab:SetConsumables(payload)
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(self.ConsumableItems) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
         
-        local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
         local fullName = HLP.GetAttr(data, "displayName")
 
@@ -100,9 +98,9 @@ function ConsumableTab:SetConsumables(payload)
         end
 
         local cell = row:AddCell()
-        local ConsumableItem = cell:AddImageButton("",icon, {100*ViewPortScale, 100*ViewPortScale})
+        local ConsumableItem = cell:AddImageButton("##Consumable" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("AddItem")
+        local popup = cell:AddPopup("AddItem" .. uuid)
 
         ConsumableItem.OnClick = function()
             popup:Open()

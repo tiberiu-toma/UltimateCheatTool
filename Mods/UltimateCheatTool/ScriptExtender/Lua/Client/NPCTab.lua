@@ -80,15 +80,13 @@ function NPCTab:SetNPCs(payload)
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(self.AllNPCs) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
         
-        local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
         if icon then
             --icon = icon:match("%((.-)%)")
@@ -107,9 +105,9 @@ function NPCTab:SetNPCs(payload)
         end
 
         local cell = row:AddCell()
-        local NPCItem = cell:AddImageButton("",icon, {100*ViewPortScale, 100*ViewPortScale})
+        local NPCItem = cell:AddImageButton("##NPC" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("AddItem")
+        local popup = cell:AddPopup("AddItem" .. uuid)
 
         NPCItem.OnClick = function()
             popup:Open()
@@ -165,15 +163,13 @@ function NPCTab:GetSpawnedNPCs()
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(self.SpawnedNPCs) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
         
-        local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
         if icon then
             --icon = icon:match("%((.-)%)")
@@ -192,9 +188,9 @@ function NPCTab:GetSpawnedNPCs()
         end
 
         local cell = row:AddCell()
-        local NPCItem = cell:AddImageButton("",icon, {100*ViewPortScale, 100*ViewPortScale})
+        local NPCItem = cell:AddImageButton("##SpawnedNPC" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("ManageNPC")
+        local popup = cell:AddPopup("ManageNPC" .. uuid)
 
         NPCItem.OnClick = function()
             popup:Open()

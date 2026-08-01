@@ -80,15 +80,13 @@ function StatusTab:SetStatuses(payload)
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(self.AllStatuses) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
 
-        local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
         if not icon or icon == "unknown" or icon == "" then
             icon = "EC_Portrait_Generic"
@@ -105,9 +103,9 @@ function StatusTab:SetStatuses(payload)
         end
 
         local cell = row:AddCell()
-        local StatusItem = cell:AddImageButton("",icon, {100*ViewPortScale, 100*ViewPortScale})
+        local StatusItem = cell:AddImageButton("##Status" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("AddStatus")
+        local popup = cell:AddPopup("AddStatus" .. uuid)
 
         StatusItem.OnClick = function()
             popup:Open()
@@ -203,10 +201,10 @@ function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove)
     t.NoHostExtendX = true
 
     local i = 1
-    local row = t:AddRow()
+    local row
 
     for uuid, data in kpairs(statuses) do
-        if i > 1 and (i - 1) % maxTableWidth == 0 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
 
@@ -222,7 +220,7 @@ function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove)
         end
 
         local cell = row:AddCell()
-        local statusItem = cell:AddImageButton("", icon, {100 * ViewPortScale, 100 * ViewPortScale})
+        local statusItem = cell:AddImageButton("##StatusGrid" .. uuid, icon, {100 * ViewPortScale, 100 * ViewPortScale})
         cell:AddText(name)
         local popup = cell:AddPopup("ManageStatus_" .. uuid)
 

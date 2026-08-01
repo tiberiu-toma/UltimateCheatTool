@@ -437,6 +437,11 @@ function HLP.Strlen(str)
     return string.len(str)
 end
 
+function HLP.Trim(s)
+    if not s then return "" end
+    return s:match'^%s*(.*%S)' or ''
+end
+
 function HLP.StrContains(needle, haystack, normalize)
     needle = HLP.Normalize(needle, normalize)
     haystack = HLP.Normalize(haystack, normalize)

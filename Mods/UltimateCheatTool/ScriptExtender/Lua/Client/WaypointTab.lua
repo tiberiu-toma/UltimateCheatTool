@@ -53,15 +53,13 @@ function WaypointTab:SetWaypoints(items)
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(self.WaypointItems) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
         
-        local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
         local name = HLP.GetAttr(data, "name")
         local trigger = HLP.GetAttr(data, "trigger")
@@ -77,9 +75,9 @@ function WaypointTab:SetWaypoints(items)
 
         icon = "EC_Portrait_Generic"
         local cell = row:AddCell()
-        local WaypointItem = cell:AddImageButton("",icon, {100*ViewPortScale, 100*ViewPortScale})
+        local WaypointItem = cell:AddImageButton("##Waypoint" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("AddItem")
+        local popup = cell:AddPopup("AddItem" .. uuid)
 
         WaypointItem.OnClick = function()
             popup:Open()

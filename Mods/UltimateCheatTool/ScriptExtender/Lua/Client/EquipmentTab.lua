@@ -77,15 +77,13 @@ function EquipmentTab:SetEquipment(payload)
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(self.EquipmentItems) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
         
-        local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
         local name = HLP.GetAttr(data, "displayName")
 
@@ -112,9 +110,9 @@ function EquipmentTab:SetEquipment(payload)
         end
 
         local cell = row:AddCell()
-        local equipmentItem = cell:AddImageButton("",icon, {100*ViewPortScale, 100*ViewPortScale})
+        local equipmentItem = cell:AddImageButton("##Equipment" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("AddItem")
+        local popup = cell:AddPopup("AddItem" .. uuid)
 
         equipmentItem.OnClick = function()
             popup:Open()

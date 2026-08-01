@@ -26,11 +26,10 @@ function RecruitTab:ShowCompanions()
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for name,uuid in kpairs(HLP.Companions) do
-        if i % 4 == 1 then
+        if (i - 1) % 4 == 0 then
             row = t:AddRow()
         end
         
@@ -39,9 +38,9 @@ function RecruitTab:ShowCompanions()
         if name == "Shadowheart" then name = "ShadowHeart" end
 
         local cell = row:AddCell()
-        local companion = cell:AddImageButton("","EC_Portrait_" .. name, {100*ViewPortScale, 100*ViewPortScale})
+        local companion = cell:AddImageButton("##Companion" .. uuid, "EC_Portrait_" .. name, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("AddItem")
+        local popup = cell:AddPopup("AddItem" .. uuid)
 
         companion.OnClick = function()
             popup:Open()

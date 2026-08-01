@@ -80,15 +80,13 @@ function SpellTab:SetSpells(payload)
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(self.AllSpells) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
         
-        local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
         if not icon or icon == "unknown" or icon == "" then
             icon = "EC_Portrait_Generic"
@@ -112,9 +110,9 @@ function SpellTab:SetSpells(payload)
         end
 
         local cell = row:AddCell()
-        local SpellItem = cell:AddImageButton("",icon, {100*ViewPortScale, 100*ViewPortScale})
+        local SpellItem = cell:AddImageButton("##Spell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("AddItem")
+        local popup = cell:AddPopup("AddItem" .. uuid)
 
         SpellItem.OnClick = function()
             popup:Open()
@@ -192,15 +190,13 @@ function SpellTab:GetLearnedSpells()
     t.NoHostExtendX = true
 
     local i = 1
-
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(learnedForChar) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
         
-        local uuid = HLP.GetAttr(data, "id")
         local icon = HLP.GetAttr(data, "icon")
         local fullName = HLP.GetAttr(data, "displayName")
 
@@ -215,9 +211,9 @@ function SpellTab:GetLearnedSpells()
         end
 
         local cell = row:AddCell()
-        local SpellItem = cell:AddImageButton("",icon, {100*ViewPortScale, 100*ViewPortScale})
+        local SpellItem = cell:AddImageButton("##LearnedSpell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         local txt = cell:AddText(name)
-        local popup = cell:AddPopup("ManageSpell")
+        local popup = cell:AddPopup("ManageSpell" .. uuid)
 
         SpellItem.OnClick = function()
             popup:Open()

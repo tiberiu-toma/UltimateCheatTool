@@ -77,10 +77,10 @@ function TagTab:SetTags(payload)
     t.NoHostExtendX = true
 
     local i = 1
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(self.AllTags) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
 
@@ -95,7 +95,7 @@ function TagTab:SetTags(payload)
         end
 
         local cell = row:AddCell()
-        local tagButton = cell:AddButton(shortName)
+        local tagButton = cell:AddButton(shortName .. "##Tag" .. uuid)
         local txt = cell:AddText(name)
         local popup = cell:AddPopup("AddTag" .. uuid)
 
@@ -168,10 +168,10 @@ function TagTab:GetAppliedTags()
     t.NoHostExtendX = true
 
     local i = 1
-    local row = t:AddRow()
+    local row
 
     for uuid,data in kpairs(appliedForChar) do
-        if i % maxTableWidth == 1 then
+        if (i - 1) % maxTableWidth == 0 then
             row = t:AddRow()
         end
 
@@ -186,7 +186,7 @@ function TagTab:GetAppliedTags()
         end
 
         local cell = row:AddCell()
-        local tagButton = cell:AddButton(shortName)
+        local tagButton = cell:AddButton(shortName .. "##AppliedTag" .. uuid)
         local txt = cell:AddText(name)
         local popup = cell:AddPopup("ManageTag" .. uuid)
 
@@ -204,7 +204,7 @@ function TagTab:GetAppliedTags()
         local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
         removeButton.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
+            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
             if self.AppliedTags[charUUID] then self.AppliedTags[charUUID][uuid] = nil end
             self:GetAppliedTags()
         end

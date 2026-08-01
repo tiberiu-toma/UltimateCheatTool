@@ -32,7 +32,10 @@ function LCL.PreprocessXML(str)
         return str
     end
 
+    -- First, handle <br> tags by converting them to newlines
     str = str:gsub("<[Bb][Rr]>", "\n")
-
-    return str
+    -- Then, strip all other XML/HTML-like tags
+    str = str:gsub("<[^>]+>", "")
+    -- Finally, trim whitespace from the start and end
+    return HLP.Trim(str)
 end
