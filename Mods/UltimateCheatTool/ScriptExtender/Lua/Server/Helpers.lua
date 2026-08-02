@@ -21,7 +21,7 @@ end
 
 function HLP.GetAllChars()
     local allChars = {}
-    local allEntities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+    local allEntities = Ext.Entity.GetAllEntitiesWithComponent("PartyMember")
 
     for _,entity in pairs(allEntities) do
         table.insert(allChars, HLP.GetChar(entity))
@@ -115,6 +115,7 @@ function HLP.RefreshEquippedItem(character, itemTemplateUUID)
             if item and item.GameObjectVisual and item.GameObjectVisual.RootTemplateId == itemTemplateUUID then
                 Osi.Unequip(character, itemHandle)
                 local ticks = 0
+                local e
                 e = Ext.Events.Tick:Subscribe(function()
                     ticks = ticks + 1
                     if ticks >= 10 then

@@ -59,40 +59,78 @@ end
 function PASSV.AddOnItem(character, itemTemplateUUID, passiveId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
-    local stats = Ext.Stats.Get(template.Stats)
-    if not stats then return end
+    
+    local originalStats = Ext.Stats.Get(template.Stats)
+    if not originalStats then return end
+    
+    local backupStatsName = originalStats.Name .. "_UCT_BACKUP"
+    local backupStats = Ext.Stats.Get(backupStatsName)
 
-    local passivesOnEquip = HLP.GetAttr(stats, "PassivesOnEquip") or ""
+    -- If a backup doesn't exist, create one before modifying the original.
+    if not backupStats then
+        local modifierList = originalStats.ModifierList
+        if modifierList == "Weapon" or modifierList == "Armor" then
+            -- Create a backup copy of the original stats.
+            backupStats = Ext.Stats.Create(backupStatsName, modifierList, originalStats.Name)
+            if not backupStats then return end -- Backup creation failed
+        else
+            return -- Not a modifiable item type
+        end
+    end
+ 
+    local passivesOnEquip = HLP.GetAttr(originalStats, "PassivesOnEquip") or ""
     if not string.find(passivesOnEquip, passiveId, 1, true) then
         passivesOnEquip = (passivesOnEquip == "" and passiveId) or (passivesOnEquip .. ";" .. passiveId)
-        stats.PassivesOnEquip = passivesOnEquip
-        stats:Sync()
-        HLP.RefreshEquippedItem(character, itemTemplateUUID)
+        originalStats.PassivesOnEquip = passivesOnEquip
+        originalStats:Sync()
+        
+        if character then
+            HLP.RefreshEquippedItem(character, itemTemplateUUID)
+        end
     end
 end
 
 function PASSV.RemoveFromItem(character, itemTemplateUUID, passiveId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
-    local stats = Ext.Stats.Get(template.Stats)
-    if not stats then return end
 
-    local passivesOnEquip = HLP.GetAttr(stats, "PassivesOnEquip") or ""
-    if passivesOnEquip == "" then return end
+    local originalStats = Ext.Stats.Get(template.Stats)
+    if not originalStats then return end
+
+    local backupStatsName = originalStats.Name .. "_UCT_BACKUP"
+    local backupStats = Ext.Stats.Get(backupStatsName)
+
+    -- If there's no backup, we can't (and shouldn't) do anything.
+    if not backupStats then return end
+
+    local passivesOnEquip = HLP.GetAttr(originalStats, "PassivesOnEquip") or ""
+    if not string.find(passivesOnEquip, passiveId, 1, true) then
+        return -- Passive not found on this item
+    end
 
     local items = {}
-    local found = false
     for item in string.gmatch(passivesOnEquip, "([^;]+)") do
         if item ~= passiveId then
             table.insert(items, item)
-        else
-            found = true
         end
     end
 
-    if found then
-        stats.PassivesOnEquip = table.concat(items, ";")
-        stats:Sync()
+    local newPassives = table.concat(items, ";")
+    originalStats.PassivesOnEquip = newPassives
+
+    -- Check if this was the last modification. If so, revert to original stats.
+    local currentStatuses = HLP.GetAttr(originalStats, "StatusOnEquip") or ""
+    local backupPassives = HLP.GetAttr(backupStats, "PassivesOnEquip") or ""
+    local backupStatuses = HLP.GetAttr(backupStats, "StatusOnEquip") or ""
+
+    if newPassives == backupPassives and currentStatuses == backupStatuses then
+        -- All custom modifications are gone. Restore the original properties.
+        originalStats.PassivesOnEquip = backupStats.PassivesOnEquip
+        originalStats.StatusOnEquip = backupStats.StatusOnEquip
+    end
+
+    originalStats:Sync()
+    if character then
         HLP.RefreshEquippedItem(character, itemTemplateUUID)
     end
 end

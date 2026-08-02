@@ -46,40 +46,72 @@ end
 function STAT.ApplyToItem(character, itemTemplateUUID, statusId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
-    local stats = Ext.Stats.Get(template.Stats)
-    if not stats then return end
+    
+    local originalStats = Ext.Stats.Get(template.Stats)
+    if not originalStats then return end
 
-    local statusOnEquip = HLP.GetAttr(stats, "StatusOnEquip") or ""
+    local backupStatsName = originalStats.Name .. "_UCT_BACKUP"
+    local backupStats = Ext.Stats.Get(backupStatsName)
+
+    if not backupStats then
+        local modifierList = originalStats.ModifierList
+        if modifierList == "Weapon" or modifierList == "Armor" then
+            backupStats = Ext.Stats.Create(backupStatsName, modifierList, originalStats.Name)
+            if not backupStats then return end
+        else
+            return
+        end
+    end
+ 
+    local statusOnEquip = HLP.GetAttr(originalStats, "StatusOnEquip") or ""
     if not string.find(statusOnEquip, statusId, 1, true) then
         statusOnEquip = (statusOnEquip == "" and statusId) or (statusOnEquip .. ";" .. statusId)
-        stats.StatusOnEquip = statusOnEquip
-        stats:Sync()
-        HLP.RefreshEquippedItem(character, itemTemplateUUID)
+        originalStats.StatusOnEquip = statusOnEquip
+        originalStats:Sync()
+        if character then
+            HLP.RefreshEquippedItem(character, itemTemplateUUID)
+        end
     end
 end
 
 function STAT.RemoveFromItem(character, itemTemplateUUID, statusId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
-    local stats = Ext.Stats.Get(template.Stats)
-    if not stats then return end
 
-    local statusOnEquip = HLP.GetAttr(stats, "StatusOnEquip") or ""
-    if statusOnEquip == "" then return end
+    local originalStats = Ext.Stats.Get(template.Stats)
+    if not originalStats then return end
+
+    local backupStatsName = originalStats.Name .. "_UCT_BACKUP"
+    local backupStats = Ext.Stats.Get(backupStatsName)
+
+    if not backupStats then return end
+
+    local statusOnEquip = HLP.GetAttr(originalStats, "StatusOnEquip") or ""
+    if not string.find(statusOnEquip, statusId, 1, true) then
+        return
+    end
 
     local items = {}
-    local found = false
     for item in string.gmatch(statusOnEquip, "([^;]+)") do
         if item ~= statusId then
             table.insert(items, item)
-        else
-            found = true
         end
     end
 
-    if found then
-        stats.StatusOnEquip = table.concat(items, ";")
-        stats:Sync()
+    local newStatuses = table.concat(items, ";")
+    originalStats.StatusOnEquip = newStatuses
+    
+    local currentPassives = HLP.GetAttr(originalStats, "PassivesOnEquip") or ""
+    local backupPassives = HLP.GetAttr(backupStats, "PassivesOnEquip") or ""
+    local backupStatuses = HLP.GetAttr(backupStats, "StatusOnEquip") or ""
+
+    if newStatuses == backupStatuses and currentPassives == backupPassives then
+        originalStats.PassivesOnEquip = backupStats.PassivesOnEquip
+        originalStats.StatusOnEquip = backupStats.StatusOnEquip
+    end
+
+    originalStats:Sync()
+    if character then
         HLP.RefreshEquippedItem(character, itemTemplateUUID)
     end
 end
