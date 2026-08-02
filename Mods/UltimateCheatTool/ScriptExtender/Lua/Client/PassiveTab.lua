@@ -87,26 +87,12 @@ function PassiveTab:DrawGrid()
         else
             addToSelectedItem.OnClick = function()
                 if equipmentData and equipmentData.id then
-                    local charUUID = UI.CharSelector.SelectedCharacter
-                    SMS.AddPassiveOnItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
-                    -- Optimistically update the local data and refresh the UI
-                    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-                    if not modifiedEquipment[equipmentData.id] then modifiedEquipment[equipmentData.id] = {} end
-                    if not modifiedEquipment[equipmentData.id].passives then modifiedEquipment[equipmentData.id].passives = {} end
-                    modifiedEquipment[equipmentData.id].passives[uuid] = data
-                    self:GetAddedPassives(true)
+                    SMS.AddPassiveOnItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
                 end
             end
             removeFromSelectedItem.OnClick = function()
                 if equipmentData and equipmentData.id then
-                    local charUUID = UI.CharSelector.SelectedCharacter
-                    SMS.RemovePassiveFromItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
-                    -- Optimistically update the local data and refresh the UI
-                    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-                    if modifiedEquipment[equipmentData.id] and modifiedEquipment[equipmentData.id].passives then
-                        modifiedEquipment[equipmentData.id].passives[uuid] = nil
-                    end
-                    self:GetAddedPassives(true)
+                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
                 end
             end
         end
@@ -130,18 +116,11 @@ function PassiveTab:DrawGrid()
         InfoPopup:AddInfo(popup, data, passiveInfoFields)
         
         removePassiveBtn.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.AddPassive:SendToServer({ character = charUUID, uuid=uuid, remove=1})
-            if self.AddedPassives[charUUID] then self.AddedPassives[charUUID][uuid] = nil end
-            self:GetAddedPassives(true)
+            SMS.AddPassive:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, remove=1})
         end
 
         addPassiveBtn.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.AddPassive:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
-            if not self.AddedPassives[charUUID] then self.AddedPassives[charUUID] = {} end
-            self.AddedPassives[charUUID][uuid] = data
-            self:GetAddedPassives(true)
+            SMS.AddPassive:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
         end
 
         i = i + 1
@@ -216,10 +195,8 @@ function PassiveTab:_DrawPassiveGrid(parent, passives, maxTableWidth, onRemove)
     end
 end
 
-function PassiveTab:GetAddedPassives(noRefetch)
-    if not noRefetch then
-        self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
-    end
+function PassiveTab:GetAddedPassives()
+    self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
 
     UI.DestroyChildren(self.AddedPassivesArea)
 
@@ -244,10 +221,7 @@ function PassiveTab:GetAddedPassives(noRefetch)
             charPassivesCell:AddText("No custom passives.")
         else
             self:_DrawPassiveGrid(charPassivesCell, addedForChar, 3, function(uuid, data)
-                local charUUID = UI.CharSelector.SelectedCharacter
-                SMS.AddPassive:SendToServer({ character = charUUID, uuid = uuid, remove = 1 })
-                if self.AddedPassives[charUUID] then self.AddedPassives[charUUID][uuid] = nil end
-                self:GetAddedPassives(true)
+                SMS.AddPassive:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid = uuid, remove = 1 })
             end)
         end
     end
@@ -267,18 +241,7 @@ function PassiveTab:GetAddedPassives(noRefetch)
             itemPassivesCell:AddText("No custom passives.")
         else
             self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 3, function(uuid, data)
-                local charUUID = UI.CharSelector.SelectedCharacter
-                SMS.RemovePassiveFromItem:SendToServer({ character = charUUID, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
-                -- Optimistically update the client-side variable to avoid UI lag
-                local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment
-                if modifiedEquipment and modifiedEquipment[itemTemplateUUID] and modifiedEquipment[itemTemplateUUID].passives then
-                    modifiedEquipment[itemTemplateUUID].passives[uuid] = nil
-                    if HLP.Count(modifiedEquipment[itemTemplateUUID].passives) == 0 then modifiedEquipment[itemTemplateUUID].passives = nil end
-                    if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then modifiedEquipment[itemTemplateUUID] = nil end
-                    -- Set the modified table back to the variable
-                    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
-                end
-                self:GetAddedPassives(true)
+                SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
             end)
         end
     end

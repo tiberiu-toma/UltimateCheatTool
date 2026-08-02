@@ -72,6 +72,24 @@ function HLP.ToClient(event, payload, targetUuid)
     return true
 end
 
+--- Sends a message to a client after a specified delay in server ticks.
+---@param event ExtNet.Channel The network channel to use.
+---@param payload table The data to send.
+---@param targetUuid string|number The target client's user ID or character UUID.
+---@param delayTicks? number The number of ticks to wait (defaults to 10).
+function HLP.ToClientDelayed(event, payload, targetUuid, delayTicks)
+    delayTicks = delayTicks or 5
+    local ticks = 0
+    local e
+    e = Ext.Events.Tick:Subscribe(function()
+        ticks = ticks + 1
+        if ticks >= delayTicks then
+            HLP.ToClient(event, payload, targetUuid)
+            Ext.Events.Tick:Unsubscribe(e)
+        end
+    end)
+end
+
 function HLP.GetClientIdForEntity(uuid)
     local entity = Ext.Entity.Get(uuid)
     if not entity then

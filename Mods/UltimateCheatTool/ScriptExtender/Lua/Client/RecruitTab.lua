@@ -46,11 +46,11 @@ function RecruitTab:ShowCompanions()
             popup:Open()
         end
 
-        local select = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb78", "Recruit"))
-        local approvalMax = popup:AddButton(LCL.Get("", "Max Approval"))
-        local approvalMin = popup:AddButton(LCL.Get("", "Minimum Approval"))
-        local approvalPlus = popup:AddButton(LCL.Get("", "+10 Approval"))
-        local approvalMinus = popup:AddButton(LCL.Get("", "-10 Approval"))
+        local select = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb78", "Recruit") .. "##Recruit" .. uuid)
+        local approvalMax = popup:AddButton(LCL.Get("", "Max Approval") .. "##MaxApproval" .. uuid)
+        local approvalMin = popup:AddButton(LCL.Get("", "Minimum Approval") .. "##MinApproval" .. uuid)
+        local approvalPlus = popup:AddButton(LCL.Get("", "+10 Approval") .. "##Plus10Approval" .. uuid)
+        local approvalMinus = popup:AddButton(LCL.Get("", "-10 Approval") .. "##Minus10Approval" .. uuid)
 
         select.OnClick = function()
             SMS.RecruitCompanion:SendToServer({ data=name })

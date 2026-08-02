@@ -54,7 +54,7 @@ function SpellTab:DrawGrid()
         if not icon or icon == "unknown" or icon == "" then
             icon = "EC_Portrait_Generic"
         end
-        local name = HLP.GetAttr(data, "displayName")
+        local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
 
         if not name then
             goto continue
@@ -74,8 +74,8 @@ function SpellTab:DrawGrid()
             popup:Open()
         end
 
-        local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn"))
-        local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
+        local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn") .. "##" .. uuid)
+        local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##" .. uuid)
         removeSpell.SameLine = true
 
         data.fullName = fullName
@@ -89,21 +89,14 @@ function SpellTab:DrawGrid()
             { key = "cooldown", label = "Cooldown" },
             { key = "modName", label = "Mod Name" },
         }
-        InfoPopup:AddInfo(popup, data, spellInfoFields)
+                InfoPopup:AddInfo(popup, data, spellInfoFields)
         
         removeSpell.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
-            if self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID][uuid] = nil end
-            self:GetLearnedSpells(true)
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, unlearn=1 })
         end
 
         selectSpell.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
-            if not self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID] = {} end
-            self.LearnedSpells[charUUID][uuid] = data
-            self:GetLearnedSpells(true)
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
         end
 
         i = i + 1
@@ -112,10 +105,8 @@ function SpellTab:DrawGrid()
     end
 end
 
-function SpellTab:GetLearnedSpells(noRefetch)
-    if not noRefetch then
-        self.LearnedSpells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
-    end
+function SpellTab:GetLearnedSpells()
+    self.LearnedSpells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
 
     UI.DestroyChildren(self.LearnedSpellsArea)
 
@@ -157,7 +148,7 @@ function SpellTab:GetLearnedSpells(noRefetch)
         end
         
         local icon = HLP.GetAttr(data, "icon")
-        local fullName = HLP.GetAttr(data, "displayName")
+        local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
 
         if not fullName then
             goto continue
@@ -184,15 +175,14 @@ function SpellTab:GetLearnedSpells(noRefetch)
         }
         InfoPopup:AddInfo(popup, data, learnedSpellInfoFields)
 
-        local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn"))
+        local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##" .. uuid)
         removeSpell.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.LearnSpell:SendToServer({ character = charUUID, uuid=uuid, unlearn=1 })
-            if self.LearnedSpells[charUUID] then self.LearnedSpells[charUUID][uuid] = nil end
-            self:GetLearnedSpells(true)
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, unlearn=1 })
         end
 
         i = i + 1
+
+
         drawnCount = drawnCount + 1
 
         ::continue::

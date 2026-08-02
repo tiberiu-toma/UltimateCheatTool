@@ -50,9 +50,9 @@ function TagTab:DrawGrid()
             row = t:AddRow()
         end
 
-        local name = HLP.GetAttr(data, "displayName")
+        local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
         if not name then goto continue end
-        local description = HLP.GetAttr(data, "displayDescription")
+        local description = LCL.PreprocessXML(HLP.GetAttr(data, "displayDescription"))
         if not description then goto continue end
 
         local shortName = name
@@ -69,8 +69,8 @@ function TagTab:DrawGrid()
             popup:Open()
         end
 
-        local addButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add"))
-        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
+        local addButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add") .. "##" .. uuid)
+        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
         removeButton.SameLine = true
 
         local tagInfoFields = {
@@ -81,18 +81,11 @@ function TagTab:DrawGrid()
         InfoPopup:AddInfo(popup, data, tagInfoFields)
 
         removeButton.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
-            if self.AppliedTags[charUUID] then self.AppliedTags[charUUID][uuid] = nil end
-            self:GetAppliedTags(true)
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
         end
 
         addButton.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, data=data })
-            if not self.AppliedTags[charUUID] then self.AppliedTags[charUUID] = {} end
-            self.AppliedTags[charUUID][uuid] = data
-            self:GetAppliedTags(true)
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, data=data })
         end
 
         i = i + 1
@@ -100,10 +93,8 @@ function TagTab:DrawGrid()
     end
 end
 
-function TagTab:GetAppliedTags(noRefetch)
-    if not noRefetch then
-        self.AppliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
-    end
+function TagTab:GetAppliedTags()
+    self.AppliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
 
     UI.DestroyChildren(self.AppliedTagsArea)
 
@@ -122,6 +113,8 @@ function TagTab:GetAppliedTags(noRefetch)
 
     local maxTableWidth = 5
     local tableWidth = math.min(totalApplied, maxTableWidth)
+    
+    local header = self.AppliedTagsArea:AddCollapsingHeader("Applied Tags##AppliedTagsHeader")
 
     local header = self.AppliedTagsArea:AddCollapsingHeader("Applied Tags")
 
@@ -144,9 +137,9 @@ function TagTab:GetAppliedTags(noRefetch)
             row = t:AddRow()
         end
 
-        local name = HLP.GetAttr(data, "displayName")
+        local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
         if not name then goto continue end
-        local description = HLP.GetAttr(data, "displayDescription")
+        local description = LCL.PreprocessXML(HLP.GetAttr(data, "displayDescription"))
         if not description then goto continue end
 
         local shortName = name
@@ -170,12 +163,9 @@ function TagTab:GetAppliedTags(noRefetch)
         }
         InfoPopup:AddInfo(popup, data, appliedTagInfoFields)
 
-        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
+        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
         removeButton.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.ManageTag:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
-            if self.AppliedTags[charUUID] then self.AppliedTags[charUUID][uuid] = nil end
-            self:GetAppliedTags(true)
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
         end
 
         i = i + 1

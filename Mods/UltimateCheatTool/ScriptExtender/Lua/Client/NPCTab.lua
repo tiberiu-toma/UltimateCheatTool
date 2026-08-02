@@ -54,7 +54,7 @@ function NPCTab:DrawGrid()
         if icon then
             icon = "EC_Portrait_Generic"
         end
-        local fullName = HLP.GetAttr(data, "displayName")
+        local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
 
         if not fullName then goto continue end
 
@@ -72,7 +72,7 @@ function NPCTab:DrawGrid()
             popup:Open()
         end
 
-        local selectNPC = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn"))
+        local selectNPC = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. "##" .. uuid)
 
         data.fullName = fullName
         local npcInfoFields = {
@@ -82,10 +82,7 @@ function NPCTab:DrawGrid()
         InfoPopup:AddInfo(popup, data, npcInfoFields)
 
         selectNPC.OnClick = function()
-            SMS.SpawnCharacter:SendToServer({ uuid=uuid, amount=1, data=data })
-
-            self.SpawnedNPCs[uuid] = data
-            self:GetSpawnedNPCs(true)
+            SMS.SpawnCharacter:SendToServer({ ID = USERID, uuid=uuid, amount=1, data=data })
         end
 
         i = i + 1
@@ -94,10 +91,8 @@ function NPCTab:DrawGrid()
     end
 end
 
-function NPCTab:GetSpawnedNPCs(noRefetch)
-    if not noRefetch then
-        self.SpawnedNPCs = Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs or {}
-    end
+function NPCTab:GetSpawnedNPCs()
+    self.SpawnedNPCs = Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs or {}
 
     UI.DestroyChildren(self.SpawnedNPCsArea)
 
@@ -136,7 +131,7 @@ function NPCTab:GetSpawnedNPCs(noRefetch)
         if icon then
             icon = "EC_Portrait_Generic"
         end
-        local fullName = HLP.GetAttr(data, "displayName")
+        local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
 
         if not fullName then
             goto continue
@@ -163,22 +158,19 @@ function NPCTab:GetSpawnedNPCs(noRefetch)
         }
         InfoPopup:AddInfo(popup, data, spawnedNpcInfoFields)
 
-        local removeNPC = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
-        local enableCombat = popup:AddButton(LCL.Get("h684797ebd2ea4495b56dcc96c031bf261", "Enable Combat"))
-        local disableCombat = popup:AddButton(LCL.Get("h684797ebd2ea4495b56dcc96c031bf262", "Disable Combat"))
+        local removeNPC = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
+        local enableCombat = popup:AddButton(LCL.Get("h684797ebd2ea4495b56dcc96c031bf261", "Enable Combat") .. "##" .. uuid)
+        local disableCombat = popup:AddButton(LCL.Get("h684797ebd2ea4495b56dcc96c031bf262", "Disable Combat") .. "##" .. uuid)
 
         removeNPC.OnClick = function()
-            SMS.DespawnCharacter:SendToServer({ uuid=uuid })
-
-            self.SpawnedNPCs[uuid] = nil
-            self:GetSpawnedNPCs(true)
+            SMS.DespawnCharacter:SendToServer({ ID = USERID, uuid=uuid })
         end
 
         enableCombat.OnClick = function()
-            SMS.ManageNPC:SendToServer({ uuid=uuid,can=1,topic="combat" })
+            SMS.ManageNPC:SendToServer({ ID = USERID, uuid=uuid,can=1,topic="combat" })
         end
         disableCombat.OnClick = function()
-            SMS.ManageNPC:SendToServer({ uuid=uuid,can=0,topic="combat" })
+            SMS.ManageNPC:SendToServer({ ID = USERID, uuid=uuid,can=0,topic="combat" })
         end
 
         i = i + 1

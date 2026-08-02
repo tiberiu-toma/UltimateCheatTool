@@ -41,7 +41,7 @@ function ConsumableTab:DrawGrid()
         end
         
         local icon = HLP.GetAttr(data, "icon")
-        local fullName = HLP.GetAttr(data, "displayName")
+        local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
 
         if not fullName then goto continue end
 
@@ -60,7 +60,7 @@ function ConsumableTab:DrawGrid()
         end
 
         for _,num in ipairs(self.Config.amountOptions) do
-            local selectConsumable = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num)
+            local selectConsumable = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
             selectConsumable.SameLine = true
 
             selectConsumable.OnClick = function()

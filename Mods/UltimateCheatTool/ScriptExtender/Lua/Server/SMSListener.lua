@@ -158,6 +158,7 @@ SMS.LearnSpell:SetHandler(function(payload)
         end
         
         Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
     else
         SPLL.Learn(character, uuid)
 
@@ -166,6 +167,7 @@ SMS.LearnSpell:SetHandler(function(payload)
         spells[character][uuid] = data
         
         Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
     end
 end)
 
@@ -185,6 +187,7 @@ SMS.AddPassive:SetHandler(function(payload)
         end
         
         Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
     else
         PASSV.Add(character, uuid)
    
@@ -193,6 +196,7 @@ SMS.AddPassive:SetHandler(function(payload)
         passives[character][uuid] = data
         
         Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
     end
 end)
 
@@ -217,6 +221,7 @@ SMS.AddPassiveOnItem:SetHandler(function(payload)
     end
     modifiedEquipment[itemTemplateUUID].passives[passiveUUID] = data
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
 end)
 
 SMS.RemovePassiveFromItem:SetHandler(function(payload)
@@ -237,6 +242,7 @@ SMS.RemovePassiveFromItem:SetHandler(function(payload)
         if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then modifiedEquipment[itemTemplateUUID] = nil end
     end
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
 end)
 
 SMS.ManageTag:SetHandler(function(payload)
@@ -254,12 +260,14 @@ SMS.ManageTag:SetHandler(function(payload)
             tags[character][tagId] = nil
         end
         Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Tag" }, payload.ID)
     else
         TAGS.Set(character, tagId)
         local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
         if not tags[character] then tags[character] = {} end
         tags[character][tagId] = data
         Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Tag" }, payload.ID)
     end
 end)
 
@@ -278,6 +286,7 @@ SMS.ApplyStatus:SetHandler(function(payload)
             statuses[character][uuid] = nil
         end
         Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
     else
         STAT.Apply(character, uuid)
 
@@ -285,6 +294,7 @@ SMS.ApplyStatus:SetHandler(function(payload)
         if not statuses[character] then statuses[character] = {} end
         statuses[character][uuid] = data
         Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
     end
 end)
 
@@ -309,6 +319,7 @@ SMS.ApplyStatusToItem:SetHandler(function(payload)
     end
     modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = data
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
 end)
 
 SMS.RemoveStatusFromItem:SetHandler(function(payload)
@@ -329,6 +340,7 @@ SMS.RemoveStatusFromItem:SetHandler(function(payload)
         if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then modifiedEquipment[itemTemplateUUID] = nil end
     end
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
 end)
 
 SMS.SpawnTemplate:SetHandler(function(payload)
@@ -370,6 +382,7 @@ SMS.SpawnCharacter:SetHandler(function(payload)
             spawns[uuid]["created"] = spawn
             
             Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs = spawns
+            HLP.ToClientDelayed(SMS.UIRefresh, { tab = "NPC" }, payload.ID)
         end
     end
 end)
@@ -386,6 +399,7 @@ SMS.DespawnCharacter:SetHandler(function(payload)
         spawns[uuid] = nil
         
         Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs = spawns
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "NPC" }, payload.ID)
     end
 end)
 SMS.ManageNPC:SetHandler(function(payload)

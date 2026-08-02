@@ -88,26 +88,12 @@ function StatusTab:DrawGrid()
         else
             applyToSelectedItem.OnClick = function()
                 if equipmentData and equipmentData.id then
-                    local charUUID = UI.CharSelector.SelectedCharacter
-                    SMS.ApplyStatusToItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
-                    -- Optimistically update the local data and refresh the UI
-                    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-                    if not modifiedEquipment[equipmentData.id] then modifiedEquipment[equipmentData.id] = {} end
-                    if not modifiedEquipment[equipmentData.id].statuses then modifiedEquipment[equipmentData.id].statuses = {} end
-                    modifiedEquipment[equipmentData.id].statuses[uuid] = data
-                    self:GetAppliedStatuses(true)
+                    SMS.ApplyStatusToItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
                 end
             end
             removeFromSelectedItem.OnClick = function()
                 if equipmentData and equipmentData.id then
-                    local charUUID = UI.CharSelector.SelectedCharacter
-                    SMS.RemoveStatusFromItem:SendToServer({ character = charUUID, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
-                    -- Optimistically update the local data and refresh the UI
-                    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-                    if modifiedEquipment[equipmentData.id] and modifiedEquipment[equipmentData.id].statuses then
-                        modifiedEquipment[equipmentData.id].statuses[uuid] = nil
-                    end
-                    self:GetAppliedStatuses(true)
+                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
                 end
             end
         end
@@ -120,18 +106,11 @@ function StatusTab:DrawGrid()
         InfoPopup:AddInfo(popup, data, statusInfoFields)
 
         removeStatus.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.ApplyStatus:SendToServer({ character = charUUID, uuid=uuid, remove=1 })
-            if self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID][uuid] = nil end
-            self:GetAppliedStatuses(true)
+            SMS.ApplyStatus:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
         end
 
         applyStatus.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
-            SMS.ApplyStatus:SendToServer({ character = charUUID, uuid=uuid, amount=1, data=data })
-            if not self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID] = {} end
-            self.AppliedStatuses[charUUID][uuid] = data
-            self:GetAppliedStatuses(true)
+            SMS.ApplyStatus:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
         end
 
         i = i + 1
@@ -206,10 +185,8 @@ function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove)
     end
 end
 
-function StatusTab:GetAppliedStatuses(noRefetch)
-    if not noRefetch then
-        self.AppliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
-    end
+function StatusTab:GetAppliedStatuses()
+    self.AppliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
 
     UI.DestroyChildren(self.AppliedStatusesArea)
 
@@ -234,10 +211,7 @@ function StatusTab:GetAppliedStatuses(noRefetch)
             charStatusesCell:AddText("No custom statuses.")
         else
             self:_DrawStatusGrid(charStatusesCell, appliedForChar, 3, function(uuid, data)
-                local charUUID = UI.CharSelector.SelectedCharacter
-                SMS.ApplyStatus:SendToServer({ character = charUUID, uuid = uuid, remove = 1 })
-                if self.AppliedStatuses[charUUID] then self.AppliedStatuses[charUUID][uuid] = nil end
-                self:GetAppliedStatuses(true)
+                SMS.ApplyStatus:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid = uuid, remove = 1 })
             end)
         end
     end
@@ -257,18 +231,7 @@ function StatusTab:GetAppliedStatuses(noRefetch)
             itemStatusesCell:AddText("No custom statuses.")
         else
             self:_DrawStatusGrid(itemStatusesCell, itemStatuses, 3, function(uuid, data)
-                local charUUID = UI.CharSelector.SelectedCharacter
-                SMS.RemoveStatusFromItem:SendToServer({ character = charUUID, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
-                -- Optimistically update the client-side variable to avoid UI lag
-                local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment
-                if modifiedEquipment and modifiedEquipment[itemTemplateUUID] and modifiedEquipment[itemTemplateUUID].statuses then
-                    modifiedEquipment[itemTemplateUUID].statuses[uuid] = nil
-                    if HLP.Count(modifiedEquipment[itemTemplateUUID].statuses) == 0 then modifiedEquipment[itemTemplateUUID].statuses = nil end
-                    if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then modifiedEquipment[itemTemplateUUID] = nil end
-                    -- Set the modified table back to the variable
-                    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
-                end
-                self:GetAppliedStatuses(true)
+                SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
             end)
         end
     end

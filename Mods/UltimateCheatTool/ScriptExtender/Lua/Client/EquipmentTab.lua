@@ -49,7 +49,7 @@ function EquipmentTab:DrawGrid()
         end
         
         local icon = HLP.GetAttr(data, "icon")
-        local name = HLP.GetAttr(data, "displayName")
+        local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
 
         if not name then
             goto continue
@@ -70,7 +70,7 @@ function EquipmentTab:DrawGrid()
         end
         
         for _,num in ipairs(self.Config.amountOptions) do
-            local selectEquipment = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num)
+            local selectEquipment = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
             selectEquipment.SameLine = true
 
             selectEquipment.OnClick = function()
@@ -79,7 +79,7 @@ function EquipmentTab:DrawGrid()
             end
         end
 
-        local setAsSelectedBtn = popup:AddButton("Set as Selected Equipment")
+        local setAsSelectedBtn = popup:AddButton("Set as Selected Equipment##SetSelected" .. uuid)
         setAsSelectedBtn.OnClick = function()
             if UI and UI.EquipmentSelector then
                 UI.EquipmentSelector:SetSelectedEquipment(data)

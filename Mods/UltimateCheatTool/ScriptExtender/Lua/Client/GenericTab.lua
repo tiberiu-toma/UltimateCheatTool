@@ -60,7 +60,7 @@ function GenericTab:Init()
     goldRow:AddCell():AddText("Add Gold:")
     local goldAmounts = {1000, 10000, 50000, 100000}
     for _, amount in ipairs(goldAmounts) do
-        local btn = goldRow:AddCell():AddButton("Add " .. amount .. "##Gold")
+        local btn = goldRow:AddCell():AddButton("Add " .. amount .. "##Gold" .. tostring(amount))
         btn.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.AddGold:SendToServer({ ID = charUUID, Amount = amount })
@@ -72,7 +72,7 @@ function GenericTab:Init()
     expRow:AddCell():AddText("Add Experience:")
     local expAmounts = {1000, 10000, 50000, 100000}
     for _, amount in ipairs(expAmounts) do
-        local btn = expRow:AddCell():AddButton("Add " .. amount .. " XP##XP")
+        local btn = expRow:AddCell():AddButton("Add " .. amount .. " XP##XP" .. tostring(amount))
         btn.OnClick = function()
             SMS.AddExperience:SendToServer({ Amount = amount })
         end
@@ -83,7 +83,7 @@ function GenericTab:Init()
     inspirationRow:AddCell():AddText("Add Inspiration:")
     local inspirationAmounts = {1, 2, 3, 4}
     for _, amount in ipairs(inspirationAmounts) do
-        local btn = inspirationRow:AddCell():AddButton("Add " .. amount .. "##Inspiration")
+        local btn = inspirationRow:AddCell():AddButton("Add " .. amount .. "##Inspiration" .. tostring(amount))
         btn.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.AddInspiration:SendToServer({ ID = charUUID, Amount = amount })
@@ -95,7 +95,7 @@ function GenericTab:Init()
     tadpoleRow:AddCell():AddText("Add Tadpoles:")
     local tadpoleAmounts = {1, 5, 10, 25}
     for _, amount in ipairs(tadpoleAmounts) do
-        local btn = tadpoleRow:AddCell():AddButton("Add " .. amount .. "##Tadpole")
+        local btn = tadpoleRow:AddCell():AddButton("Add " .. amount .. "##Tadpole" .. tostring(amount))
         btn.OnClick = function()
             local charUUID = UI.CharSelector.SelectedCharacter
             SMS.AddTadpoles:SendToServer({ ID = charUUID, Amount = amount })
