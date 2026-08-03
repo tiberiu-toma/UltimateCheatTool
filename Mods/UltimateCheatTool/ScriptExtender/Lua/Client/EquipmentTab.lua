@@ -39,7 +39,7 @@ function EquipmentTab:DrawGrid()
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
     local t = self.MainArea:AddTable("EquipmentGrid", tableWidth)
-    t.SizingFixedSame = true
+    t.SizingFixedSame = false
     t.NoHostExtendX = true
 
     local i = 1

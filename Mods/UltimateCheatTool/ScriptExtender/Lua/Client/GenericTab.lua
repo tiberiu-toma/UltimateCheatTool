@@ -52,7 +52,7 @@ function GenericTab:Init()
     -- Resources
     local resourcesGroup = self.Tab:AddGroup("Resources")
     resourcesGroup:AddSeparatorText(LCL.Get("UCT_GenericTab_AddResources", "Add Resources"))
-    local resourcesTable = resourcesGroup:AddTable("ResourcesTable", 6)
+    local resourcesTable = resourcesGroup:AddTable("ResourcesTable", 5)
     resourcesTable.NoHostExtendX = true
 
     -- Gold Row
