@@ -18,7 +18,7 @@ function GenericTab:Init()
     local actionsGroup = self.Tab:AddGroup("CharacterActions")
     actionsGroup:AddSeparatorText(LCL.Get("UCT_GenericTab_CharacterActions", "Character Actions"))
     local actionsTable = actionsGroup:AddTable("ActionsTable", 2)
-    actionsTable.SizingFixedSame = true
+    actionsTable.SizingFixedSame = false
     actionsTable.NoHostExtendX = true
     
     local actionsRow1 = actionsTable:AddRow()

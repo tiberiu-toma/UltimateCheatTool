@@ -150,7 +150,7 @@ function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove, gr
 
     local tableWidth = math.min(total, maxTableWidth)
     local t = parent:AddTable(gridId, tableWidth)
-    t.SizingFixedSame = true
+    t.SizingFixedFit = true
     t.NoHostExtendX = true
 
     local i = 1
