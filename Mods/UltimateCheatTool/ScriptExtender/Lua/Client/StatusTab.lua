@@ -76,18 +76,22 @@ function StatusTab:DrawGrid()
             popup:Open()
         end
 
-        local applyStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432083", "Apply"))
-        local removeStatus = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove"))
-        removeStatus.SameLine = true
+        local actionsTable = popup:AddTable("StatusActionsTable" .. uuid, 2)
+        actionsTable.SizingFixedSame = false
+        actionsTable.NoHostExtendX = true
 
-        local applyForPartyBtn = popup:AddButton(LCL.Get("UCT_StatusTab_ApplyForParty", "Apply for Party"))
-        local removeForPartyBtn = popup:AddButton(LCL.Get("UCT_StatusTab_RemoveForParty", "Remove for Party"))
-        removeForPartyBtn.SameLine = true
+        local row1 = actionsTable:AddRow()
+        local applyStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432083", "Apply") .. "##Apply" .. uuid)
+        local removeStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove") .. "##Remove" .. uuid)
 
-        local applyToSelectedItem = popup:AddButton(LCL.Get("UCT_StatusTab_ApplyToSelectedItem", "Apply to Selected Item"))
-        local removeFromSelectedItem = popup:AddButton(LCL.Get("UCT_StatusTab_RemoveFromSelectedItem", "Remove from Selected"))
-        removeFromSelectedItem.SameLine = true
+        local row2 = actionsTable:AddRow()
+        local applyForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyForParty", "Apply for Party") .. "##ApplyParty" .. uuid)
+        local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
 
+        local row3 = actionsTable:AddRow()
+        local applyToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyToSelectedItem", "Apply to Selected Item") .. "##ApplyItem" .. uuid)
+        local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
+        
         local equipmentData = UI.EquipmentSelector.SelectedEquipment
         if not equipmentData then
             applyToSelectedItem.Disabled = true

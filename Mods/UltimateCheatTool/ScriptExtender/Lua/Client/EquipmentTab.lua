@@ -71,9 +71,13 @@ function EquipmentTab:DrawGrid()
             popup:Open()
         end
         
+        local spawnTable = popup:AddTable("SpawnAmountTable" .. uuid, 5)
+        spawnTable.SizingFixedSame = false
+        spawnTable.NoHostExtendX = true
+        local spawnRow = spawnTable:AddRow()
+
         for _,num in ipairs(self.Config.amountOptions) do
-            local selectEquipment = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
-            selectEquipment.SameLine = true
+            local selectEquipment = spawnRow:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
 
             selectEquipment.OnClick = function()
                 local charUUID = UI.CharSelector.SelectedCharacter

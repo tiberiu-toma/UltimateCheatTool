@@ -76,12 +76,16 @@ function SpellTab:DrawGrid()
             popup:Open()
         end
 
-        local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn") .. "##" .. uuid)
-        local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##" .. uuid)
-        removeSpell.SameLine = true
-        local learnForParty = popup:AddButton(LCL.Get("UCT_SpellTab_LearnForParty", "Learn for Party") .. "##LearnParty" .. uuid)
-        local unlearnForParty = popup:AddButton(LCL.Get("UCT_SpellTab_UnlearnForParty", "Unlearn for Party") .. "##UnlearnParty" .. uuid)
-        unlearnForParty.SameLine = true
+        local actionsTable = popup:AddTable("SpellActionsTable" .. uuid, 2)
+        actionsTable.SizingFixedSame = false
+        actionsTable.NoHostExtendX = true
+
+        local row1 = actionsTable:AddRow()
+        local selectSpell = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn") .. "##Learn" .. uuid)
+        local removeSpell = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##Unlearn" .. uuid)
+        local row2 = actionsTable:AddRow()
+        local learnForParty = row2:AddCell():AddButton(LCL.Get("UCT_SpellTab_LearnForParty", "Learn for Party") .. "##LearnParty" .. uuid)
+        local unlearnForParty = row2:AddCell():AddButton(LCL.Get("UCT_SpellTab_UnlearnForParty", "Unlearn for Party") .. "##UnlearnParty" .. uuid)
 
         data.fullName = fullName
         local spellInfoFields = {

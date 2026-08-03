@@ -70,13 +70,16 @@ function TagTab:DrawGrid()
             popup:Open()
         end
 
-        local addButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add") .. "##" .. uuid)
-        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
-        removeButton.SameLine = true
+        local actionsTable = popup:AddTable("TagActionsTable" .. uuid, 2)
+        actionsTable.SizingFixedSame = false
+        actionsTable.NoHostExtendX = true
 
-        local addForPartyBtn = popup:AddButton(LCL.Get("UCT_TagTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
-        local removeForPartyBtn = popup:AddButton(LCL.Get("UCT_TagTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
-        removeForPartyBtn.SameLine = true
+        local row1 = actionsTable:AddRow()
+        local addButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add") .. "##Add" .. uuid)
+        local removeButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##Remove" .. uuid)
+        local row2 = actionsTable:AddRow()
+        local addForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_TagTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
+        local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_TagTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
 
         local tagInfoFields = {
             { key = "id", label = "ID" },

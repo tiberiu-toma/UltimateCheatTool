@@ -75,18 +75,22 @@ function PassiveTab:DrawGrid()
             popup:Open()
         end
 
-        local addPassiveBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_Add", "Add"))
-        local removePassiveBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_Remove", "Remove"))
-        removePassiveBtn.SameLine = true
+        local actionsTable = popup:AddTable("PassiveActionsTable" .. uuid, 2)
+        actionsTable.SizingFixedSame = false
+        actionsTable.NoHostExtendX = true
 
-        local addForPartyBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_AddForParty", "Add for Party"))
-        local removeForPartyBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_RemoveForParty", "Remove for Party"))
-        removeForPartyBtn.SameLine = true
+        local row1 = actionsTable:AddRow()
+        local addPassiveBtn = row1:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Add", "Add") .. "##Add" .. uuid)
+        local removePassiveBtn = row1:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Remove", "Remove") .. "##Remove" .. uuid)
 
-        local addToSelectedItem = popup:AddButton(LCL.Get("UCT_PassiveTab_AddToSelectedItem", "Add to Selected Item"))
-        local removeFromSelectedItem = popup:AddButton(LCL.Get("UCT_PassiveTab_RemoveFromSelectedItem", "Remove from Selected"))
-        removeFromSelectedItem.SameLine = true
+        local row2 = actionsTable:AddRow()
+        local addForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_PassiveTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
+        local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_PassiveTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
 
+        local row3 = actionsTable:AddRow()
+        local addToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_PassiveTab_AddToSelectedItem", "Add to Selected Item") .. "##AddItem" .. uuid)
+        local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_PassiveTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
+        
         local equipmentData = UI.EquipmentSelector.SelectedEquipment
         if not equipmentData then
             addToSelectedItem.Disabled = true
