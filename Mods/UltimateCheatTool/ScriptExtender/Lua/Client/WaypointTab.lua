@@ -11,9 +11,11 @@ function WaypointTab:New(holder)
 
     local config = {
         tabName = "Waypoints",
+        tabNameHandle = "UCT_WaypointTab_Label",
         idPrefix = "Waypoint",
         fetchMessage = SMS.FetchWaypoints,
         searchLabel = "Search Waypoints:",
+        searchLabelHandle = "UCT_SearchWaypoints_Label",
         noItemsText = "No waypoints found.",
         maxTableWidth = 5
     }
@@ -27,7 +29,7 @@ function WaypointTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
     
-    local t = self.MainArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("WaypointGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 

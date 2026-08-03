@@ -97,7 +97,7 @@ function UI:Init()
     self.EquipmentSelector = EquipmentSelector:New(self.Window, function(eqData) self:OnEquipmentChange(eqData) end)
     self.EquipmentSelector.Container.SameLine = true
 
-    self.TabBar = self.Window:AddTabBar("")
+    self.TabBar = self.Window:AddTabBar("UCT_MainTabBar")
     
     self.GenericTab = GenericTab:New(self.TabBar)
     self.EquipmentTab = EquipmentTab:New(self.TabBar)

@@ -13,7 +13,7 @@ function RecruitTab:New(holder)
     if UI.RecruitTab then return end 
 
     local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("", "Companions")),
+        Tab = holder:AddTabItem(LCL.Get("UCT_CompanionTab_Label", "Companions")),
     }, RecruitTab)
     return instance
 end
@@ -21,7 +21,7 @@ end
 function RecruitTab:ShowCompanions()
     UI.DestroyChildren(self.RecruitOptions)
 
-    local t = self.RecruitOptions:AddTable("", 4)
+    local t = self.RecruitOptions:AddTable("CompanionGrid", 4)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -47,10 +47,10 @@ function RecruitTab:ShowCompanions()
         end
 
         local select = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb78", "Recruit") .. "##Recruit" .. uuid)
-        local approvalMax = popup:AddButton(LCL.Get("", "Max Approval") .. "##MaxApproval" .. uuid)
-        local approvalMin = popup:AddButton(LCL.Get("", "Minimum Approval") .. "##MinApproval" .. uuid)
-        local approvalPlus = popup:AddButton(LCL.Get("", "+10 Approval") .. "##Plus10Approval" .. uuid)
-        local approvalMinus = popup:AddButton(LCL.Get("", "-10 Approval") .. "##Minus10Approval" .. uuid)
+        local approvalMax = popup:AddButton(LCL.Get("UCT_RecruitTab_MaxApproval", "Max Approval") .. "##MaxApproval" .. uuid)
+        local approvalMin = popup:AddButton(LCL.Get("UCT_RecruitTab_MinApproval", "Minimum Approval") .. "##MinApproval" .. uuid)
+        local approvalPlus = popup:AddButton(LCL.Get("UCT_RecruitTab_Plus10Approval", "+10 Approval") .. "##Plus10Approval" .. uuid)
+        local approvalMinus = popup:AddButton(LCL.Get("UCT_RecruitTab_Minus10Approval", "-10 Approval") .. "##Minus10Approval" .. uuid)
 
         select.OnClick = function()
             SMS.RecruitCompanion:SendToServer({ data=name })
@@ -81,7 +81,7 @@ function RecruitTab:ShowCompanions()
 end
 
 function RecruitTab:Init()
-    self.Description = self.Tab:AddText("Change approval or recruit any companion and teleport them to your location. Works regardless of story progression")
+    self.Description = self.Tab:AddText(LCL.Get("UCT_RecruitTab_Description", "Change approval or recruit any companion and teleport them to your location. Works regardless of story progression"))
 
     self.RecruitOptions = self.Tab:AddGroup("Companions")
     self:ShowCompanions()

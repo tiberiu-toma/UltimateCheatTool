@@ -13,9 +13,11 @@ function NPCTab:New(holder)
 
     local config = {
         tabName = "NPCs",
+        tabNameHandle = "UCT_NPCTab_Label",
         idPrefix = "NPC",
         fetchMessage = SMS.FetchNPCs,
         searchLabel = "Search NPCs:",
+        searchLabelHandle = "UCT_SearchNPCs_Label",
         noItemsText = "No NPCs found.",
         maxTableWidth = 5
     }
@@ -38,7 +40,7 @@ function NPCTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    local t = self.MainArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("NPCGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -99,16 +101,16 @@ function NPCTab:GetSpawnedNPCs()
     local totalSpawned = HLP.Count(self.SpawnedNPCs)
 
     if totalSpawned == 0 then
-        self.SpawnedNPCsArea:AddText("You haven't spawned any NPCs.")
+        self.SpawnedNPCsArea:AddText(LCL.Get("UCT_NPCTab_NoSpawnedNPCs", "You haven't spawned any NPCs."))
         return
     end
 
     local maxTableWidth = self.Config.maxTableWidth or 5
     local tableWidth = math.min(totalSpawned, maxTableWidth)
 
-    local header = self.SpawnedNPCsArea:AddCollapsingHeader("Spawned NPCs")
+    local header = self.SpawnedNPCsArea:AddCollapsingHeader(LCL.Get("UCT_NPCTab_SpawnedNPCsHeader", "Spawned NPCs"))
 
-    local t = header:AddTable("", tableWidth)
+    local t = header:AddTable("SpawnedNPCGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 

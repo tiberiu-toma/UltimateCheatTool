@@ -98,10 +98,10 @@ end
 function EquipmentSelector:DrawQuickPick()
     UI.DestroyChildren(self.QuickPickContainer)
 
-    self.QuickPickContainer:AddSeparatorText("Quick Pick Item")
+    self.QuickPickContainer:AddSeparatorText(LCL.Get("UCT_EquipmentSelector_QuickPick", "Quick Pick Item"))
 
     if #self.QuickPickItems == 0 then
-        self.QuickPickContainer:AddText("No items equipped.")
+        self.QuickPickContainer:AddText(LCL.Get("UCT_EquipmentSelector_NoItemsEquipped", "No items equipped."))
         return
     end
 
@@ -132,10 +132,10 @@ end
 function EquipmentSelector:ShowModifiedItemsPopup(items)
     UI.DestroyChildren(self.ModifiedItemsPopup)
 
-    self.ModifiedItemsPopup:AddSeparatorText("Modified Equipment")
+    self.ModifiedItemsPopup:AddSeparatorText(LCL.Get("UCT_EquipmentSelector_ModifiedEquipment", "Modified Equipment"))
 
     if HLP.Count(items) == 0 then
-        self.ModifiedItemsPopup:AddText("No equipment has been modified yet.")
+        self.ModifiedItemsPopup:AddText(LCL.Get("UCT_EquipmentSelector_NoItemsModified", "No equipment has been modified yet."))
         self.ModifiedItemsPopup:Open()
         return
     end

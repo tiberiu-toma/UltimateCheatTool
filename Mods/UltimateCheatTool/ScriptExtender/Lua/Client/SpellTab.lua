@@ -13,9 +13,11 @@ function SpellTab:New(holder)
 
     local config = {
         tabName = "Spells",
+        tabNameHandle = "UCT_SpellTab_Label",
         idPrefix = "Spell",
         fetchMessage = SMS.FetchSpells,
         searchLabel = "Search Spells:",
+        searchLabelHandle = "UCT_SearchSpells_Label",
         noItemsText = "No spells found.",
         maxTableWidth = 5
     }
@@ -38,7 +40,7 @@ function SpellTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    local t = self.MainArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("SpellGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -112,23 +114,23 @@ function SpellTab:GetLearnedSpells()
 
     local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
     if not charUUID then
-        self.LearnedSpellsArea:AddText("Select a character to see their spells.")
+        self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_SelectCharacter", "Select a character to see their spells."))
         return
     end
 
     local learnedForChar = self.LearnedSpells[charUUID] or {}
     local totalSpawned = HLP.Count(learnedForChar)
     if totalSpawned == 0 then
-        self.LearnedSpellsArea:AddText("You haven't learned any spells.")
+        self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_NoLearnedSpells", "You haven't learned any spells."))
         return
     end
 
     local maxTableWidth = self.Config.maxTableWidth or 5
     local tableWidth = math.min(totalSpawned, maxTableWidth)
 
-    local header = self.LearnedSpellsArea:AddCollapsingHeader("Learned Spells")
+    local header = self.LearnedSpellsArea:AddCollapsingHeader(LCL.Get("UCT_LearnedSpellsHeader", "Learned Spells"))
 
-    local t = header:AddTable("", tableWidth)
+    local t = header:AddTable("LearnedSpellsGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 

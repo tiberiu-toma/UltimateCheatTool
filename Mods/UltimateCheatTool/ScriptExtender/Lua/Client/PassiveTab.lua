@@ -13,9 +13,11 @@ function PassiveTab:New(holder)
 
     local config = {
         tabName = "Passives",
+        tabNameHandle = "UCT_PassiveTab_Label",
         idPrefix = "Passive",
         fetchMessage = SMS.FetchPassives,
         searchLabel = "Search Passives:",
+        searchLabelHandle = "UCT_SearchPassives_Label",
         noItemsText = "No passives found.",
         maxTableWidth = 5
     }
@@ -38,7 +40,7 @@ function PassiveTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    local t = self.MainArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("PassiveGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -133,14 +135,14 @@ end
 ---@param passives table
 ---@param maxTableWidth number
 ---@param onRemove function
-function PassiveTab:_DrawPassiveGrid(parent, passives, maxTableWidth, onRemove)
+function PassiveTab:_DrawPassiveGrid(parent, passives, maxTableWidth, onRemove, gridId)
     local total = HLP.Count(passives)
     if total == 0 then
         return
     end
 
     local tableWidth = math.min(total, maxTableWidth)
-    local t = parent:AddTable("", tableWidth)
+    local t = parent:AddTable(gridId, tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -200,7 +202,7 @@ function PassiveTab:GetAddedPassives()
 
     UI.DestroyChildren(self.AddedPassivesArea)
 
-    local header = self.AddedPassivesArea:AddCollapsingHeader("Added Passives")
+    local header = self.AddedPassivesArea:AddCollapsingHeader(LCL.Get("UCT_AddedPassivesHeader", "Added Passives"))
 
     local layoutTable = header:AddTable("AddedPassivesLayout", 2)
     layoutTable.SizingFixedSame = true
@@ -211,26 +213,26 @@ function PassiveTab:GetAddedPassives()
     local itemPassivesCell = row:AddCell()
 
     -- Column 1: Character Passives
-    charPassivesCell:AddSeparatorText("On Character")
+    charPassivesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
     local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
     if not charUUID then
-        charPassivesCell:AddText("Select a character.")
+        charPassivesCell:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
     else
         local addedForChar = self.AddedPassives[charUUID] or {}
         if HLP.Count(addedForChar) == 0 then
-            charPassivesCell:AddText("No custom passives.")
+            charPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
         else
             self:_DrawPassiveGrid(charPassivesCell, addedForChar, 3, function(uuid, data)
                 SMS.AddPassive:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid = uuid, remove = 1 })
-            end)
+            end, "CharAddedPassivesGrid")
         end
     end
 
     -- Column 2: Item Passives
-    itemPassivesCell:AddSeparatorText("On Selected Item")
+    itemPassivesCell:AddSeparatorText(LCL.Get("UCT_OnSelectedItem", "On Selected Item"))
     local equipmentData = UI.EquipmentSelector.SelectedEquipment
     if not equipmentData then
-        itemPassivesCell:AddText("No item selected.")
+        itemPassivesCell:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
     else
         local itemTemplateUUID = equipmentData.id
         local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -238,11 +240,11 @@ function PassiveTab:GetAddedPassives()
         local itemPassives = itemMods and itemMods.passives
 
         if not itemPassives or HLP.Count(itemPassives) == 0 then
-            itemPassivesCell:AddText("No custom passives.")
+            itemPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
         else
             self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 3, function(uuid, data)
                 SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
-            end)
+            end, "ItemAddedPassivesGrid")
         end
     end
 end

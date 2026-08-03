@@ -11,9 +11,11 @@ function ConsumableTab:New(holder)
 
     local config = {
         tabName = "Consumables",
+        tabNameHandle = "UCT_ConsumableTab_Label",
         idPrefix = "Consumable",
         fetchMessage = SMS.FetchConsumables,
         searchLabel = "Search Consumables:",
+        searchLabelHandle = "UCT_SearchConsumables_Label",
         noItemsText = "No consumables found.",
         maxTableWidth = 5,
         amountOptions = {1, 2, 5, 10, 99}
@@ -28,7 +30,7 @@ function ConsumableTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
     
-    local t = self.MainArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("ConsumableGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 

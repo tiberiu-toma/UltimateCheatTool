@@ -62,13 +62,13 @@ function CharacterSelector:Draw()
     layoutTable.NoHostExtendX = true
 
     local row1 = layoutTable:AddRow()
-    row1:AddCell():AddText("Select Character to Apply Cheats To:")
+    row1:AddCell():AddText(LCL.Get("UCT_CharacterSelector_Label", "Select Character to Apply Cheats To:"))
     local imageCell = row1:AddCell()
     local comboImageButton = imageCell:AddImageButton("char_select_img", selectedIcon, {100 * ViewPortScale, 100 * ViewPortScale})
 
     local row2 = layoutTable:AddRow()
     local refreshCell = row2:AddCell()
-    local refreshButton = refreshCell:AddButton("Refresh Party")
+    local refreshButton = refreshCell:AddButton(LCL.Get("UCT_CharacterSelector_RefreshParty", "Refresh Party"))
     refreshButton.OnClick = function()
         SMS.FetchPartyMembers:SendToServer({ ID = USERID })
         self:SetSelectedCharacter(_C().Uuid.EntityUuid)

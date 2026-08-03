@@ -11,9 +11,11 @@ function EquipmentTab:New(holder)
 
     local config = {
         tabName = "Equipment",
+        tabNameHandle = "UCT_EquipmentTab_Label",
         idPrefix = "Equipment",
         fetchMessage = SMS.FetchEquipment,
         searchLabel = "Search Equipment:",
+        searchLabelHandle = "UCT_SearchEquipment_Label",
         noItemsText = "No equipment found.",
         maxTableWidth = 5,
         amountOptions = {1, 2, 5, 10, 99}
@@ -25,7 +27,7 @@ function EquipmentTab:New(holder)
 end
 
 function EquipmentTab:AddExtraSearchButtons(searchArea)
-    local spawnAllBtn = searchArea:AddButton(LCL.Get("", "Spawn All (Non-Story)"))
+    local spawnAllBtn = searchArea:AddButton(LCL.Get("UCT_EquipmentTab_SpawnAll", "Spawn All (Non-Story)"))
     spawnAllBtn.OnClick = function()
         local charUUID = UI.CharSelector.SelectedCharacter
         SMS.SpawnAllEquipment:SendToServer({ ID = charUUID })
@@ -36,7 +38,7 @@ function EquipmentTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    local t = self.MainArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("EquipmentGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -79,7 +81,7 @@ function EquipmentTab:DrawGrid()
             end
         end
 
-        local setAsSelectedBtn = popup:AddButton("Set as Selected Equipment##SetSelected" .. uuid)
+        local setAsSelectedBtn = popup:AddButton(LCL.Get("UCT_EquipmentTab_SetAsSelected", "Set as Selected Equipment") .. "##SetSelected" .. uuid)
         setAsSelectedBtn.OnClick = function()
             if UI and UI.EquipmentSelector then
                 UI.EquipmentSelector:SetSelectedEquipment(data)

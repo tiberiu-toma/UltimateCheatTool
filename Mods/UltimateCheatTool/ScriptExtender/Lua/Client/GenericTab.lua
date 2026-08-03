@@ -51,13 +51,13 @@ function GenericTab:Init()
 
     -- Resources
     local resourcesGroup = self.Tab:AddGroup("Resources")
-    resourcesGroup:AddSeparatorText("Add Resources")
+    resourcesGroup:AddSeparatorText(LCL.Get("UCT_GenericTab_AddResources", "Add Resources"))
     local resourcesTable = resourcesGroup:AddTable("ResourcesTable", 6)
     resourcesTable.NoHostExtendX = true
 
     -- Gold Row
     local goldRow = resourcesTable:AddRow()
-    goldRow:AddCell():AddText("Add Gold:")
+    goldRow:AddCell():AddText(LCL.Get("UCT_GenericTab_AddGold", "Add Gold:"))
     local goldAmounts = {1000, 10000, 50000, 100000}
     for _, amount in ipairs(goldAmounts) do
         local btn = goldRow:AddCell():AddButton("Add " .. amount .. "##Gold" .. tostring(amount))
@@ -69,7 +69,7 @@ function GenericTab:Init()
 
     -- Experience Row
     local expRow = resourcesTable:AddRow()
-    expRow:AddCell():AddText("Add Experience:")
+    expRow:AddCell():AddText(LCL.Get("UCT_GenericTab_AddExperience", "Add Experience:"))
     local expAmounts = {1000, 10000, 50000, 100000}
     for _, amount in ipairs(expAmounts) do
         local btn = expRow:AddCell():AddButton("Add " .. amount .. " XP##XP" .. tostring(amount))
@@ -80,7 +80,7 @@ function GenericTab:Init()
 
     -- Inspiration Row
     local inspirationRow = resourcesTable:AddRow()
-    inspirationRow:AddCell():AddText("Add Inspiration:")
+    inspirationRow:AddCell():AddText(LCL.Get("UCT_GenericTab_AddInspiration", "Add Inspiration:"))
     local inspirationAmounts = {1, 2, 3, 4}
     for _, amount in ipairs(inspirationAmounts) do
         local btn = inspirationRow:AddCell():AddButton("Add " .. amount .. "##Inspiration" .. tostring(amount))
@@ -92,7 +92,7 @@ function GenericTab:Init()
 
     -- Tadpoles Row
     local tadpoleRow = resourcesTable:AddRow()
-    tadpoleRow:AddCell():AddText("Add Tadpoles:")
+    tadpoleRow:AddCell():AddText(LCL.Get("UCT_GenericTab_AddTadpoles", "Add Tadpoles:"))
     local tadpoleAmounts = {1, 5, 10, 25}
     for _, amount in ipairs(tadpoleAmounts) do
         local btn = tadpoleRow:AddCell():AddButton("Add " .. amount .. "##Tadpole" .. tostring(amount))

@@ -16,8 +16,9 @@ BaseTab = {}
 BaseTab.__index = BaseTab
 
 function BaseTab:New(holder, config)
+    local tabLabel = LCL.Get(config.tabNameHandle, config.tabName)
     local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("", config.tabName)),
+        Tab = holder:AddTabItem(tabLabel),
         Items = {},
         SearchText = "",
         CurrentPage = 1,
@@ -77,7 +78,7 @@ end
 function BaseTab:AddSearch()
     UI.DestroyChildren(self.SearchArea)
 
-    self.SearchArea:AddSeparatorText(LCL.Get("", self.Config.searchLabel or "Search:"))
+    self.SearchArea:AddSeparatorText(LCL.Get(self.Config.searchLabelHandle, self.Config.searchLabel or "Search:"))
 
     local searchInput = self.SearchArea:AddInputText("##Search" .. self.Config.idPrefix, "")
     local searchBtn = self.SearchArea:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb76", "Search") .. "##" .. self.Config.idPrefix)

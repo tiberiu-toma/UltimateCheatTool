@@ -13,9 +13,11 @@ function StatusTab:New(holder)
 
     local config = {
         tabName = "Statuses",
+        tabNameHandle = "UCT_StatusTab_Label",
         idPrefix = "Status",
         fetchMessage = SMS.FetchStatuses,
         searchLabel = "Search Statuses:",
+        searchLabelHandle = "UCT_SearchStatuses_Label",
         noItemsText = "No statuses found.",
         maxTableWidth = 5
     }
@@ -38,7 +40,7 @@ function StatusTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    local t = self.MainArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("StatusGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -123,14 +125,14 @@ end
 ---@param statuses table
 ---@param maxTableWidth number
 ---@param onRemove function
-function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove)
+function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove, gridId)
     local total = HLP.Count(statuses)
     if total == 0 then
         return
     end
 
     local tableWidth = math.min(total, maxTableWidth)
-    local t = parent:AddTable("", tableWidth)
+    local t = parent:AddTable(gridId, tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -190,7 +192,7 @@ function StatusTab:GetAppliedStatuses()
 
     UI.DestroyChildren(self.AppliedStatusesArea)
 
-    local header = self.AppliedStatusesArea:AddCollapsingHeader("Applied Statuses")
+    local header = self.AppliedStatusesArea:AddCollapsingHeader(LCL.Get("UCT_AppliedStatusesHeader", "Applied Statuses"))
 
     local layoutTable = header:AddTable("AppliedStatusesLayout", 2)
     layoutTable.SizingFixedSame = true
@@ -201,26 +203,26 @@ function StatusTab:GetAppliedStatuses()
     local itemStatusesCell = row:AddCell()
 
     -- Column 1: Character Statuses
-    charStatusesCell:AddSeparatorText("On Character")
+    charStatusesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
     local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
     if not charUUID then
-        charStatusesCell:AddText("Select a character.")
+        charStatusesCell:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
     else
         local appliedForChar = self.AppliedStatuses[charUUID] or {}
         if HLP.Count(appliedForChar) == 0 then
-            charStatusesCell:AddText("No custom statuses.")
+            charStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
         else
             self:_DrawStatusGrid(charStatusesCell, appliedForChar, 3, function(uuid, data)
                 SMS.ApplyStatus:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid = uuid, remove = 1 })
-            end)
+            end, "CharAppliedStatusesGrid")
         end
     end
 
     -- Column 2: Item Statuses
-    itemStatusesCell:AddSeparatorText("On Selected Item")
+    itemStatusesCell:AddSeparatorText(LCL.Get("UCT_OnSelectedItem", "On Selected Item"))
     local equipmentData = UI.EquipmentSelector.SelectedEquipment
     if not equipmentData then
-        itemStatusesCell:AddText("No item selected.")
+        itemStatusesCell:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
     else
         local itemTemplateUUID = equipmentData.id
         local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -228,11 +230,11 @@ function StatusTab:GetAppliedStatuses()
         local itemStatuses = itemMods and itemMods.statuses
 
         if not itemStatuses or HLP.Count(itemStatuses) == 0 then
-            itemStatusesCell:AddText("No custom statuses.")
+            itemStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
         else
             self:_DrawStatusGrid(itemStatusesCell, itemStatuses, 3, function(uuid, data)
                 SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
-            end)
+            end, "ItemAppliedStatusesGrid")
         end
     end
 end

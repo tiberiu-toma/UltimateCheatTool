@@ -13,9 +13,11 @@ function TagTab:New(holder)
 
     local config = {
         tabName = "Tags",
+        tabNameHandle = "UCT_TagTab_Label",
         idPrefix = "Tag",
         fetchMessage = SMS.FetchTags,
         searchLabel = "Search Tags:",
+        searchLabelHandle = "UCT_SearchTags_Label",
         noItemsText = "No tags found.",
         maxTableWidth = 3
     }
@@ -38,7 +40,7 @@ function TagTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
 
-    local t = self.MainArea:AddTable("", tableWidth)
+    local t = self.MainArea:AddTable("TagGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -62,7 +64,6 @@ function TagTab:DrawGrid()
 
         local cell = row:AddCell()
         local tagButton = cell:AddButton(shortName .. "##Tag" .. uuid)
-        cell:AddText(name)
         local popup = cell:AddPopup("AddTag" .. uuid)
 
         tagButton.OnClick = function()
@@ -100,25 +101,23 @@ function TagTab:GetAppliedTags()
 
     local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
     if not charUUID then
-        self.AppliedTagsArea:AddText("Select a character to see their tags.")
+        self.AppliedTagsArea:AddText(LCL.Get("UCT_TagTab_SelectCharacter", "Select a character to see their tags."))
         return
     end
 
     local appliedForChar = self.AppliedTags[charUUID] or {}
     local totalApplied = HLP.Count(appliedForChar)
     if totalApplied == 0 then
-        self.AppliedTagsArea:AddText("You don't have any custom tags applied.")
+        self.AppliedTagsArea:AddText(LCL.Get("UCT_NoCustomTags", "You don't have any custom tags applied."))
         return
     end
 
-    local maxTableWidth = 5
+    local maxTableWidth = self.Config.maxTableWidth or 3
     local tableWidth = math.min(totalApplied, maxTableWidth)
     
     local header = self.AppliedTagsArea:AddCollapsingHeader("Applied Tags##AppliedTagsHeader")
 
-    local header = self.AppliedTagsArea:AddCollapsingHeader("Applied Tags")
-
-    local t = header:AddTable("", tableWidth)
+    local t = header:AddTable("AppliedTagsGrid", tableWidth)
     t.SizingFixedSame = true
     t.NoHostExtendX = true
 
@@ -149,7 +148,6 @@ function TagTab:GetAppliedTags()
 
         local cell = row:AddCell()
         local tagButton = cell:AddButton(shortName .. "##AppliedTag" .. uuid)
-        local txt = cell:AddText(name)
         local popup = cell:AddPopup("ManageTag" .. uuid)
 
         tagButton.OnClick = function()

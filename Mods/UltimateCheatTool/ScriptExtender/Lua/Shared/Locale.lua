@@ -22,12 +22,6 @@ LocaleText = {
 	hb1787db13e1747e681ca4bad56e73bb77 = "Refresh",
 	hb1787db13e1747e681ca4bad56e73bb78 = "Recruit",
 	hb1787db13e1747e681ca4bad56e73bb79 = "Teleport",
-
-	UCT_GenericTab_CharacterActions = "Character Actions",
-	UCT_GenericTab_RestoreParty = "Restore Party",
-	UCT_GenericTab_ResetCooldowns = "Reset Cooldowns",
-	UCT_GenericTab_StartRespec = "Respec Character",
-	UCT_GenericTab_ChangeAppearance = "Change Appearance",
 	
 	UCT_PassiveTab_AddToSelectedItem = "Add to Selected Equipment",
 	UCT_PassiveTab_RemoveFromSelectedItem = "Remove from Selected Equipment",
@@ -37,6 +31,74 @@ LocaleText = {
 	UCT_PassiveTab_Add = "Add",
 	UCT_PassiveTab_Remove = "Remove",
 
+	-- Tab Names
+	UCT_EquipmentTab_Label = "Equipment",
+	UCT_ConsumableTab_Label = "Consumables",
+	UCT_SpellTab_Label = "Spells",
+	UCT_PassiveTab_Label = "Passives",
+	UCT_StatusTab_Label = "Statuses",
+	UCT_CompanionTab_Label = "Companions",
+	UCT_NPCTab_Label = "NPCs",
+	UCT_TagTab_Label = "Tags",
+	UCT_WaypointTab_Label = "Waypoints",
+
+	-- Search Labels
+	UCT_SearchEquipment_Label = "Search Equipment:",
+	UCT_SearchConsumables_Label = "Search Consumables:",
+	UCT_SearchSpells_Label = "Search Spells:",
+	UCT_SearchPassives_Label = "Search Passives:",
+	UCT_SearchStatuses_Label = "Search Statuses:",
+	UCT_SearchNPCs_Label = "Search NPCs:",
+	UCT_SearchTags_Label = "Search Tags:",
+	UCT_SearchWaypoints_Label = "Search Waypoints:",
+
+	-- Generic Tab
+	UCT_GenericTab_CharacterActions = "Character Actions",
+	UCT_GenericTab_RestoreParty = "Restore Party",
+	UCT_GenericTab_ResetCooldowns = "Reset Cooldowns",
+	UCT_GenericTab_StartRespec = "Respec Character",
+	UCT_GenericTab_ChangeAppearance = "Change Appearance",
+	UCT_GenericTab_AddResources = "Add Resources",
+	UCT_GenericTab_AddGold = "Add Gold:",
+	UCT_GenericTab_AddExperience = "Add Experience:",
+	UCT_GenericTab_AddInspiration = "Add Inspiration:",
+	UCT_GenericTab_AddTadpoles = "Add Tadpoles:",
+
+	-- Character & Equipment Selectors
+	UCT_CharacterSelector_Label = "Select Character to Apply Cheats To:",
+	UCT_CharacterSelector_RefreshParty = "Refresh Party",
 	UCT_EquipmentSelector_Label = "Select Equipment to Modify:",
 	UCT_EquipmentSelector_Refresh = "Refresh Inventory",
+	UCT_EquipmentSelector_QuickPick = "Quick Pick Item",
+	UCT_EquipmentSelector_ModifiedEquipment = "Modified Equipment",
+	UCT_EquipmentSelector_NoItemsEquipped = "No items equipped.",
+	UCT_EquipmentSelector_NoItemsModified = "No equipment has been modified yet.",
+
+	-- Equipment Tab
+	UCT_EquipmentTab_SpawnAll = "Spawn All (Non-Story)",
+	UCT_EquipmentTab_SetAsSelected = "Set as Selected Equipment",
+
+	-- Recruit Tab
+	UCT_RecruitTab_Description = "Change approval or recruit any companion and teleport them to your location. Works regardless of story progression",
+	UCT_RecruitTab_MaxApproval = "Max Approval",
+	UCT_RecruitTab_MinApproval = "Minimum Approval",
+	UCT_RecruitTab_Plus10Approval = "+10 Approval",
+	UCT_RecruitTab_Minus10Approval = "-10 Approval",
+
+	-- Shared Text
+	UCT_OnCharacter = "On Character",
+	UCT_OnSelectedItem = "On Selected Item",
+	UCT_SelectCharacter = "Select a character.",
+	UCT_NoItemSelected = "No item selected.",
+	UCT_NoCustomPassives = "No custom passives.",
+	UCT_NoCustomStatuses = "No custom statuses.",
+	UCT_NoCustomTags = "You don't have any custom tags applied.",
+	UCT_AddedPassivesHeader = "Added Passives",
+	UCT_AppliedStatusesHeader = "Applied Statuses",
+	UCT_LearnedSpellsHeader = "Learned Spells",
+	UCT_SpellTab_SelectCharacter = "Select a character to see their spells.",
+	UCT_SpellTab_NoLearnedSpells = "You haven't learned any spells.",
+	UCT_TagTab_SelectCharacter = "Select a character to see their tags.",
+	UCT_NPCTab_NoSpawnedNPCs = "You haven't spawned any NPCs.",
+	UCT_NPCTab_SpawnedNPCsHeader = "Spawned NPCs",
 }
