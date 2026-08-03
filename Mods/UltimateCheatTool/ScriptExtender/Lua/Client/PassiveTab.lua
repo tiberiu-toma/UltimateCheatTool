@@ -78,6 +78,11 @@ function PassiveTab:DrawGrid()
         local addPassiveBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_Add", "Add"))
         local removePassiveBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_Remove", "Remove"))
         removePassiveBtn.SameLine = true
+
+        local addForPartyBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_AddForParty", "Add for Party"))
+        local removeForPartyBtn = popup:AddButton(LCL.Get("UCT_PassiveTab_RemoveForParty", "Remove for Party"))
+        removeForPartyBtn.SameLine = true
+
         local addToSelectedItem = popup:AddButton(LCL.Get("UCT_PassiveTab_AddToSelectedItem", "Add to Selected Item"))
         local removeFromSelectedItem = popup:AddButton(LCL.Get("UCT_PassiveTab_RemoveFromSelectedItem", "Remove from Selected"))
         removeFromSelectedItem.SameLine = true
@@ -123,6 +128,14 @@ function PassiveTab:DrawGrid()
 
         addPassiveBtn.OnClick = function()
             SMS.AddPassive:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
+        end
+
+        addForPartyBtn.OnClick = function()
+            SMS.AddPassiveForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
+        end
+
+        removeForPartyBtn.OnClick = function()
+            SMS.RemovePassiveForParty:SendToServer({ ID = USERID, uuid = uuid })
         end
 
         i = i + 1

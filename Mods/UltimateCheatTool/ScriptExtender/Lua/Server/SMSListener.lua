@@ -171,6 +171,46 @@ SMS.LearnSpell:SetHandler(function(payload)
     end
 end)
 
+SMS.LearnSpellForParty:SetHandler(function(payload)
+    local uuid = payload.uuid
+    local data = payload.data
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local spells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        SPLL.Learn(charUUID, uuid)
+        if not spells[charUUID] then spells[charUUID] = {} end
+        spells[charUUID][uuid] = data
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
+end)
+
+SMS.UnlearnSpellForParty:SetHandler(function(payload)
+    local uuid = payload.uuid
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local spells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        SPLL.Learn(charUUID, uuid, true) -- Unlearn the spell
+        if spells[charUUID] then
+            spells[charUUID][uuid] = nil
+        end
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
+end)
+
 SMS.AddPassive:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
@@ -198,6 +238,46 @@ SMS.AddPassive:SetHandler(function(payload)
         Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
         HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
     end
+end)
+
+SMS.AddPassiveForParty:SetHandler(function(payload)
+    local uuid = payload.uuid
+    local data = payload.data
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local passives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        PASSV.Add(charUUID, uuid)
+        if not passives[charUUID] then passives[charUUID] = {} end
+        passives[charUUID][uuid] = data
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
+end)
+
+SMS.RemovePassiveForParty:SetHandler(function(payload)
+    local uuid = payload.uuid
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local passives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        PASSV.Add(charUUID, uuid, true) -- Remove the passive
+        if passives[charUUID] then
+            passives[charUUID][uuid] = nil
+        end
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
 end)
 
 SMS.AddPassiveOnItem:SetHandler(function(payload)
@@ -271,6 +351,46 @@ SMS.ManageTag:SetHandler(function(payload)
     end
 end)
 
+SMS.AddTagForParty:SetHandler(function(payload)
+    local tagId = payload.uuid
+    local data = payload.data
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        TAGS.Set(charUUID, tagId)
+        if not tags[charUUID] then tags[charUUID] = {} end
+        tags[charUUID][tagId] = data
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Tag" }, payload.ID)
+end)
+
+SMS.RemoveTagForParty:SetHandler(function(payload)
+    local tagId = payload.uuid
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        TAGS.Clear(charUUID, tagId)
+        if tags[charUUID] then
+            tags[charUUID][tagId] = nil
+        end
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Tag" }, payload.ID)
+end)
+
 SMS.ApplyStatus:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
@@ -296,6 +416,46 @@ SMS.ApplyStatus:SetHandler(function(payload)
         Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
         HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
     end
+end)
+
+SMS.ApplyStatusForParty:SetHandler(function(payload)
+    local uuid = payload.uuid
+    local data = payload.data
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        STAT.Apply(charUUID, uuid)
+        if not statuses[charUUID] then statuses[charUUID] = {} end
+        statuses[charUUID][uuid] = data
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
+end)
+
+SMS.RemoveStatusForParty:SetHandler(function(payload)
+    local uuid = payload.uuid
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        STAT.Apply(charUUID, uuid, true) -- Remove the status
+        if statuses[charUUID] then
+            statuses[charUUID][uuid] = nil
+        end
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
 end)
 
 SMS.ApplyStatusToItem:SetHandler(function(payload)

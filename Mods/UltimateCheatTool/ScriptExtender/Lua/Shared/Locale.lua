@@ -101,4 +101,12 @@ LocaleText = {
 	UCT_TagTab_SelectCharacter = "Select a character to see their tags.",
 	UCT_NPCTab_NoSpawnedNPCs = "You haven't spawned any NPCs.",
 	UCT_NPCTab_SpawnedNPCsHeader = "Spawned NPCs",
+	UCT_SpellTab_LearnForParty = "Learn for Party",
+	UCT_SpellTab_UnlearnForParty = "Unlearn for Party",
+	UCT_PassiveTab_AddForParty = "Add for Party",
+	UCT_PassiveTab_RemoveForParty = "Remove for Party",
+	UCT_StatusTab_ApplyForParty = "Apply for Party",
+	UCT_StatusTab_RemoveForParty = "Remove for Party",
+	UCT_TagTab_AddForParty = "Add for Party",
+	UCT_TagTab_RemoveForParty = "Remove for Party",
 }

@@ -74,6 +74,10 @@ function TagTab:DrawGrid()
         local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
         removeButton.SameLine = true
 
+        local addForPartyBtn = popup:AddButton(LCL.Get("UCT_TagTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
+        local removeForPartyBtn = popup:AddButton(LCL.Get("UCT_TagTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
+        removeForPartyBtn.SameLine = true
+
         local tagInfoFields = {
             { key = "id", label = "ID" },
             { key = "displayName", label = "Name" },
@@ -87,6 +91,14 @@ function TagTab:DrawGrid()
 
         addButton.OnClick = function()
             SMS.ManageTag:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, data=data })
+        end
+
+        addForPartyBtn.OnClick = function()
+            SMS.AddTagForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
+        end
+
+        removeForPartyBtn.OnClick = function()
+            SMS.RemoveTagForParty:SendToServer({ ID = USERID, uuid = uuid })
         end
 
         i = i + 1

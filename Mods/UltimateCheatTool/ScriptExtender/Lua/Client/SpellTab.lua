@@ -79,6 +79,9 @@ function SpellTab:DrawGrid()
         local selectSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432081", "Learn") .. "##" .. uuid)
         local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##" .. uuid)
         removeSpell.SameLine = true
+        local learnForParty = popup:AddButton(LCL.Get("UCT_SpellTab_LearnForParty", "Learn for Party") .. "##LearnParty" .. uuid)
+        local unlearnForParty = popup:AddButton(LCL.Get("UCT_SpellTab_UnlearnForParty", "Unlearn for Party") .. "##UnlearnParty" .. uuid)
+        unlearnForParty.SameLine = true
 
         data.fullName = fullName
         local spellInfoFields = {
@@ -99,6 +102,14 @@ function SpellTab:DrawGrid()
 
         selectSpell.OnClick = function()
             SMS.LearnSpell:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
+        end
+
+        learnForParty.OnClick = function()
+            SMS.LearnSpellForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
+        end
+
+        unlearnForParty.OnClick = function()
+            SMS.UnlearnSpellForParty:SendToServer({ ID = USERID, uuid = uuid })
         end
 
         i = i + 1
