@@ -184,6 +184,50 @@ function UI.DestroyChildren(obj)
         end
     end
 end
+
+function UI.CenterObjectH(parent, objDef)
+    if not objDef or not parent then return end
+
+    local table = parent:AddTable("CenteringTable", 3)
+    table.SizingFixedSame = true
+    table.NoHostExtendX = false
+    local row = table:AddRow()
+    local leftCell = row:AddCell()
+    local centerCell = row:AddCell()
+    local rightCell = row:AddCell()
+    return objDef(centerCell)
+end
+
+function UI.CenterObjectV(parent, objDef)
+    if not objDef or not parent then return end
+
+    local table = parent:AddTable("CenteringTable", 1)
+    table.SizingFixedSame = true
+    table.NoHostExtendX = false
+    local row1 = table:AddRow()
+    local row2 = table:AddRow()
+    local row3 = table:AddRow()
+    local topCell = row1:AddCell()
+    local centerCell = row2:AddCell()
+    local bottomCell = row3:AddCell()
+    return objDef(centerCell)
+end
+
+--function UI.CenterObject(parent, objDef)
+--    if not objDef or not parent then return end
+--
+--    local table = parent:AddTable("CenteringTable", 3)
+--    table.SizingFixedSame = true
+--    table.NoHostExtendX = false
+--    local row1 = table:AddRow()
+--    local row2 = table:AddRow()
+--    local row3 = table:AddRow()
+--    local topCell = row1:AddCell()
+--    row2:AddCell()
+--    local centerCell = row2:AddCell()
+--    local bottomCell = row3:AddCell()
+--    return objDef(centerCell)
+--end
 ---------------------------------------------------------------------------------------------------
 --                                       Load MCM Tab
 ---------------------------------------------------------------------------------------------------
