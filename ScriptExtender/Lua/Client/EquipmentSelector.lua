@@ -18,8 +18,18 @@ function EquipmentSelector:New(parent)
         QuickPickItems = {}
     }, EquipmentSelector)
 
-    instance.SelectorContainer = instance.Container:AddGroup("SelectorContainer")
-    instance.Container:AddSeparator()
+    -- Use a table to create a two-column layout. This is more reliable than SameLine.
+    local mainLayout = instance.Container:AddTable("MainLayout", 2)
+    mainLayout.NoHostExtendX = true
+    mainLayout.SizingFixedSame = true
+    local mainRow = mainLayout:AddRow()
+
+    -- Left cell for the selector
+    instance.SelectorContainer = mainRow:AddCell():AddGroup("SelectorContainer")
+
+    -- Right cell for the party equipment tabs
+    instance.PartyEquipmentTabBar = mainRow:AddCell():AddTabBar("PartyEquipmentTabBar")
+
     return instance
 end
 
@@ -76,11 +86,8 @@ function EquipmentSelector:DrawSelector()
 end
 
 function EquipmentSelector:UpdatePartyEquipment(partyItems)
-    if self.PartyEquipmentTabBar then
-        self.PartyEquipmentTabBar:Destroy()
-    end
-    self.PartyEquipmentTabBar = self.Container:AddTabBar("PartyEquipmentTabBar")
-    self.PartyEquipmentTabBar.SameLine = true
+    -- Destroy existing tabs within the tab bar before re-adding
+    UI_Utils.DestroyChildren(self.PartyEquipmentTabBar)
 
     for _, member in ipairs(ItemTools.PartyMembers) do
         local memberTab = self.PartyEquipmentTabBar:AddTabItem(member.name)
