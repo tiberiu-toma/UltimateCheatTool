@@ -10,8 +10,6 @@ RecruitTab.__index = RecruitTab
 ---@param holder ExtuiTabBar
 
 function RecruitTab:New(holder)
-    if UI.RecruitTab then return end 
-
     local instance = setmetatable({
         Tab = holder:AddTabItem(LCL.Get("UCT_CompanionTab_Label", "Companions")),
     }, RecruitTab)
@@ -19,7 +17,7 @@ function RecruitTab:New(holder)
 end
 
 function RecruitTab:ShowCompanions()
-    UI.DestroyChildren(self.RecruitOptions)
+    UI_Utils.DestroyChildren(self.RecruitOptions)
 
     local t = self.RecruitOptions:AddTable("CompanionGrid", 4)
     t.SizingFixedSame = true

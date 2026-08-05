@@ -9,8 +9,6 @@ setmetatable(NPCTab, { __index = BaseTab })
 NPCTab.__index = NPCTab
 
 function NPCTab:New(holder)
-    if UI.NPCTab then return end 
-
     local config = {
         tabName = "NPCs",
         tabNameHandle = "UCT_NPCTab_Label",
@@ -96,7 +94,7 @@ end
 function NPCTab:GetSpawnedNPCs()
     self.SpawnedNPCs = Ext.Vars.GetModVariables(ModuleUUID).SpawnedNPCs or {}
 
-    UI.DestroyChildren(self.SpawnedNPCsArea)
+    UI_Utils.DestroyChildren(self.SpawnedNPCsArea)
 
     local totalSpawned = HLP.Count(self.SpawnedNPCs)
 

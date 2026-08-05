@@ -8,9 +8,7 @@ StatusTab = {}
 setmetatable(StatusTab, { __index = BaseTab })
 StatusTab.__index = StatusTab
 
-function StatusTab:New(holder)
-    if UI.StatusTab then return end
-
+function StatusTab:New(holder, parentUI)
     local config = {
         tabName = "Statuses",
         tabNameHandle = "UCT_StatusTab_Label",
@@ -25,6 +23,7 @@ function StatusTab:New(holder)
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, StatusTab) -- Re-set metatable to the child class
     instance.AppliedStatuses = {}
+    instance.ParentUI = parentUI -- Store the parent UI context
     return instance
 end
 
@@ -80,31 +79,50 @@ function StatusTab:DrawGrid()
         actionsTable.SizingFixedSame = false
         actionsTable.NoHostExtendX = true
 
-        local row1 = actionsTable:AddRow()
-        local applyStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432083", "Apply") .. "##Apply" .. uuid)
-        local removeStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove") .. "##Remove" .. uuid)
+        if self.ParentUI == "CharacterTools" then
+            local row1 = actionsTable:AddRow()
+            local applyStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432083", "Apply") .. "##Apply" .. uuid)
+            local removeStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove") .. "##Remove" .. uuid)
 
-        local row2 = actionsTable:AddRow()
-        local applyForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyForParty", "Apply for Party") .. "##ApplyParty" .. uuid)
-        local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
+            local row2 = actionsTable:AddRow()
+            local applyForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyForParty", "Apply for Party") .. "##ApplyParty" .. uuid)
+            local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
 
-        local row3 = actionsTable:AddRow()
-        local applyToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyToSelectedItem", "Apply to Selected Item") .. "##ApplyItem" .. uuid)
-        local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
-        
-        local equipmentData = UI.EquipmentSelector.SelectedEquipment
-        if not equipmentData then
-            applyToSelectedItem.Disabled = true
-            removeFromSelectedItem.Disabled = true
-        else
-            applyToSelectedItem.OnClick = function()
-                if equipmentData and equipmentData.id then
-                    SMS.ApplyStatusToItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
-                end
+            removeStatus.OnClick = function()
+                SMS.ApplyStatus:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
             end
-            removeFromSelectedItem.OnClick = function()
-                if equipmentData and equipmentData.id then
-                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
+    
+            applyStatus.OnClick = function()
+                SMS.ApplyStatus:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
+            end
+    
+            applyForPartyBtn.OnClick = function()
+                SMS.ApplyStatusForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
+            end
+    
+            removeForPartyBtn.OnClick = function()
+                SMS.RemoveStatusForParty:SendToServer({ ID = USERID, uuid = uuid })
+            end
+
+        elseif self.ParentUI == "ItemTools" then
+            local row3 = actionsTable:AddRow()
+            local applyToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyToSelectedItem", "Apply to Selected Item") .. "##ApplyItem" .. uuid)
+            local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
+
+            local equipmentData = ItemTools and ItemTools.EquipmentSelector and ItemTools.EquipmentSelector.SelectedEquipment
+            if not equipmentData then
+                applyToSelectedItem.Disabled = true
+                removeFromSelectedItem.Disabled = true
+            else
+                applyToSelectedItem.OnClick = function()
+                    if equipmentData and equipmentData.id then
+                        SMS.ApplyStatusToItem:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
+                    end
+                end
+                removeFromSelectedItem.OnClick = function()
+                    if equipmentData and equipmentData.id then
+                        SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
+                    end
                 end
             end
         end
@@ -115,22 +133,6 @@ function StatusTab:DrawGrid()
             { key = "fullName", label = "Name" },
         }
         InfoPopup:AddInfo(popup, data, statusInfoFields)
-
-        removeStatus.OnClick = function()
-            SMS.ApplyStatus:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
-        end
-
-        applyStatus.OnClick = function()
-            SMS.ApplyStatus:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
-        end
-
-        applyForPartyBtn.OnClick = function()
-            SMS.ApplyStatusForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
-        end
-
-        removeForPartyBtn.OnClick = function()
-            SMS.RemoveStatusForParty:SendToServer({ ID = USERID, uuid = uuid })
-        end
 
         i = i + 1
 
@@ -207,7 +209,7 @@ end
 function StatusTab:GetAppliedStatuses()
     self.AppliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
 
-    UI.DestroyChildren(self.AppliedStatusesArea)
+    UI_Utils.DestroyChildren(self.AppliedStatusesArea)
 
     local header = self.AppliedStatusesArea:AddCollapsingHeader(LCL.Get("UCT_AppliedStatusesHeader", "Applied Statuses"))
 
@@ -217,41 +219,43 @@ function StatusTab:GetAppliedStatuses()
 
     local row = layoutTable:AddRow()
     local charStatusesCell = row:AddCell()
-    local itemStatusesCell = row:AddCell()
 
-    -- Column 1: Character Statuses
-    charStatusesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
-    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
-    if not charUUID then
-        charStatusesCell:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
-    else
-        local appliedForChar = self.AppliedStatuses[charUUID] or {}
-        if HLP.Count(appliedForChar) == 0 then
-            charStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
+    if self.ParentUI == "CharacterTools" then
+        -- Column 1: Character Statuses
+        charStatusesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
+        local charUUID = CharacterTools and CharacterTools.CharSelector and CharacterTools.CharSelector.SelectedCharacter
+        if not charUUID then
+            charStatusesCell:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
         else
-            self:_DrawStatusGrid(charStatusesCell, appliedForChar, 3, function(uuid, data)
-                SMS.ApplyStatus:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid = uuid, remove = 1 })
-            end, "CharAppliedStatusesGrid")
+            local appliedForChar = self.AppliedStatuses[charUUID] or {}
+            if HLP.Count(appliedForChar) == 0 then
+                charStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
+            else
+                self:_DrawStatusGrid(charStatusesCell, appliedForChar, 3, function(uuid, data)
+                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid = uuid, remove = 1 })
+                end, "CharAppliedStatusesGrid")
+            end
         end
-    end
-
-    -- Column 2: Item Statuses
-    itemStatusesCell:AddSeparatorText(LCL.Get("UCT_OnSelectedItem", "On Selected Item"))
-    local equipmentData = UI.EquipmentSelector.SelectedEquipment
-    if not equipmentData then
-        itemStatusesCell:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
-    else
-        local itemTemplateUUID = equipmentData.id
-        local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-        local itemMods = modifiedEquipment[itemTemplateUUID]
-        local itemStatuses = itemMods and itemMods.statuses
-
-        if not itemStatuses or HLP.Count(itemStatuses) == 0 then
-            itemStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
+    elseif self.ParentUI == "ItemTools" then
+        local itemStatusesCell = row:AddCell()
+        -- Column 2: Item Statuses
+        itemStatusesCell:AddSeparatorText(LCL.Get("UCT_OnSelectedItem", "On Selected Item"))
+        local equipmentData = ItemTools and ItemTools.EquipmentSelector and ItemTools.EquipmentSelector.SelectedEquipment
+        if not equipmentData then
+            itemStatusesCell:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
         else
-            self:_DrawStatusGrid(itemStatusesCell, itemStatuses, 3, function(uuid, data)
-                SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
-            end, "ItemAppliedStatusesGrid")
+            local itemTemplateUUID = equipmentData.id
+            local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+            local itemMods = modifiedEquipment[itemTemplateUUID]
+            local itemStatuses = itemMods and itemMods.statuses
+
+            if not itemStatuses or HLP.Count(itemStatuses) == 0 then
+                itemStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
+            else
+                self:_DrawStatusGrid(itemStatusesCell, itemStatuses, 3, function(uuid, data)
+                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
+                end, "ItemAppliedStatusesGrid")
+            end
         end
     end
 end

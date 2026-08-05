@@ -7,8 +7,6 @@ setmetatable(ConsumableTab, { __index = BaseTab })
 ConsumableTab.__index = ConsumableTab
 
 function ConsumableTab:New(holder)
-    if UI.ConsumableTab then return end 
-
     local config = {
         tabName = "Consumables",
         tabNameHandle = "UCT_ConsumableTab_Label",
@@ -70,7 +68,7 @@ function ConsumableTab:DrawGrid()
             local selectConsumable = spawnRow:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
 
             selectConsumable.OnClick = function()
-                local charUUID = UI.CharSelector.SelectedCharacter
+                local charUUID = CharacterTools.CharSelector.SelectedCharacter
                 SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
             end
         end

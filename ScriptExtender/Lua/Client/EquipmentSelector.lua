@@ -40,7 +40,7 @@ function EquipmentSelector:SetSelectedEquipment(equipmentData)
 end
 
 function EquipmentSelector:FetchEquippedItems()
-    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
+    local charUUID = CharacterTools and CharacterTools.CharSelector and CharacterTools.CharSelector.SelectedCharacter
     if charUUID then
         SMS.FetchEquippedItems:SendToServer({ ID = USERID, character = charUUID })
     end
@@ -52,7 +52,7 @@ function EquipmentSelector:SetQuickPickItems(items)
 end
 
 function EquipmentSelector:DrawSelector()
-    UI.DestroyChildren(self.SelectorContainer)
+    UI_Utils.DestroyChildren(self.SelectorContainer)
 
     local selectedName = "None"
     local selectedIcon = "EC_Portrait_Generic"
@@ -96,7 +96,7 @@ function EquipmentSelector:DrawSelector()
 end
 
 function EquipmentSelector:DrawQuickPick()
-    UI.DestroyChildren(self.QuickPickContainer)
+    UI_Utils.DestroyChildren(self.QuickPickContainer)
 
     self.QuickPickContainer:AddSeparatorText(LCL.Get("UCT_EquipmentSelector_QuickPick", "Quick Pick Item"))
 
@@ -130,7 +130,7 @@ function EquipmentSelector:DrawQuickPick()
 end
 
 function EquipmentSelector:ShowModifiedItemsPopup(items)
-    UI.DestroyChildren(self.ModifiedItemsPopup)
+    UI_Utils.DestroyChildren(self.ModifiedItemsPopup)
 
     self.ModifiedItemsPopup:AddSeparatorText(LCL.Get("UCT_EquipmentSelector_ModifiedEquipment", "Modified Equipment"))
 

@@ -7,8 +7,6 @@ setmetatable(EquipmentTab, { __index = BaseTab })
 EquipmentTab.__index = EquipmentTab
 
 function EquipmentTab:New(holder)
-    if UI.EquipmentTab then return end 
-
     local config = {
         tabName = "Equipment",
         tabNameHandle = "UCT_EquipmentTab_Label",
@@ -29,7 +27,7 @@ end
 function EquipmentTab:AddExtraSearchButtons(searchArea)
     local spawnAllBtn = searchArea:AddButton(LCL.Get("UCT_EquipmentTab_SpawnAll", "Spawn All (Non-Story)"))
     spawnAllBtn.OnClick = function()
-        local charUUID = UI.CharSelector.SelectedCharacter
+        local charUUID = CharacterTools.CharSelector.SelectedCharacter
         SMS.SpawnAllEquipment:SendToServer({ ID = charUUID })
     end
 end
@@ -80,15 +78,15 @@ function EquipmentTab:DrawGrid()
             local selectEquipment = spawnRow:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
 
             selectEquipment.OnClick = function()
-                local charUUID = UI.CharSelector.SelectedCharacter
+                local charUUID = CharacterTools.CharSelector.SelectedCharacter
                 SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
             end
         end
 
         local setAsSelectedBtn = popup:AddButton(LCL.Get("UCT_EquipmentTab_SetAsSelected", "Set as Selected Equipment") .. "##SetSelected" .. uuid)
         setAsSelectedBtn.OnClick = function()
-            if UI and UI.EquipmentSelector then
-                UI.EquipmentSelector:SetSelectedEquipment(data)
+            if ItemTools and ItemTools.EquipmentSelector then
+                ItemTools.EquipmentSelector:SetSelectedEquipment(data)
             end
         end
 

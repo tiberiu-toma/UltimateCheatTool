@@ -45,7 +45,7 @@ function CharacterSelector:SetSelectedCharacter(charUUID)
 end
 
 function CharacterSelector:Draw()
-    UI.DestroyChildren(self.Container)
+    UI_Utils.DestroyChildren(self.Container)
 
     local selectedName = "None"
     local selectedIcon = "EC_Portrait_Generic"

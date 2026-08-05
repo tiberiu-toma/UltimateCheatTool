@@ -7,8 +7,6 @@ setmetatable(WaypointTab, { __index = BaseTab })
 WaypointTab.__index = WaypointTab
 
 function WaypointTab:New(holder)
-    if UI.WaypointTab then return end 
-
     local config = {
         tabName = "Waypoints",
         tabNameHandle = "UCT_WaypointTab_Label",
