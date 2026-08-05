@@ -284,12 +284,9 @@ SMS.AddPassiveOnItem:SetHandler(function(payload)
     local itemTemplateUUID = payload.itemTemplateUUID
     local passiveUUID = payload.passiveUUID
     local data = payload.data
-    local character = payload.character
-
-    if not character then return end
     
     -- Apply the passive to the item for the current session
-    PASSV.AddOnItem(character, itemTemplateUUID, passiveUUID)
+    PASSV.AddOnItem(itemTemplateUUID, passiveUUID)
 
     -- Save the modification for persistence
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -307,12 +304,9 @@ end)
 SMS.RemovePassiveFromItem:SetHandler(function(payload)
     local itemTemplateUUID = payload.itemTemplateUUID
     local passiveUUID = payload.passiveUUID
-    local character = payload.character
-
-    if not character then return end
 
     -- Remove the passive from the item for the current session
-    PASSV.RemoveFromItem(character, itemTemplateUUID, passiveUUID)
+    PASSV.RemoveFromItem(itemTemplateUUID, passiveUUID)
 
     -- Update saved modifications
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -462,12 +456,9 @@ SMS.ApplyStatusToItem:SetHandler(function(payload)
     local itemTemplateUUID = payload.itemTemplateUUID
     local statusUUID = payload.statusUUID
     local data = payload.data
-    local character = payload.character
-
-    if not character then return end
     
     -- Apply the status to the item for the current session
-    STAT.ApplyToItem(character, itemTemplateUUID, statusUUID)
+    STAT.ApplyToItem(itemTemplateUUID, statusUUID)
 
     -- Save the modification for persistence
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -485,12 +476,9 @@ end)
 SMS.RemoveStatusFromItem:SetHandler(function(payload)
     local itemTemplateUUID = payload.itemTemplateUUID
     local statusUUID = payload.statusUUID
-    local character = payload.character
-
-    if not character then return end
 
     -- Remove the status from the item for the current session
-    STAT.RemoveFromItem(character, itemTemplateUUID, statusUUID)
+    STAT.RemoveFromItem(itemTemplateUUID, statusUUID)
 
     -- Update saved modifications
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
@@ -513,6 +501,19 @@ SMS.SpawnTemplate:SetHandler(function(payload)
     --print("Spawning " .. amount .. " " .. uuid)
     for i=1,amount do
         Osi.TemplateAddTo(uuid, character, 1, 0)
+    end
+end)
+
+SMS.SpawnAllOfTemplateForParty:SetHandler(function(payload)
+    local uuid = payload.uuid
+    local amount = payload.amount or 1
+    local partyMembers = HLP.GetAllChars()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    for _, charUUID in ipairs(partyMembers) do
+        for i=1,amount do
+            Osi.TemplateAddTo(uuid, charUUID, 1, 0)
+        end
     end
 end)
 
@@ -700,14 +701,15 @@ SMS.FetchModifiedItemsData:SetHandler(function(payload)
 end)
 
 SMS.FetchEquippedItems:SetHandler(function(payload)
-    local characterUUID = payload.character
-    if not characterUUID then return end
-
-    local itemsData = EKP.GetEquippedItems(characterUUID)
+    local partyMembers = PARTY.GetMembers()
+    local itemsData = EKP.GetAllEquippedItems()
 
     HLP.ToClient(
         SMS.SendEquippedItems,
-        { data = itemsData },
+        { 
+            party = partyMembers,
+            items = itemsData 
+        },
         payload.ID
     )
 end)

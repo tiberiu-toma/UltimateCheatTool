@@ -1,54 +1,34 @@
+local UIState = Ext.Require("Client/UIState.lua")
+
 ---@class EquipmentSelector
 ---@field Container ExtuiGroup
 ---@field SelectorContainer ExtuiGroup
----@field QuickPickContainer ExtuiGroup
----@field SelectedEquipment table | nil
----@field OnChange function | nil
+---@field PartyEquipmentTabBar ExtuiTabBar
 ---@field ModifiedItemsPopup ExtuiPopup
 ---@field QuickPickItems table
 EquipmentSelector = {}
 EquipmentSelector.__index = EquipmentSelector
 
 ---@param parent ExtuiWindow|ExtuiChildWindow
----@param onChange function
 ---@return EquipmentSelector
-function EquipmentSelector:New(parent, onChange)
+function EquipmentSelector:New(parent)
     local instance = setmetatable({
         Container = parent:AddGroup("EquipmentSelector"),
-        SelectedEquipment = nil,
         ModifiedItemsPopup = parent:AddPopup("ModifiedEquipmentPopup"),
-        OnChange = onChange,
         QuickPickItems = {}
     }, EquipmentSelector)
 
     instance.SelectorContainer = instance.Container:AddGroup("SelectorContainer")
-    instance.QuickPickContainer = instance.Container:AddGroup("QuickPickContainer")
-    instance.QuickPickContainer.SameLine = true
-
+    instance.Container:AddSeparator()
     return instance
 end
 
 ---@param equipmentData table
 function EquipmentSelector:SetSelectedEquipment(equipmentData)
-    if self.SelectedEquipment ~= equipmentData then
-        self.SelectedEquipment = equipmentData
-        if self.OnChange then
-            self.OnChange(self.SelectedEquipment)
-        end
+    if UIState.SelectedEquipment ~= equipmentData then
+        UIState:SetSelectedEquipment(equipmentData)
         self:DrawSelector() -- Redraw to update selection visual
     end
-end
-
-function EquipmentSelector:FetchEquippedItems()
-    local charUUID = CharacterTools and CharacterTools.CharSelector and CharacterTools.CharSelector.SelectedCharacter
-    if charUUID then
-        SMS.FetchEquippedItems:SendToServer({ ID = USERID, character = charUUID })
-    end
-end
-
-function EquipmentSelector:SetQuickPickItems(items)
-    self.QuickPickItems = items or {}
-    self:DrawQuickPick()
 end
 
 function EquipmentSelector:DrawSelector()
@@ -57,9 +37,9 @@ function EquipmentSelector:DrawSelector()
     local selectedName = "None"
     local selectedIcon = "EC_Portrait_Generic"
 
-    if self.SelectedEquipment then
-        selectedName = self.SelectedEquipment.displayName or "Unknown"
-        selectedIcon = self.SelectedEquipment.icon or "EC_Portrait_Generic"
+    if UIState.SelectedEquipment then
+        selectedName = UIState.SelectedEquipment.displayName or "Unknown"
+        selectedIcon = UIState.SelectedEquipment.icon or "EC_Portrait_Generic"
     end
 
     local layoutTable = self.SelectorContainer:AddTable("EquipmentSelectorLayout", 2)
@@ -95,37 +75,43 @@ function EquipmentSelector:DrawSelector()
     end
 end
 
-function EquipmentSelector:DrawQuickPick()
-    UI_Utils.DestroyChildren(self.QuickPickContainer)
-
-    self.QuickPickContainer:AddSeparatorText(LCL.Get("UCT_EquipmentSelector_QuickPick", "Quick Pick Item"))
-
-    if #self.QuickPickItems == 0 then
-        self.QuickPickContainer:AddText(LCL.Get("UCT_EquipmentSelector_NoItemsEquipped", "No items equipped."))
-        return
+function EquipmentSelector:UpdatePartyEquipment(partyItems)
+    if self.PartyEquipmentTabBar then
+        self.PartyEquipmentTabBar:Destroy()
     end
+    self.PartyEquipmentTabBar = self.Container:AddTabBar("PartyEquipmentTabBar")
+    self.PartyEquipmentTabBar.SameLine = true
 
-    local maxTableWidth = 4
-    local tableWidth = math.min(#self.QuickPickItems, maxTableWidth)
-    local t = self.QuickPickContainer:AddTable("QuickPickTable", tableWidth)
-    t.SizingFixedSame = true
-    t.NoHostExtendX = true
+    for _, member in ipairs(ItemTools.PartyMembers) do
+        local memberTab = self.PartyEquipmentTabBar:AddTabItem(member.name)
+        local items = partyItems[member.uuid] or {}
 
-    local i = 1
-    local row = t:AddRow()
+        if #items == 0 then
+            memberTab:AddText(LCL.Get("UCT_EquipmentSelector_NoItemsEquipped", "No items equipped."))
+        else
+            local maxTableWidth = 8
+            local tableWidth = math.min(#items, maxTableWidth)
+            local t = memberTab:AddTable("QuickPickTable_" .. member.uuid, tableWidth)
+            t.SizingFixedSame = true
+            t.NoHostExtendX = true
 
-    for _, data in ipairs(self.QuickPickItems) do
-        if i > 1 and (i - 1) % maxTableWidth == 0 then
-            row = t:AddRow()
+            local i = 1
+            local row = t:AddRow()
+
+            for _, data in ipairs(items) do
+                if i > 1 and (i - 1) % maxTableWidth == 0 then
+                    row = t:AddRow()
+                end
+
+                local cell = row:AddCell()
+                local itemButton = cell:AddImageButton("quick_pick_btn_" .. (data.id or tostring(i)) .. "_" .. member.uuid, data.icon, {60 * ViewPortScale, 60 * ViewPortScale})
+                
+                itemButton.OnClick = function()
+                    self:SetSelectedEquipment(data)
+                end
+                i = i + 1
+            end
         end
-
-        local cell = row:AddCell()
-        local itemButton = cell:AddImageButton("quick_pick_btn_" .. (data.id or tostring(i)), data.icon, {60 * ViewPortScale, 60 * ViewPortScale})
-        
-        itemButton.OnClick = function()
-            self:SetSelectedEquipment(data)
-        end
-        i = i + 1
     end
 end
 
@@ -155,7 +141,11 @@ end
 
 function EquipmentSelector:Draw()
     self:DrawSelector()
-    self:DrawQuickPick()
+end
+
+function EquipmentSelector:FetchEquippedItems()
+    -- Fetches for the whole party, no character context needed here.
+    SMS.FetchEquippedItems:SendToServer({ ID = USERID })
 end
 
 function EquipmentSelector:Init()

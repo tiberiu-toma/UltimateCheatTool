@@ -1,4 +1,5 @@
 local BaseTab = Ext.Require("Client/BaseTab.lua")
+local UIState = Ext.Require("Client/UIState.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class ConsumableTab : BaseTab
@@ -68,7 +69,7 @@ function ConsumableTab:DrawGrid()
             local selectConsumable = spawnRow:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
 
             selectConsumable.OnClick = function()
-                local charUUID = CharacterTools.CharSelector.SelectedCharacter
+                local charUUID = UIState.SelectedCharacter
                 SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
             end
         end

@@ -69,8 +69,9 @@ end)
 
 SMS.SendEquippedItems:SetHandler(function(payload)
     if ItemTools and ItemTools.EquipmentSelector then
-        local items = payload.data
-        ItemTools.EquipmentSelector:SetQuickPickItems(items)
+        -- payload contains { party = {members...}, items = { [charUUID] = {items...} } }
+        ItemTools.PartyMembers = payload.party or {}
+        ItemTools.EquipmentSelector:UpdatePartyEquipment(payload.items or {})
     end
 end)
 

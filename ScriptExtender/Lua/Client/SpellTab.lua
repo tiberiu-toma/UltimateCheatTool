@@ -1,4 +1,5 @@
 local BaseTab = Ext.Require("Client/BaseTab.lua")
+local UIState = Ext.Require("Client/UIState.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class SpellTab : BaseTab
@@ -99,11 +100,11 @@ function SpellTab:DrawGrid()
                 InfoPopup:AddInfo(popup, data, spellInfoFields)
         
         removeSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid=uuid, unlearn=1 })
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, unlearn=1 })
         end
 
         selectSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, amount=1, data=data })
         end
 
         learnForParty.OnClick = function()
@@ -125,7 +126,7 @@ function SpellTab:GetLearnedSpells()
 
     UI_Utils.DestroyChildren(self.LearnedSpellsArea)
 
-    local charUUID = CharacterTools and CharacterTools.CharSelector and CharacterTools.CharSelector.SelectedCharacter
+    local charUUID = UIState.SelectedCharacter
     if not charUUID then
         self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_SelectCharacter", "Select a character to see their spells."))
         return
@@ -192,7 +193,7 @@ function SpellTab:GetLearnedSpells()
 
         local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##" .. uuid)
         removeSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid=uuid, unlearn=1 })
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, unlearn=1 })
         end
 
         i = i + 1

@@ -7,6 +7,8 @@ MCMActive = Mods and Mods.BG3MCM
 CharacterTools = nil
 ItemTools = nil
 
+local UI_Events = Ext.Require("Client/UI_Events.lua")
+local UIState = Ext.Require("Client/UIState.lua")
 local BaseTab = Ext.Require("Client/BaseTab.lua")
 local EquipmentTab = Ext.Require("Client/EquipmentTab.lua")
 local NPCTab = Ext.Require("Client/NPCTab.lua")
@@ -121,10 +123,18 @@ end
 function CharacterToolsUI:Initialize()
     if self.Ready then return end
 
-    USERID = _C().Uuid.EntityUuid -- USERID is character-centric
+    USERID = _C().Uuid.EntityUuid
 
-    self.CharSelector = CharacterSelector:New(self.Window, function(charUUID) self:OnCharacterChange(charUUID) end)
+    self.CharSelector = CharacterSelector:New(self.Window)
     self.CharSelector:Init()
+
+    UI_Events:Subscribe("CharacterChanged", function(charUUID)
+        -- Refresh character-specific tabs within this UI
+        if self.SpellTab and self.SpellTab.Tab.Visible then self.SpellTab:GetLearnedSpells() end
+        if self.TagTab and self.TagTab.Tab.Visible then self.TagTab:GetAppliedTags() end
+        if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
+        if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
+    end)
 
     self.TabBar = self.Window:AddTabBar("UCT_CharacterTabBar")
 
@@ -149,25 +159,6 @@ function CharacterToolsUI:Initialize()
     self.ResetTab:Init()
 
     self.Ready = true
-end
-
-function CharacterToolsUI:OnCharacterChange(charUUID)
-    -- This function will be called when the character selection changes.
-    -- Let's force a redraw of the added/applied sections for relevant tabs.
-    if ItemTools and ItemTools.EquipmentSelector then
-        ItemTools.EquipmentSelector:SetSelectedEquipment(nil) -- Clear selected equipment when character changes in CharacterTools
-        ItemTools.EquipmentSelector:FetchEquippedItems() -- Refresh quick picks for ItemTools
-    end
-
-    -- Refresh tabs in CharacterTools
-    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end -- Refresh CharacterTools' PassiveTab
-    if self.SpellTab and self.SpellTab.Tab.Visible then self.SpellTab:GetLearnedSpells() end
-    if self.TagTab and self.TagTab.Tab.Visible then self.TagTab:GetAppliedTags() end
-    if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end -- Refresh CharacterTools' StatusTab
-
-    -- Also refresh relevant tabs in ItemTools since character change affects them
-    if ItemTools and ItemTools.PassiveTab and ItemTools.PassiveTab.Tab.Visible then ItemTools.PassiveTab:GetAddedPassives() end
-    if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.Tab.Visible then ItemTools.StatusTab:GetAppliedStatuses() end
 end
 
 function CharacterToolsUI:HideWindows()
@@ -206,6 +197,7 @@ end
 ---@field TabBar ExtuiTabBar
 ---@field EquipmentTab EquipmentTab
 ---@field ConsumableTab ConsumableTab
+---@field PartyMembers table
 ItemToolsUI = {}
 ItemToolsUI.__index = ItemToolsUI
 
@@ -216,6 +208,7 @@ function ItemToolsUI:New(mcm)
         Settings = {},
         HotKeys = {},
         Ready = false,
+        PartyMembers = {},
     }, ItemToolsUI)
 
     if mcm then
@@ -233,9 +226,22 @@ function ItemToolsUI:Initialize()
 
     -- EquipmentSelector needs CharacterTools.CharSelector.SelectedCharacter
     -- We assume CharacterTools is initialized first and globally accessible.
-    self.EquipmentSelector = EquipmentSelector:New(self.Window, function(eqData) self:OnEquipmentChange(eqData) end)
+    self.EquipmentSelector = EquipmentSelector:New(self.Window)
     self.EquipmentSelector.Container.SameLine = true
     self.EquipmentSelector:Init()
+
+    UI_Events:Subscribe("CharacterChanged", function(charUUID)
+        -- When the main character context changes, re-fetch all party equipment
+        self.EquipmentSelector:FetchEquippedItems()
+    end)
+
+    -- Subscribe to events
+    UI_Events:Subscribe("EquipmentChanged", function(eqData)
+        -- This function will be called when the equipment selection changes.
+        -- Let's force a redraw of the added/applied sections for relevant tabs.
+        if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
+        if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
+    end)
 
     self.TabBar = self.Window:AddTabBar("UCT_ItemTabBar")
 
@@ -249,19 +255,6 @@ function ItemToolsUI:Initialize()
     self.StatusTab:Init() -- Initialize ItemTools' StatusTab
     self.ConsumableTab:Init()
     self.Ready = true
-end
-
-function ItemToolsUI:OnEquipmentChange(eqData)
-    -- This function will be called when the equipment selection changes.
-    -- Let's force a redraw of the added/applied sections for relevant tabs in CharacterTools.
-    if CharacterTools then
-        -- Refresh CharacterTools' PassiveTab and StatusTab if they are visible
-        if CharacterTools.PassiveTab and CharacterTools.PassiveTab.Tab.Visible then CharacterTools.PassiveTab:GetAddedPassives() end
-        if CharacterTools.StatusTab and CharacterTools.StatusTab.Tab.Visible then CharacterTools.StatusTab:GetAppliedStatuses() end
-    end
-    -- Also refresh ItemTools' own PassiveTab and StatusTab
-    if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
-    if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
 end
 
 function ItemToolsUI:HideWindows()
@@ -312,6 +305,10 @@ end
 Ext.Events.GameStateChanged:Subscribe(function(ev)
     if CharacterTools and CharacterTools.Ready and CharacterTools.CharSelector and ev.ToState == "Running" then
         USERID = _C().Uuid.EntityUuid
+        local charUUID = _C().Uuid.EntityUuid
+        USERID = charUUID
+        -- Set initial character state and trigger initial data fetches
+        UIState:SetSelectedCharacter(charUUID)
         CharacterTools.CharSelector:Init()
     end
 end)

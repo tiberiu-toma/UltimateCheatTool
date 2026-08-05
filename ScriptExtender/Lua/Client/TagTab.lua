@@ -1,4 +1,5 @@
 local BaseTab = Ext.Require("Client/BaseTab.lua")
+local UIState = Ext.Require("Client/UIState.lua")
 local InfoPopup = Ext.Require("Client/InfoPopup.lua")
 
 ---@class TagTab : BaseTab
@@ -87,11 +88,11 @@ function TagTab:DrawGrid()
         InfoPopup:AddInfo(popup, data, tagInfoFields)
 
         removeButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
         end
 
         addButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid=uuid, data=data })
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data })
         end
 
         addForPartyBtn.OnClick = function()
@@ -112,7 +113,7 @@ function TagTab:GetAppliedTags()
 
     UI_Utils.DestroyChildren(self.AppliedTagsArea)
 
-    local charUUID = CharacterTools and CharacterTools.CharSelector and CharacterTools.CharSelector.SelectedCharacter
+    local charUUID = UIState.SelectedCharacter
     if not charUUID then
         self.AppliedTagsArea:AddText(LCL.Get("UCT_TagTab_SelectCharacter", "Select a character to see their tags."))
         return
@@ -176,7 +177,7 @@ function TagTab:GetAppliedTags()
 
         local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
         removeButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ ID = USERID, character = CharacterTools.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
         end
 
         i = i + 1

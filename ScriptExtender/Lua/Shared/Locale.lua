@@ -27,6 +27,9 @@ LocaleText = {
 	UCT_PassiveTab_RemoveFromSelectedItem = "Remove from Selected Equipment",
 	UCT_StatusTab_ApplyToSelectedItem = "Apply to Selected Equipment",
 	UCT_StatusTab_RemoveFromSelectedItem = "Remove from Selected Equipment",
+	UCT_SpawnFor = "Spawn For...",
+	UCT_SpawnForChar = "Spawn for",
+	UCT_SpawnForAll = "Spawn for Entire Party",
 
 	UCT_PassiveTab_Add = "Add",
 	UCT_PassiveTab_Remove = "Remove",
