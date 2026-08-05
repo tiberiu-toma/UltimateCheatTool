@@ -219,9 +219,9 @@ function StatusTab:GetAppliedStatuses()
     layoutTable.NoHostExtendX = true
 
     local row = layoutTable:AddRow()
-    local charStatusesCell = row:AddCell()
 
     if self.ParentUI == "CharacterTools" then
+        local charStatusesCell = row:AddCell()
         -- Column 1: Character Statuses
         charStatusesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
         local charUUID = UIState.SelectedCharacter
