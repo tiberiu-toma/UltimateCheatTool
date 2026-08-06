@@ -46,6 +46,7 @@ LocaleText = {
 	UCT_CompanionTab_Label = "Companions",
 	UCT_NPCTab_Label = "NPCs",
 	UCT_ResourceTab_Label = "Resources",
+	UCT_AbilityTab_Label = "Abilities",
 	UCT_TagTab_Label = "Tags",
 	UCT_WaypointTab_Label = "Waypoints",
 
@@ -101,6 +102,9 @@ LocaleText = {
 	UCT_NoCustomResources = "This character has no custom resources added.",
 	UCT_AddedResourcesHeader = "Added Resources",
 	UCT_ResourceTab_SelectCharacter = "Select a character to see their added resources.",
+	UCT_AbilityTab_SelectCharacter = "Select a character to see their abilities.",
+	UCT_NoCustomAbilities = "This character has no custom ability boosts.",
+	UCT_AbilityTab_ClearAll = "Clear All Boosts",
 	UCT_NoCustomPassives = "No custom passives.",
 	UCT_NoCustomStatuses = "No custom statuses.",
 	UCT_NoCustomTags = "You don't have any custom tags applied.",

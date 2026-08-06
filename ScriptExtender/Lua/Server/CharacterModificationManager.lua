@@ -25,6 +25,15 @@ function CharacterModificationManager:ReapplyAll()
 				end
 			end
 		end
+
+		-- Re-apply abilities
+		if modifications.abilities then
+			for boostKey, abilityModData in pairs(modifications.abilities) do
+				if abilityModData.boostString then
+					Osi.AddBoosts(charUUID, abilityModData.boostString, "", "")
+				end
+			end
+		end
 	end
 end
 
