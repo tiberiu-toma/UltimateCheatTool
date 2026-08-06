@@ -1,6 +1,7 @@
 local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UI/UIState.lua")
 local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
+local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua")
 
 ---@class SpellTab : BaseTab
 ---@field LearnedSpells table
@@ -23,11 +24,40 @@ function SpellTab:New(holder)
 
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, SpellTab) -- Re-set metatable to the child class
+
+    local gridConfig = {
+        headerText = LCL.Get("UCT_LearnedSpellsHeader", "Learned Spells"),
+        noItemsText = LCL.Get("UCT_SpellTab_NoLearnedSpells", "This character has no custom learned spells."),
+        maxTableWidth = 5,
+        idPrefix = "Spell",
+        renderItem = function(cell, uuid, spellMod)
+            local data = spellMod.data
+            local icon = HLP.GetAttr(data, "icon")
+            local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
+
+            if not fullName then return end
+
+            local name = fullName
+            if HLP.Strlen(name) > 20 then name = HLP.Cut(name, 1, 20) .. "..." end
+
+            local spellItem = cell:AddImageButton("##LearnedSpell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+            cell:AddText(name)
+            local popup = cell:AddPopup("ManageSpell" .. uuid)
+
+            spellItem.OnClick = function() popup:Open() end
+
+            InfoPopup:AddInfo(popup, data, { { key = "id", label = "ID" }, { key = "displayName", label = "Name" } })
+
+            local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##" .. uuid)
+            removeSpell.OnClick = function() SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, unlearn=1 }) end
+        end
+    }
+    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("LearnedSpells"), gridConfig)
+
     return instance
 end
 
 function SpellTab:Init()
-    self.LearnedSpellsArea = self.Tab:AddGroup("LearnedSpells")
     self:GetLearnedSpells()
 
     -- This will create the search, pagination, and main areas and fetch the first page of all spells
@@ -143,88 +173,16 @@ function SpellTab:DrawGrid()
 end
 
 function SpellTab:GetLearnedSpells()
-    local modifiedChars = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
-
-    UI_Utils.DestroyChildren(self.LearnedSpellsArea)
-
     local charUUID = UIState.SelectedCharacter
     if not charUUID then
-        self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_SelectCharacter", "Select a character to see their learned spells."))
+        UI_Utils.DestroyChildren(self.ModificationGrid.Parent)
+        self.ModificationGrid.Parent:AddText(LCL.Get("UCT_SpellTab_SelectCharacter", "Select a character to see their learned spells."))
         return
     end
 
+    local modifiedChars = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
     local learnedForChar = (modifiedChars[charUUID] and modifiedChars[charUUID].spells) or {}
-    local totalLearned = HLP.Count(learnedForChar)
-    if totalLearned == 0 then
-        self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_NoLearnedSpells", "This character has no custom learned spells."))
-        return
-    end
-
-    local maxTableWidth = self.Config.maxTableWidth or 5
-    local tableWidth = math.min(totalLearned, maxTableWidth)
-
-    local header = self.LearnedSpellsArea:AddCollapsingHeader(LCL.Get("UCT_LearnedSpellsHeader", "Learned Spells"))
-
-    local t = header:AddTable("LearnedSpellsGrid", tableWidth)
-    t.SizingFixedSame = true
-    t.NoHostExtendX = true
-
-    local i = 1
-    local row
-    local drawnCount = 0
-    local maxDrawn = 50 -- Performance cap
-
-    for uuid,spellMod in kpairs(learnedForChar) do
-        if drawnCount >= maxDrawn then
-            header:AddText("...and more (list truncated for performance).")
-            break
-        end
-
-        if (i - 1) % maxTableWidth == 0 then
-            row = t:AddRow()
-        end
-        
-        local data = spellMod.data
-        local icon = HLP.GetAttr(data, "icon")
-        local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
-
-        if not fullName then
-            goto continue
-        end
-
-        local name = fullName
-        if HLP.Strlen(name) > 20 then
-            name = HLP.Cut(name, 1, 20) .. "..."
-        end
-
-        local cell = row:AddCell()
-        local spellItem = cell:AddImageButton("##LearnedSpell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        cell:AddText(name)
-        local popup = cell:AddPopup("ManageSpell" .. uuid)
-
-        spellItem.OnClick = function()
-            popup:Open()
-        end
-
-        data.fullName = fullName
-        local learnedSpellInfoFields = {
-            { key = "id", label = "ID" },
-            { key = "fullName", label = "Name" },
-        }
-        InfoPopup:AddInfo(popup, data, learnedSpellInfoFields)
-
-        local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##" .. uuid)
-        removeSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, unlearn=1 })
-        end
-
-        i = i + 1
-
-
-        drawnCount = drawnCount + 1
-
-        ::continue::
-    end
+    self.ModificationGrid:Draw(learnedForChar)
 end
 
 return SpellTab

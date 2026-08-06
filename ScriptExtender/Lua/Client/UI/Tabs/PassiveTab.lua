@@ -1,6 +1,7 @@
 local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UI/UIState.lua")
 local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
+local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua")
 
 ---@class PassiveTab : BaseTab
 ---@field AddedPassives table
@@ -23,13 +24,47 @@ function PassiveTab:New(holder, parentUI)
 
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, PassiveTab) -- Re-set metatable to the child class
-    instance.AddedPassives = {}
-    instance.ParentUI = parentUI -- Store the parent UI context
+    instance.ParentUI = parentUI
+
+    local gridConfig = {
+        headerText = LCL.Get("UCT_AddedPassivesHeader", "Added Passives"),
+        noItemsText = LCL.Get("UCT_NoCustomPassives", "No custom passives."),
+        maxTableWidth = 3,
+        idPrefix = "Passive",
+        renderItem = function(cell, uuid, data)
+            local icon = HLP.GetAttr(data, "icon") or "EC_Portrait_Generic"
+            if icon == "unknown" or icon == "" then icon = "EC_Portrait_Generic" end
+            local fullName = HLP.GetAttr(data, "displayName")
+
+            if not fullName then return end
+
+            local name = fullName
+            if HLP.Strlen(name) > 20 then name = HLP.Cut(name, 1, 20) .. "..." end
+
+            local itemButton = cell:AddImageButton("##PassiveGrid" .. uuid, icon, {100 * ViewPortScale, 100 * ViewPortScale})
+            cell:AddText(name)
+            local popup = cell:AddPopup("ManagePassive_" .. uuid)
+
+            itemButton.OnClick = function() popup:Open() end
+
+            InfoPopup:AddInfo(popup, data, { { key = "id", label = "ID" }, { key = "displayName", label = "Name" } })
+
+            local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
+            removeButton.OnClick = function()
+                if instance.ParentUI == "CharacterTools" then
+                    SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
+                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment then
+                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemTemplateUUID = UIState.SelectedEquipment.id, passiveUUID = uuid })
+                end
+            end
+        end
+    }
+    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("AddedPassives"), gridConfig)
+
     return instance
 end
 
 function PassiveTab:Init()
-    self.AddedPassivesArea = self.Tab:AddGroup("AddedPassives")
     self:GetAddedPassives()
 
     -- This will create the search, pagination, and main areas and fetch the first page of all passives
@@ -147,123 +182,28 @@ function PassiveTab:DrawGrid()
     end
 end
 
----@param parent ExtuiGroup
----@param passives table
----@param maxTableWidth number
----@param onRemove function
-function PassiveTab:_DrawPassiveGrid(parent, passives, maxTableWidth, onRemove, gridId)
-    local total = HLP.Count(passives)
-    if total == 0 then
-        return
-    end
-
-    local tableWidth = math.min(total, maxTableWidth)
-    local t = parent:AddTable(gridId, tableWidth)
-    t.SizingFixedFit = true
-    t.NoHostExtendX = true
-
-    local i = 1
-    local row
-    local drawnCount = 0
-    local maxDrawn = 50 -- Performance cap
-
-    for uuid, data in kpairs(passives) do
-        if drawnCount >= maxDrawn then
-            parent:AddText("...and more (list truncated for performance).")
-            break
-        end
-
-        if (i - 1) % maxTableWidth == 0 then
-            row = t:AddRow()
-        end
-
-        local icon = HLP.GetAttr(data, "icon") or "EC_Portrait_Generic"
-        if icon == "unknown" or icon == "" then icon = "EC_Portrait_Generic" end
-        local fullName = HLP.GetAttr(data, "displayName")
-
-        if not fullName then goto continue end
-
-        local name = fullName
-        if HLP.Strlen(name) > 20 then
-            name = HLP.Cut(name, 1, 20) .. "..."
-        end
-
-        local cell = row:AddCell()
-        local passiveItem = cell:AddImageButton("##PassiveGrid" .. uuid, icon, {100 * ViewPortScale, 100 * ViewPortScale})
-        cell:AddText(name)
-        local popup = cell:AddPopup("ManagePassive_" .. uuid)
-
-        passiveItem.OnClick = function() popup:Open() end
-
-        data.fullName = fullName
-        local infoFields = {
-            { key = "id", label = "ID" },
-            { key = "fullName", label = "Name" },
-        }
-        InfoPopup:AddInfo(popup, data, infoFields)
-
-        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
-        removeButton.OnClick = function()
-            onRemove(uuid, data)
-        end
-
-        i = i + 1
-        drawnCount = drawnCount + 1
-        ::continue::
-    end
-end
-
 function PassiveTab:GetAddedPassives()
-    self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
-
-    UI_Utils.DestroyChildren(self.AddedPassivesArea)
-
-    local header = self.AddedPassivesArea:AddCollapsingHeader(LCL.Get("UCT_AddedPassivesHeader", "Added Passives"))
-
-    local layoutTable = header:AddTable("AddedPassivesLayout", 2)
-    layoutTable.SizingFixedSame = true
-    layoutTable.NoHostExtendX = true
-
-    local row = layoutTable:AddRow()
-
     if self.ParentUI == "CharacterTools" then
-        local charPassivesCell = row:AddCell()
-        -- Column 1: Character Passives
-        charPassivesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
         local charUUID = UIState.SelectedCharacter
         if not charUUID then
-            charPassivesCell:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
-        else
-            local addedForChar = self.AddedPassives[charUUID] or {}
-            if HLP.Count(addedForChar) == 0 then
-                charPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
-            else
-                self:_DrawPassiveGrid(charPassivesCell, addedForChar, 3, function(uuid, data)
-                    SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
-                end, "CharAddedPassivesGrid")
-            end
+            UI_Utils.DestroyChildren(self.ModificationGrid.Parent)
+            self.ModificationGrid.Parent:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
+            return
         end
+        local addedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
+        local data = addedPassives[charUUID] or {}
+        self.ModificationGrid:Draw(data)
     elseif self.ParentUI == "ItemTools" then
-        local itemPassivesCell = row:AddCell()
-        -- Column 2: Item Passives
-        itemPassivesCell:AddSeparatorText(LCL.Get("UCT_OnSelectedItem", "On Selected Item"))
         local equipmentData = UIState.SelectedEquipment
         if not equipmentData then
-            itemPassivesCell:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
-        else
-            local itemTemplateUUID = equipmentData.id
-            local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-            local itemMods = modifiedEquipment[itemTemplateUUID]
-            local itemPassives = itemMods and itemMods.passives
-
-            if not itemPassives or HLP.Count(itemPassives) == 0 then
-                itemPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
-            else
-                self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 3, function(uuid, data)
-                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
-                end, "ItemAddedPassivesGrid")
-            end
+            UI_Utils.DestroyChildren(self.ModificationGrid.Parent)
+            self.ModificationGrid.Parent:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
+            return
         end
+        local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+        local itemMods = modifiedEquipment[equipmentData.id]
+        local data = (itemMods and itemMods.passives) or {}
+        self.ModificationGrid:Draw(data)
     end
 end
 
