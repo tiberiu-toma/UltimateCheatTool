@@ -151,3 +151,15 @@ function HLP.RefreshEquippedItem(character, itemTemplateUUID)
         end
     end
 end
+
+--- A wrapper for Ext.Loca.GetTranslatedString that falls back to a provided name if the result is an empty/placeholder string.
+---@param handle string The localization handle.
+---@param fallbackName string The name to use if the translation is missing.
+---@return string The translated string or the fallback name.
+function HLP.GetTranslatedString(handle, fallbackName)
+    local translated = Ext.Loca.GetTranslatedString(handle, fallbackName)
+    if translated and string.sub(translated, 1, 3) == "%%%" then
+        return fallbackName
+    end
+    return translated
+end

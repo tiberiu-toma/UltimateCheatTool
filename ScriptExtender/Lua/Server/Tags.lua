@@ -11,7 +11,7 @@ function TAGS.GetAll(search, page)
 
     for _, tagId in pairs(tagData) do
         local staticData = Ext.StaticData.Get(tagId, "Tag")
-        local displayName = Ext.Loca.GetTranslatedString(staticData.DisplayName.Handle.Handle, staticData.Name)
+        local displayName = HLP.GetTranslatedString(staticData.DisplayName.Handle.Handle, staticData.Name)
         local displayDescription = Ext.Loca.GetTranslatedString(staticData.DisplayDescription.Handle.Handle, staticData.Description)
 
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName))
