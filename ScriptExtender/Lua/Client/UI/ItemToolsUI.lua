@@ -1,10 +1,10 @@
 local UI_Events = Ext.Require("Client/UI_Events.lua")
 local UIState = Ext.Require("Client/UIState.lua")
-local EquipmentSelector = Ext.Require("Client/EquipmentSelector.lua")
-local EquipmentTab = Ext.Require("Client/EquipmentTab.lua")
-local ConsumableTab = Ext.Require("Client/ConsumableTab.lua")
-local PassiveTab = Ext.Require("Client/PassiveTab.lua")
-local StatusTab = Ext.Require("Client/StatusTab.lua")
+local EquipmentSelector = Ext.Require("Client/UI/Components/EquipmentSelector.lua")
+local EquipmentTab = Ext.Require("Client/UI/Tabs/EquipmentTab.lua")
+local ConsumableTab = Ext.Require("Client/UI/Tabs/ConsumableTab.lua")
+local PassiveTab = Ext.Require("Client/UI/Tabs/PassiveTab.lua")
+local StatusTab = Ext.Require("Client/UI/Tabs/StatusTab.lua")
 
 ---@class ItemToolsUI
 ---@field Ready boolean
@@ -55,8 +55,26 @@ function ItemToolsUI:Initialize()
     UI_Events:Subscribe("EquipmentChanged", function(eqData)
         -- This function will be called when the equipment selection changes.
         -- Let's force a redraw of the added/applied sections for relevant tabs.
-        if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
-        if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
+        if self.PassiveTab and self.PassiveTab.Tab.Visible then
+            self.PassiveTab:GetAddedPassives()
+            -- Re-render the main grid to update button states without a server call
+            self.PassiveTab:SetData({
+                data = self.PassiveTab.Items,
+                totalItems = self.PassiveTab.TotalItems,
+                totalPages = self.PassiveTab.TotalPages,
+                currentPage = self.PassiveTab.CurrentPage
+            })
+        end
+        if self.StatusTab and self.StatusTab.Tab.Visible then
+            self.StatusTab:GetAppliedStatuses()
+            -- Re-render the main grid to update button states without a server call
+            self.StatusTab:SetData({
+                data = self.StatusTab.Items,
+                totalItems = self.StatusTab.TotalItems,
+                totalPages = self.StatusTab.TotalPages,
+                currentPage = self.StatusTab.CurrentPage
+            })
+        end
     end)
 
     self.TabBar = self.Window:AddTabBar("UCT_ItemTabBar")

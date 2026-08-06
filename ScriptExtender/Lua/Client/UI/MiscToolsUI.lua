@@ -1,7 +1,7 @@
 local UI_Events = Ext.Require("Client/UI_Events.lua")
 local UIState = Ext.Require("Client/UIState.lua")
-local NPCTab = Ext.Require("Client/NPCTab.lua")
-local WaypointTab = Ext.Require("Client/WaypointTab.lua")
+local NPCTab = Ext.Require("Client/UI/Tabs/NPCTab.lua")
+local WaypointTab = Ext.Require("Client/UI/Tabs/WaypointTab.lua")
 
 ---@class MiscToolsUI
 ---@field Ready boolean

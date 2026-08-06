@@ -1,4 +1,4 @@
-local Pagination = Ext.Require("Client/Pagination.lua")
+local Pagination = Ext.Require("Client/Utils/Pagination.lua")
 
 ---@class BaseTab
 ---@field Tab ExtuiTabItem

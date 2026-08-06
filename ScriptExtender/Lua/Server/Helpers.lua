@@ -114,29 +114,34 @@ function HLP.RefreshEquippedItem(character, itemTemplateUUID)
     local stats = Ext.Stats.Get(template.Stats)
     if not stats then return end
     
-    local charactersToRefresh = {}
+    local characterUUIDsToRefresh = {}
     if character then
-        table.insert(charactersToRefresh, character)
+        -- If a specific character is provided, ensure it's a UUID string
+        local charUUID_str = (type(character) == "table" and character.uuid) or character
+        table.insert(characterUUIDsToRefresh, charUUID_str)
     else
-        charactersToRefresh = HLP.GetAllChars()
+        -- If no specific character, refresh for all party members
+        local allPartyMembersData = PARTY.GetMembers()
+        for _, memberData in ipairs(allPartyMembersData) do
+            table.insert(characterUUIDsToRefresh, memberData.uuid)
+        end
     end
 
-    for _, charToRefresh in ipairs(charactersToRefresh) do
-        -- Find the item in the character's equipment and refresh it
+    for _, charUUID in ipairs(characterUUIDsToRefresh) do
         local slotsToCheck = { "Helmet", "Breast", "Gloves", "Boots", "Melee Main Weapon", "Melee Offhand Weapon", "Ranged Main Weapon", "Ranged Offhand Weapon", "Amulet", "Ring", "Ring2", "Underwear", "Cloak", "MusicalInstrument" }
 
         for _, slot in ipairs(slotsToCheck) do
-            local itemHandle = Osi.GetEquippedItem(charToRefresh, slot)
+            local itemHandle = Osi.GetEquippedItem(charUUID, slot)
             if itemHandle ~= 0 then
                 local item = Ext.Entity.Get(itemHandle)
                 if item and item.GameObjectVisual and item.GameObjectVisual.RootTemplateId == itemTemplateUUID then
-                    Osi.Unequip(charToRefresh, itemHandle)
+                    Osi.Unequip(charUUID, itemHandle)
                     local ticks = 0
                     local e
                     e = Ext.Events.Tick:Subscribe(function()
                         ticks = ticks + 1
                         if ticks >= 10 then
-                            Osi.Equip(charToRefresh, itemHandle)
+                            Osi.Equip(charUUID, itemHandle)
                             Ext.Events.Tick:Unsubscribe(e)
                         end
                     end

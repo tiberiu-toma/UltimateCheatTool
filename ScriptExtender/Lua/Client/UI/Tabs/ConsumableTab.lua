@@ -1,6 +1,6 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UIState.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class ConsumableTab : BaseTab
 ConsumableTab = {}
@@ -55,23 +55,29 @@ function ConsumableTab:DrawGrid()
         local itemButton = cell:AddImageButton("##Consumable" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         cell:AddText(name)
         local popup = cell:AddPopup("AddItem" .. uuid)
+        local spawnTargetPopup = cell:AddPopup("SpawnTarget_Consumable_" .. uuid)
 
         itemButton.OnClick = function()
             popup:Open()
         end
 
-        local spawnTable = popup:AddTable("SpawnAmountTable" .. uuid, 5)
-        spawnTable.SizingFixedSame = false
-        spawnTable.NoHostExtendX = true
-        local spawnRow = spawnTable:AddRow()
-
-        for _,num in ipairs(self.Config.amountOptions) do
-            local selectConsumable = spawnRow:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
-
-            selectConsumable.OnClick = function()
-                local charUUID = UIState.SelectedCharacter
-                SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
+        local spawnForBtn = popup:AddButton(LCL.Get("UCT_SpawnFor", "Spawn For..."))
+        spawnForBtn.OnClick = function()
+            UI_Utils.DestroyChildren(spawnTargetPopup) -- Rebuild on open to get latest party
+            if ItemTools and ItemTools.PartyMembers and #ItemTools.PartyMembers > 0 then
+                for _, member in ipairs(ItemTools.PartyMembers) do
+                    local spawnForCharBtn = spawnTargetPopup:AddButton(LCL.Get("UCT_SpawnForChar", "Spawn for") .. " " .. member.name)
+                    spawnForCharBtn.OnClick = function()
+                        SMS.SpawnTemplate:SendToServer({ character = member.uuid, uuid = uuid, amount = 1 })
+                    end
+                end
+                spawnTargetPopup:AddSeparator()
+                local spawnForAllBtn = spawnTargetPopup:AddButton(LCL.Get("UCT_SpawnForAll", "Spawn for Entire Party"))
+                spawnForAllBtn.OnClick = function()
+                    SMS.SpawnAllOfTemplateForParty:SendToServer({ uuid = uuid, amount = 1 })
+                end
             end
+            spawnTargetPopup:Open()
         end
 
         data.fullName = fullName

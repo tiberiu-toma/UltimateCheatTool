@@ -1,6 +1,6 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UIState.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class PassiveTab : BaseTab
 ---@field AddedPassives table
@@ -112,12 +112,12 @@ function PassiveTab:DrawGrid()
             else
                 addToSelectedItem.OnClick = function()
                     if equipmentData and equipmentData.id then
-                        SMS.AddPassiveOnItem:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
+                        SMS.AddPassiveOnItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
                     end
                 end
                 removeFromSelectedItem.OnClick = function()
                     if equipmentData and equipmentData.id then
-                        SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
+                        SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
                     end
                 end
             end
@@ -260,7 +260,7 @@ function PassiveTab:GetAddedPassives()
                 itemPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
             else
                 self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 3, function(uuid, data)
-                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
+                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
                 end, "ItemAddedPassivesGrid")
             end
         end

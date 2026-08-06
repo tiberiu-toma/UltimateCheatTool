@@ -1,6 +1,6 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UIState.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class StatusTab : BaseTab
 ---@field AppliedStatuses table
@@ -117,12 +117,12 @@ function StatusTab:DrawGrid()
             else
                 applyToSelectedItem.OnClick = function()
                     if equipmentData and equipmentData.id then
-                        SMS.ApplyStatusToItem:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
+                        SMS.ApplyStatusToItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
                     end
                 end
                 removeFromSelectedItem.OnClick = function()
                     if equipmentData and equipmentData.id then
-                        SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
+                        SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
                     end
                 end
             end
@@ -254,7 +254,7 @@ function StatusTab:GetAppliedStatuses()
                 itemStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
             else
                 self:_DrawStatusGrid(itemStatusesCell, itemStatuses, 3, function(uuid, data)
-                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
+                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
                 end, "ItemAppliedStatusesGrid")
             end
         end

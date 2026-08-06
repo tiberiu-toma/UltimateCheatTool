@@ -1,4 +1,4 @@
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class RecruitTab
 ---@field Tab ExtuiTabItem

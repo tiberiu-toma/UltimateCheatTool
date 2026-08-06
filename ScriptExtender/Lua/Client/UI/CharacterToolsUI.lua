@@ -1,13 +1,13 @@
 local UI_Events = Ext.Require("Client/UI_Events.lua")
 local UIState = Ext.Require("Client/UIState.lua")
-local CharacterSelector = Ext.Require("Client/CharacterSelector.lua")
-local GenericTab = Ext.Require("Client/GenericTab.lua")
-local PassiveTab = Ext.Require("Client/PassiveTab.lua")
-local StatusTab = Ext.Require("Client/StatusTab.lua")
-local TagTab = Ext.Require("Client/TagTab.lua")
-local SpellTab = Ext.Require("Client/SpellTab.lua")
-local RecruitTab = Ext.Require("Client/RecruitTab.lua")
-local ResetTab = Ext.Require("Client/ResetTab.lua")
+local CharacterSelector = Ext.Require("Client/UI/Components/CharacterSelector.lua")
+local GenericTab = Ext.Require("Client/UI/Tabs/GenericTab.lua")
+local PassiveTab = Ext.Require("Client/UI/Tabs/PassiveTab.lua")
+local StatusTab = Ext.Require("Client/UI/Tabs/StatusTab.lua")
+local TagTab = Ext.Require("Client/UI/Tabs/TagTab.lua")
+local SpellTab = Ext.Require("Client/UI/Tabs/SpellTab.lua")
+local RecruitTab = Ext.Require("Client/UI/Tabs/RecruitTab.lua")
+local ResetTab = Ext.Require("Client/UI/Tabs/ResetTab.lua")
 
 ---@class CharacterToolsUI
 ---@field Ready boolean

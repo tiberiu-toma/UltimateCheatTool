@@ -1,5 +1,5 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class NPCTab : BaseTab
 ---@field SpawnedNPCs table

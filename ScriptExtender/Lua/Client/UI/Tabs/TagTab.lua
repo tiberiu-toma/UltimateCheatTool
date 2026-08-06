@@ -1,6 +1,6 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UIState.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class TagTab : BaseTab
 ---@field AppliedTags table
