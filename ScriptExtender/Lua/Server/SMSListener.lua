@@ -146,27 +146,36 @@ SMS.LearnSpell:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
     local character = payload.character
+    local ability = payload.ability or "Wisdom" -- Default to Wisdom if not provided
 
     if not character then return end
     
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
+    if not mods[character] then mods[character] = {} end
+    if not mods[character].spells then mods[character].spells = {} end
+
     if HLP.GetAttr(payload, "unlearn") then
-        SPLL.Learn(character, uuid, true)
-
-        local spells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
-        if spells[character] then
-            spells[character][uuid] = nil
+        local spellData = mods[character].spells[uuid]
+        if spellData then
+            local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", spellData.spellName, spellData.learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", spellData.castingAbility)
+            Osi.RemoveBoosts(character, boostString, 1, "", "")
+            mods[character].spells[uuid] = nil
+            Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
+            HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
         end
-        
-        Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
-        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
     else
-        SPLL.Learn(character, uuid)
+        local learningStrategy = "AddChildren"
+        local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", uuid, learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", ability)
+        Osi.AddBoosts(character, boostString, "", "")
 
-        local spells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
-        if not spells[character] then spells[character] = {} end
-        spells[character][uuid] = data
+        mods[character].spells[uuid] = {
+            spellName = uuid,
+            learningStrategy = learningStrategy,
+            castingAbility = ability,
+            data = data
+        }
         
-        Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
+        Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
         HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
     end
 end)
@@ -174,20 +183,29 @@ end)
 SMS.LearnSpellForParty:SetHandler(function(payload)
     local uuid = payload.uuid
     local data = payload.data
+    local ability = payload.ability or "Wisdom"
 
     local partyMembers = PARTY.GetMembers()
     if not partyMembers or #partyMembers == 0 then return end
 
-    local spells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
+    local learningStrategy = "AddChildren"
+    local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", uuid, learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", ability)
 
     for _, member in ipairs(partyMembers) do
         local charUUID = member.uuid
-        SPLL.Learn(charUUID, uuid)
-        if not spells[charUUID] then spells[charUUID] = {} end
-        spells[charUUID][uuid] = data
+        Osi.AddBoosts(charUUID, boostString, "", "")
+        if not mods[charUUID] then mods[charUUID] = {} end
+        if not mods[charUUID].spells then mods[charUUID].spells = {} end
+        mods[charUUID].spells[uuid] = {
+            spellName = uuid,
+            learningStrategy = learningStrategy,
+            castingAbility = ability,
+            data = data
+        }
     end
 
-    Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
+    Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
     HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
 end)
 
@@ -197,17 +215,19 @@ SMS.UnlearnSpellForParty:SetHandler(function(payload)
     local partyMembers = PARTY.GetMembers()
     if not partyMembers or #partyMembers == 0 then return end
 
-    local spells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
 
     for _, member in ipairs(partyMembers) do
         local charUUID = member.uuid
-        SPLL.Learn(charUUID, uuid, true) -- Unlearn the spell
-        if spells[charUUID] then
-            spells[charUUID][uuid] = nil
+        if mods[charUUID] and mods[charUUID].spells and mods[charUUID].spells[uuid] then
+            local spellData = mods[charUUID].spells[uuid]
+            local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", spellData.spellName, spellData.learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", spellData.castingAbility)
+            Osi.RemoveBoosts(charUUID, boostString, 1, "", "")
+            mods[charUUID].spells[uuid] = nil
         end
     end
 
-    Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells = spells
+    Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
     HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
 end)
 
