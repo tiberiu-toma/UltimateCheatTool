@@ -55,29 +55,52 @@ function ConsumableTab:DrawGrid()
         local itemButton = cell:AddImageButton("##Consumable" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         cell:AddText(name)
         local popup = cell:AddPopup("AddItem" .. uuid)
-        local spawnTargetPopup = cell:AddPopup("SpawnTarget_Consumable_" .. uuid)
+        local amountPopup = cell:AddPopup("SpawnAmountPopup_"..uuid)
+        local targetPopup = cell:AddPopup("SpawnTargetPopup_"..uuid)
 
         itemButton.OnClick = function()
             popup:Open()
         end
 
-        local spawnForBtn = popup:AddButton(LCL.Get("UCT_SpawnFor", "Spawn For..."))
-        spawnForBtn.OnClick = function()
-            UI_Utils.DestroyChildren(spawnTargetPopup) -- Rebuild on open to get latest party
-            if ItemTools and ItemTools.PartyMembers and #ItemTools.PartyMembers > 0 then
-                for _, member in ipairs(ItemTools.PartyMembers) do
-                    local spawnForCharBtn = spawnTargetPopup:AddButton(LCL.Get("UCT_SpawnForChar", "Spawn for") .. " " .. member.name)
-                    spawnForCharBtn.OnClick = function()
-                        SMS.SpawnTemplate:SendToServer({ character = member.uuid, uuid = uuid, amount = 1 })
+        local spawnBtn = popup:AddButton(LCL.Get("UCT_SpawnAmountFor", "Spawn amount... for..."))
+        spawnBtn.OnClick = function()
+            -- 1. Configure and open the amount popup
+            UI_Utils.DestroyChildren(amountPopup)
+            
+            if not (ItemTools and ItemTools.PartyMembers and #ItemTools.PartyMembers > 0) then
+                amountPopup:AddText(LCL.Get("UCT_NoPartyMembers", "No party members found to spawn items for."))
+                amountPopup:Open()
+                return
+            end
+
+            amountPopup:AddText(LCL.Get("UCT_SelectSpawnAmount", "Select amount to spawn:"))
+            amountPopup:AddSeparator()
+
+            for _, amount in ipairs(self.Config.amountOptions) do
+                local amountBtn = amountPopup:AddButton(tostring(amount))
+                amountBtn.OnClick = function()
+                    -- 2. An amount was clicked. Configure the target popup.
+                    UI_Utils.DestroyChildren(targetPopup)
+                    targetPopup:AddText(string.format(LCL.Get("UCT_SelectSpawnTargetForAmount", "Spawn %s for:"), tostring(amount)))
+                    targetPopup:AddSeparator()
+
+                    for _, member in ipairs(ItemTools.PartyMembers) do
+                        local spawnForCharBtn = targetPopup:AddButton(member.name)
+                        spawnForCharBtn.OnClick = function()
+                            SMS.SpawnTemplate:SendToServer({ character = member.uuid, uuid = uuid, amount = amount })
+                        end
                     end
-                end
-                spawnTargetPopup:AddSeparator()
-                local spawnForAllBtn = spawnTargetPopup:AddButton(LCL.Get("UCT_SpawnForAll", "Spawn for Entire Party"))
-                spawnForAllBtn.OnClick = function()
-                    SMS.SpawnAllOfTemplateForParty:SendToServer({ uuid = uuid, amount = 1 })
+                    targetPopup:AddSeparator()
+                    local spawnForAllBtn = targetPopup:AddButton(LCL.Get("UCT_EntireParty", "Entire Party"))
+                    spawnForAllBtn.OnClick = function()
+                        SMS.SpawnAllOfTemplateForParty:SendToServer({ uuid = uuid, amount = amount })
+                    end
+                    
+                    targetPopup:Open()
                 end
             end
-            spawnTargetPopup:Open()
+            
+            amountPopup:Open()
         end
 
         data.fullName = fullName
