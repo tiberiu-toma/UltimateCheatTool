@@ -6,11 +6,13 @@ MCMActive = Mods and Mods.BG3MCM
 -- Global instances for CharacterTools and ItemTools UIs
 CharacterTools = nil
 ItemTools = nil
+MiscTools = nil
 
 local UI_Events = Ext.Require("Client/UI_Events.lua")
 local UIState = Ext.Require("Client/UIState.lua")
 local CharacterToolsUI = Ext.Require("Client/CharacterToolsUI.lua")
 local ItemToolsUI = Ext.Require("Client/ItemToolsUI.lua")
+local MiscToolsUI = Ext.Require("Client/MiscToolsUI.lua")
 
 --------------------------------------------------
 --------------------------------------------------
@@ -84,6 +86,11 @@ if MCMActive then
         ItemTools:Initialize()
         return ItemTools.Window
     end)
+    Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Misc Tools", function(mcm)
+        MiscTools = MiscToolsUI:New(mcm)
+        MiscTools:Initialize()
+        return MiscTools.Window
+    end)
 else
     -- For standalone mod (without MCM), create both windows
     CharacterTools = CharacterToolsUI:New(nil)
@@ -91,6 +98,9 @@ else
 
     ItemTools = ItemToolsUI:New(nil)
     ItemTools:Initialize()
+
+    MiscTools = MiscToolsUI:New(nil)
+    MiscTools:Initialize()
 end
 
 Ext.Events.GameStateChanged:Subscribe(function(ev)
@@ -107,5 +117,6 @@ end)
 return {
     CharacterTools = CharacterTools,
     ItemTools = ItemTools,
+    MiscTools = MiscTools,
     UI_Utils = UI_Utils,
 }

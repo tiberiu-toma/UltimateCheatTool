@@ -2,9 +2,9 @@ local UI_Events = Ext.Require("Client/UI_Events.lua")
 local UIState = Ext.Require("Client/UIState.lua")
 local EquipmentSelector = Ext.Require("Client/EquipmentSelector.lua")
 local EquipmentTab = Ext.Require("Client/EquipmentTab.lua")
+local ConsumableTab = Ext.Require("Client/ConsumableTab.lua")
 local PassiveTab = Ext.Require("Client/PassiveTab.lua")
 local StatusTab = Ext.Require("Client/StatusTab.lua")
-local ConsumableTab = Ext.Require("Client/ConsumableTab.lua")
 
 ---@class ItemToolsUI
 ---@field Ready boolean
@@ -62,14 +62,14 @@ function ItemToolsUI:Initialize()
     self.TabBar = self.Window:AddTabBar("UCT_ItemTabBar")
 
     self.EquipmentTab = EquipmentTab:New(self.TabBar)
+    self.ConsumableTab = ConsumableTab:New(self.TabBar)
     self.PassiveTab = PassiveTab:New(self.TabBar, "ItemTools") -- Add PassiveTab to ItemTools
     self.StatusTab = StatusTab:New(self.TabBar, "ItemTools") -- Add StatusTab to ItemTools
-    self.ConsumableTab = ConsumableTab:New(self.TabBar)
 
     self.EquipmentTab:Init()
+    self.ConsumableTab:Init()
     self.PassiveTab:Init() -- Initialize ItemTools' PassiveTab
     self.StatusTab:Init() -- Initialize ItemTools' StatusTab
-    self.ConsumableTab:Init()
     self.Ready = true
 end
 

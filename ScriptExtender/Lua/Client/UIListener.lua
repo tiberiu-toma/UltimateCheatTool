@@ -6,8 +6,8 @@ SMS.SendEquipment:SetHandler(function (payload)
     end
 end)
 SMS.SendNPCs:SetHandler(function (payload)
-    if CharacterTools then
-        local tab = CharacterTools.NPCTab
+    if MiscTools then
+        local tab = MiscTools.NPCTab
         tab:SetData(payload)
     end
 end)
@@ -46,8 +46,8 @@ SMS.SendConsumables:SetHandler(function (payload)
     end
 end)
 SMS.SendWaypoints:SetHandler(function (payload)
-    if CharacterTools then
-        local tab = CharacterTools.WaypointTab
+    if MiscTools then
+        local tab = MiscTools.WaypointTab
 
         tab:SetData(payload)
     end
@@ -100,7 +100,7 @@ SMS.UIRefresh:SetHandler(function(payload)
     if tabName == "Tag" and CharacterTools and CharacterTools.TagTab and CharacterTools.TagTab.Tab.Visible then
         CharacterTools.TagTab:GetAppliedTags()
     end
-    if tabName == "NPC" and CharacterTools and CharacterTools.NPCTab and CharacterTools.NPCTab.Tab.Visible then
-        CharacterTools.NPCTab:GetSpawnedNPCs()
+    if tabName == "NPC" and MiscTools and MiscTools.NPCTab and MiscTools.NPCTab.Tab.Visible then
+        MiscTools.NPCTab:GetSpawnedNPCs()
     end
 end)
