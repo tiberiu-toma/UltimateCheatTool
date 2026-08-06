@@ -45,6 +45,7 @@ LocaleText = {
 	UCT_StatusTab_Label = "Statuses",
 	UCT_CompanionTab_Label = "Companions",
 	UCT_NPCTab_Label = "NPCs",
+	UCT_ResourceTab_Label = "Resources",
 	UCT_TagTab_Label = "Tags",
 	UCT_WaypointTab_Label = "Waypoints",
 
@@ -55,6 +56,7 @@ LocaleText = {
 	UCT_SearchPassives_Label = "Search Passives:",
 	UCT_SearchStatuses_Label = "Search Statuses:",
 	UCT_SearchNPCs_Label = "Search NPCs:",
+	UCT_SearchResources_Label = "Search Resources:",
 	UCT_SearchTags_Label = "Search Tags:",
 	UCT_SearchWaypoints_Label = "Search Waypoints:",
 
@@ -96,6 +98,9 @@ LocaleText = {
 	UCT_OnSelectedItem = "On Selected Item",
 	UCT_SelectCharacter = "Select a character.",
 	UCT_NoItemSelected = "No item selected.",
+	UCT_NoCustomResources = "This character has no custom resources added.",
+	UCT_AddedResourcesHeader = "Added Resources",
+	UCT_ResourceTab_SelectCharacter = "Select a character to see their added resources.",
 	UCT_NoCustomPassives = "No custom passives.",
 	UCT_NoCustomStatuses = "No custom statuses.",
 	UCT_NoCustomTags = "You don't have any custom tags applied.",
@@ -116,4 +121,6 @@ LocaleText = {
 	UCT_StatusTab_RemoveForParty = "Remove for Party",
 	UCT_TagTab_AddForParty = "Add for Party",
 	UCT_TagTab_RemoveForParty = "Remove for Party",
+	UCT_ResourceTab_AddForParty = "Add for Party",
+	UCT_ResourceTab_RemoveForParty = "Remove for Party",
 }
