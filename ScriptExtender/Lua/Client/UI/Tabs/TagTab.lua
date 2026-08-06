@@ -1,6 +1,7 @@
 local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UI/UIState.lua")
 local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
+local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua")
 
 ---@class TagTab : BaseTab
 ---@field AppliedTags table
@@ -23,12 +24,35 @@ function TagTab:New(holder)
 
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, TagTab) -- Re-set metatable to the child class
-    instance.AppliedTags = {}
+
+    local gridConfig = {
+        headerText = "Applied Tags",
+        noItemsText = LCL.Get("UCT_NoCustomTags", "You don't have any custom tags applied."),
+        maxTableWidth = 3,
+        idPrefix = "Tag",
+        renderItem = function(cell, uuid, data)
+            local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
+            if not name then return end
+
+            local shortName = name
+            if HLP.Strlen(shortName) > 25 then shortName = HLP.Cut(shortName, 1, 25) .. "..." end
+
+            local tagButton = cell:AddButton(shortName .. "##AppliedTag" .. uuid)
+            local popup = cell:AddPopup("ManageTag" .. uuid)
+
+            tagButton.OnClick = function() popup:Open() end
+
+            InfoPopup:AddInfo(popup, data, { { key = "id", label = "ID" }, { key = "displayName", label = "Name" }, { key = "displayDescription", label = "Description" } })
+            local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
+            removeButton.OnClick = function() SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 }) end
+        end
+    }
+    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("AppliedTags"), gridConfig)
+
     return instance
 end
 
 function TagTab:Init()
-    self.AppliedTagsArea = self.Tab:AddGroup("AppliedTags")
     self:GetAppliedTags()
 
     -- This will create the search, pagination, and main areas and fetch the first page of all tags
@@ -109,81 +133,16 @@ function TagTab:DrawGrid()
 end
 
 function TagTab:GetAppliedTags()
-    self.AppliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
-
-    UI_Utils.DestroyChildren(self.AppliedTagsArea)
-
     local charUUID = UIState.SelectedCharacter
     if not charUUID then
-        self.AppliedTagsArea:AddText(LCL.Get("UCT_TagTab_SelectCharacter", "Select a character to see their tags."))
+        UI_Utils.DestroyChildren(self.ModificationGrid.Parent)
+        self.ModificationGrid.Parent:AddText(LCL.Get("UCT_TagTab_SelectCharacter", "Select a character to see their tags."))
         return
     end
 
-    local appliedForChar = self.AppliedTags[charUUID] or {}
-    local totalApplied = HLP.Count(appliedForChar)
-    if totalApplied == 0 then
-        self.AppliedTagsArea:AddText(LCL.Get("UCT_NoCustomTags", "You don't have any custom tags applied."))
-        return
-    end
-
-    local maxTableWidth = self.Config.maxTableWidth or 3
-    local tableWidth = math.min(totalApplied, maxTableWidth)
-    
-    local header = self.AppliedTagsArea:AddCollapsingHeader("Applied Tags##AppliedTagsHeader")
-
-    local t = header:AddTable("AppliedTagsGrid", tableWidth)
-    t.SizingFixedSame = true
-    t.NoHostExtendX = true
-
-    local i = 1
-    local row
-    local drawnCount = 0
-    local maxDrawn = 50 -- Performance cap
-
-    for uuid,data in kpairs(appliedForChar) do
-        if drawnCount >= maxDrawn then
-            header:AddText("...and more (list truncated for performance).")
-            break
-        end
-
-        if (i - 1) % maxTableWidth == 0 then
-            row = t:AddRow()
-        end
-
-        local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
-        if not name then goto continue end
-        local description = LCL.PreprocessXML(HLP.GetAttr(data, "displayDescription"))
-        if not description then goto continue end
-
-        local shortName = name
-        if HLP.Strlen(shortName) > 25 then
-            shortName = HLP.Cut(shortName, 1, 25) .. "..."
-        end
-
-        local cell = row:AddCell()
-        local tagButton = cell:AddButton(shortName .. "##AppliedTag" .. uuid)
-        local popup = cell:AddPopup("ManageTag" .. uuid)
-
-        tagButton.OnClick = function()
-            popup:Open()
-        end
-
-        local appliedTagInfoFields = {
-            { key = "id", label = "ID" },
-            { key = "displayName", label = "Name" },
-            { key = "displayDescription", label = "Description" },
-        }
-        InfoPopup:AddInfo(popup, data, appliedTagInfoFields)
-
-        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
-        removeButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
-        end
-
-        i = i + 1
-        drawnCount = drawnCount + 1
-        ::continue::
-    end
+    local appliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
+    local appliedForChar = appliedTags[charUUID] or {}
+    self.ModificationGrid:Draw(appliedForChar)
 end
 
 return TagTab

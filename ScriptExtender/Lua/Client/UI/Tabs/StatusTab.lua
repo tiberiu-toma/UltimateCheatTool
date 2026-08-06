@@ -1,6 +1,7 @@
 local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UI/UIState.lua")
 local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
+local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua")
 
 ---@class StatusTab : BaseTab
 ---@field AppliedStatuses table
@@ -23,13 +24,47 @@ function StatusTab:New(holder, parentUI)
 
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, StatusTab) -- Re-set metatable to the child class
-    instance.AppliedStatuses = {}
-    instance.ParentUI = parentUI -- Store the parent UI context
+    instance.ParentUI = parentUI
+
+    local gridConfig = {
+        headerText = LCL.Get("UCT_AppliedStatusesHeader", "Applied Statuses"),
+        noItemsText = LCL.Get("UCT_NoCustomStatuses", "No custom statuses."),
+        maxTableWidth = 3,
+        idPrefix = "Status",
+        renderItem = function(cell, uuid, data)
+            local icon = HLP.GetAttr(data, "icon") or "EC_Portrait_Generic"
+            if icon == "unknown" or icon == "" then icon = "EC_Portrait_Generic" end
+            local fullName = HLP.GetAttr(data, "displayName")
+
+            if not fullName then return end
+
+            local name = fullName
+            if HLP.Strlen(name) > 20 then name = HLP.Cut(name, 1, 20) .. "..." end
+
+            local itemButton = cell:AddImageButton("##StatusGrid" .. uuid, icon, {100 * ViewPortScale, 100 * ViewPortScale})
+            cell:AddText(name)
+            local popup = cell:AddPopup("ManageStatus_" .. uuid)
+
+            itemButton.OnClick = function() popup:Open() end
+
+            InfoPopup:AddInfo(popup, data, { { key = "id", label = "ID" }, { key = "displayName", label = "Name" } })
+
+            local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
+            removeButton.OnClick = function()
+                if instance.ParentUI == "CharacterTools" then
+                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
+                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment then
+                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemTemplateUUID = UIState.SelectedEquipment.id, statusUUID = uuid })
+                end
+            end
+        end
+    }
+    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("AppliedStatuses"), gridConfig)
+
     return instance
 end
 
 function StatusTab:Init()
-    self.AppliedStatusesArea = self.Tab:AddGroup("AppliedStatuses")
     self:GetAppliedStatuses()
 
     -- This will create the search, pagination, and main areas and fetch the first page of all statuses
@@ -141,123 +176,28 @@ function StatusTab:DrawGrid()
     end
 end
 
----@param parent ExtuiGroup
----@param statuses table
----@param maxTableWidth number
----@param onRemove function
-function StatusTab:_DrawStatusGrid(parent, statuses, maxTableWidth, onRemove, gridId)
-    local total = HLP.Count(statuses)
-    if total == 0 then
-        return
-    end
-
-    local tableWidth = math.min(total, maxTableWidth)
-    local t = parent:AddTable(gridId, tableWidth)
-    t.SizingFixedFit = true
-    t.NoHostExtendX = true
-
-    local i = 1
-    local row
-    local drawnCount = 0
-    local maxDrawn = 50 -- Performance cap
-
-    for uuid, data in kpairs(statuses) do
-        if drawnCount >= maxDrawn then
-            parent:AddText("...and more (list truncated for performance).")
-            break
-        end
-
-        if (i - 1) % maxTableWidth == 0 then
-            row = t:AddRow()
-        end
-
-        local icon = HLP.GetAttr(data, "icon") or "EC_Portrait_Generic"
-        if icon == "unknown" or icon == "" then icon = "EC_Portrait_Generic" end
-        local fullName = HLP.GetAttr(data, "displayName")
-
-        if not fullName then goto continue end
-
-        local name = fullName
-        if HLP.Strlen(name) > 20 then
-            name = HLP.Cut(name, 1, 20) .. "..."
-        end
-
-        local cell = row:AddCell()
-        local statusItem = cell:AddImageButton("##StatusGrid" .. uuid, icon, {100 * ViewPortScale, 100 * ViewPortScale})
-        cell:AddText(name)
-        local popup = cell:AddPopup("ManageStatus_" .. uuid)
-
-        statusItem.OnClick = function() popup:Open() end
-
-        data.fullName = fullName
-        local infoFields = {
-            { key = "id", label = "ID" },
-            { key = "fullName", label = "Name" },
-        }
-        InfoPopup:AddInfo(popup, data, infoFields)
-
-        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
-        removeButton.OnClick = function()
-            onRemove(uuid, data)
-        end
-
-        i = i + 1
-        drawnCount = drawnCount + 1
-        ::continue::
-    end
-end
-
 function StatusTab:GetAppliedStatuses()
-    self.AppliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
-
-    UI_Utils.DestroyChildren(self.AppliedStatusesArea)
-
-    local header = self.AppliedStatusesArea:AddCollapsingHeader(LCL.Get("UCT_AppliedStatusesHeader", "Applied Statuses"))
-
-    local layoutTable = header:AddTable("AppliedStatusesLayout", 2)
-    layoutTable.SizingFixedSame = true
-    layoutTable.NoHostExtendX = true
-
-    local row = layoutTable:AddRow()
-
     if self.ParentUI == "CharacterTools" then
-        local charStatusesCell = row:AddCell()
-        -- Column 1: Character Statuses
-        charStatusesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
         local charUUID = UIState.SelectedCharacter
         if not charUUID then
-            charStatusesCell:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
-        else
-            local appliedForChar = self.AppliedStatuses[charUUID] or {}
-            if HLP.Count(appliedForChar) == 0 then
-                charStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
-            else
-                self:_DrawStatusGrid(charStatusesCell, appliedForChar, 3, function(uuid, data)
-                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
-                end, "CharAppliedStatusesGrid")
-            end
+            UI_Utils.DestroyChildren(self.ModificationGrid.Parent)
+            self.ModificationGrid.Parent:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
+            return
         end
+        local appliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+        local data = appliedStatuses[charUUID] or {}
+        self.ModificationGrid:Draw(data)
     elseif self.ParentUI == "ItemTools" then
-        local itemStatusesCell = row:AddCell()
-        -- Column 2: Item Statuses
-        itemStatusesCell:AddSeparatorText(LCL.Get("UCT_OnSelectedItem", "On Selected Item"))
         local equipmentData = UIState.SelectedEquipment
         if not equipmentData then
-            itemStatusesCell:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
-        else
-            local itemTemplateUUID = equipmentData.id
-            local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-            local itemMods = modifiedEquipment[itemTemplateUUID]
-            local itemStatuses = itemMods and itemMods.statuses
-
-            if not itemStatuses or HLP.Count(itemStatuses) == 0 then
-                itemStatusesCell:AddText(LCL.Get("UCT_NoCustomStatuses", "No custom statuses."))
-            else
-                self:_DrawStatusGrid(itemStatusesCell, itemStatuses, 3, function(uuid, data)
-                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemTemplateUUID = itemTemplateUUID, statusUUID = uuid })
-                end, "ItemAppliedStatusesGrid")
-            end
+            UI_Utils.DestroyChildren(self.ModificationGrid.Parent)
+            self.ModificationGrid.Parent:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
+            return
         end
+        local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+        local itemMods = modifiedEquipment[equipmentData.id]
+        local data = (itemMods and itemMods.statuses) or {}
+        self.ModificationGrid:Draw(data)
     end
 end
 
