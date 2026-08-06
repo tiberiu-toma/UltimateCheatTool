@@ -2,12 +2,12 @@ local UI_Events = Ext.Require("Client/UI/UIEvents.lua")
 local UIState = Ext.Require("Client/UI/UIState.lua")
 local CharacterSelector = Ext.Require("Client/UI/Components/CharacterSelector.lua")
 local GenericTab = Ext.Require("Client/UI/Tabs/GenericTab.lua")
+local SpellTab = Ext.Require("Client/UI/Tabs/SpellTab.lua")
 local PassiveTab = Ext.Require("Client/UI/Tabs/PassiveTab.lua")
 local StatusTab = Ext.Require("Client/UI/Tabs/StatusTab.lua")
 local TagTab = Ext.Require("Client/UI/Tabs/TagTab.lua")
-local SpellTab = Ext.Require("Client/UI/Tabs/SpellTab.lua")
 local RecruitTab = Ext.Require("Client/UI/Tabs/RecruitTab.lua")
-local ResetTab = Ext.Require("Client/UI/Tabs/ResetTab.lua")
+--local ResetTab = Ext.Require("Client/UI/Tabs/ResetTab.lua")
 
 ---@class CharacterToolsUI
 ---@field Ready boolean
@@ -17,12 +17,12 @@ local ResetTab = Ext.Require("Client/UI/Tabs/ResetTab.lua")
 ---@field CharSelector CharacterSelector
 ---@field TabBar ExtuiTabBar
 ---@field GenericTab GenericTab
+---@field SpellTab SpellTab
 ---@field RecruitTab RecruitTab
 ---@field TagTab TagTab
----@field SpellTab SpellTab
 ---@field PassiveTab PassiveTab
 ---@field StatusTab StatusTab
----@field ResetTab ResetTab
+-----@field ResetTab ResetTab
 CharacterToolsUI = {}
 CharacterToolsUI.__index = CharacterToolsUI
 
@@ -64,20 +64,20 @@ function CharacterToolsUI:Initialize()
     self.TabBar = self.Window:AddTabBar("UCT_CharacterTabBar")
 
     self.GenericTab = GenericTab:New(self.TabBar)
+    self.SpellTab = SpellTab:New(self.TabBar)
     self.PassiveTab = PassiveTab:New(self.TabBar, "CharacterTools") -- Add PassiveTab to CharacterTools
     self.StatusTab = StatusTab:New(self.TabBar, "CharacterTools") -- Add StatusTab to CharacterTools
     self.TagTab = TagTab:New(self.TabBar)
-    self.SpellTab = SpellTab:New(self.TabBar)
     self.RecruitTab = RecruitTab:New(self.TabBar)
-    self.ResetTab = ResetTab:New(self.TabBar)
+    --self.ResetTab = ResetTab:New(self.TabBar)
 
     self.GenericTab:Init()
+    self.SpellTab:Init()
     self.PassiveTab:Init() -- Initialize CharacterTools' PassiveTab
     self.StatusTab:Init() -- Initialize CharacterTools' StatusTab
     self.TagTab:Init()
-    self.SpellTab:Init()
     self.RecruitTab:Init()
-    self.ResetTab:Init()
+    --self.ResetTab:Init()
 
     self.Ready = true
 end
