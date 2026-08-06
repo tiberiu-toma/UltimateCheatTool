@@ -1,5 +1,5 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class WaypointTab : BaseTab
 WaypointTab = {}
@@ -7,8 +7,6 @@ setmetatable(WaypointTab, { __index = BaseTab })
 WaypointTab.__index = WaypointTab
 
 function WaypointTab:New(holder)
-    if UI.WaypointTab then return end 
-
     local config = {
         tabName = "Waypoints",
         tabNameHandle = "UCT_WaypointTab_Label",

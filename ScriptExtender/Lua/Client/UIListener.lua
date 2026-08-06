@@ -1,92 +1,106 @@
 SMS.SendEquipment:SetHandler(function (payload)
-    if UI then
-        local tab = UI.EquipmentTab
+    if ItemTools then
+        local tab = ItemTools.EquipmentTab
 
         tab:SetData(payload)
     end
 end)
 SMS.SendNPCs:SetHandler(function (payload)
-    if UI then
-        local tab = UI.NPCTab
+    if MiscTools then
+        local tab = MiscTools.NPCTab
         tab:SetData(payload)
     end
 end)
 SMS.SendSpells:SetHandler(function (payload)
-    if UI then
-        local tab = UI.SpellTab
+    if CharacterTools then
+        local tab = CharacterTools.SpellTab
         tab:SetData(payload)
     end
 end)
 SMS.SendPassives:SetHandler(function (payload)
-    if UI then
-        local tab = UI.PassiveTab
-        tab:SetData(payload)
+    if CharacterTools and CharacterTools.PassiveTab then
+        CharacterTools.PassiveTab:SetData(payload)
+    end
+    if ItemTools and ItemTools.PassiveTab then
+        ItemTools.PassiveTab:SetData(payload)
     end
 end)
 SMS.SendTags:SetHandler(function (payload)
-    if UI then
-        local tab = UI.TagTab
+    if CharacterTools then
+        local tab = CharacterTools.TagTab
         tab:SetData(payload)
     end
 end)
 SMS.SendStatuses:SetHandler(function (payload)
-    if UI then
-        local tab = UI.StatusTab
-
-        tab:SetData(payload)
+    if CharacterTools and CharacterTools.StatusTab then
+        CharacterTools.StatusTab:SetData(payload)
+    end
+    if ItemTools and ItemTools.StatusTab then
+        ItemTools.StatusTab:SetData(payload)
     end
 end)
 SMS.SendConsumables:SetHandler(function (payload)
-    if UI then
-        local tab = UI.ConsumableTab
+    if ItemTools then
+        local tab = ItemTools.ConsumableTab
         tab:SetData(payload)
     end
 end)
 SMS.SendWaypoints:SetHandler(function (payload)
-    if UI then
-        local tab = UI.WaypointTab
+    if MiscTools then
+        local tab = MiscTools.WaypointTab
 
         tab:SetData(payload)
     end
 end)
 
 SMS.SendPartyMembers:SetHandler(function (payload)
-    if UI and UI.CharSelector then
+    if CharacterTools and CharacterTools.CharSelector then
         local members = payload.data
-        UI.CharSelector:SetPartyMembers(members)
+        CharacterTools.CharSelector:SetPartyMembers(members)
     end
 end)
 
 SMS.SendModifiedItemsData:SetHandler(function(payload)
-    if UI and UI.EquipmentSelector then
+    if ItemTools and ItemTools.EquipmentSelector then
         local items = payload.data
-        UI.EquipmentSelector:ShowModifiedItemsPopup(items)
+        ItemTools.EquipmentSelector:ShowModifiedItemsPopup(items)
     end
 end)
 
 SMS.SendEquippedItems:SetHandler(function(payload)
-    if UI and UI.EquipmentSelector then
-        local items = payload.data
-        UI.EquipmentSelector:SetQuickPickItems(items)
+    if ItemTools and ItemTools.EquipmentSelector then
+        -- payload contains { party = {members...}, items = { [charUUID] = {items...} } }
+        ItemTools.PartyMembers = payload.party or {}
+        ItemTools.EquipmentSelector:UpdatePartyEquipment(payload.items or {})
     end
 end)
 
 SMS.UIRefresh:SetHandler(function(payload)
-    if not UI or not UI.Ready then return end
-
-    -- Defer to next tick to be safe, as the variable might still be syncing.
-    -- We subscribe to the UI Tick event and immediately unsubscribe to ensure this runs only once,
-    -- after the current frame has processed.
+    if not CharacterTools and not ItemTools then return end
     local tabName = payload.tab
-    if tabName == "Passive" and UI.PassiveTab and UI.PassiveTab.Tab.Visible then
-        UI.PassiveTab:GetAddedPassives()
-    elseif tabName == "Status" and UI.StatusTab and UI.StatusTab.Tab.Visible then
-        UI.StatusTab:GetAppliedStatuses()
-    elseif tabName == "Spell" and UI.SpellTab and UI.SpellTab.Tab.Visible then
-        UI.SpellTab:GetLearnedSpells()
-    elseif tabName == "Tag" and UI.TagTab and UI.TagTab.Tab.Visible then
-        UI.TagTab:GetAppliedTags()
-    elseif tabName == "NPC" and UI.NPCTab and UI.NPCTab.Tab.Visible then
-        UI.NPCTab:GetSpawnedNPCs()
+    if tabName == "Passive" then
+        if ItemTools and ItemTools.PassiveTab and ItemTools.PassiveTab.Tab.Visible then
+            ItemTools.PassiveTab:GetAddedPassives()
+        end
+        if CharacterTools and CharacterTools.PassiveTab and CharacterTools.PassiveTab.Tab.Visible then
+            CharacterTools.PassiveTab:GetAddedPassives()
+        end
+    end
+    if tabName == "Status" then
+        if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.Tab.Visible then
+            ItemTools.StatusTab:GetAppliedStatuses()
+        end
+        if CharacterTools and CharacterTools.StatusTab and CharacterTools.StatusTab.Tab.Visible then
+            CharacterTools.StatusTab:GetAppliedStatuses()
+        end
+    end
+    if tabName == "Spell" and CharacterTools and CharacterTools.SpellTab and CharacterTools.SpellTab.Tab.Visible then
+        CharacterTools.SpellTab:GetLearnedSpells()
+    end
+    if tabName == "Tag" and CharacterTools and CharacterTools.TagTab and CharacterTools.TagTab.Tab.Visible then
+        CharacterTools.TagTab:GetAppliedTags()
+    end
+    if tabName == "NPC" and MiscTools and MiscTools.NPCTab and MiscTools.NPCTab.Tab.Visible then
+        MiscTools.NPCTab:GetSpawnedNPCs()
     end
 end)

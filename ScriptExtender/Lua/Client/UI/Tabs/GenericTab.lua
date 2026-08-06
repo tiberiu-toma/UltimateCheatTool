@@ -1,3 +1,5 @@
+local UIState = Ext.Require("Client/UI/UIState.lua")
+
 ---@class GenericTab
 ---@field Tab ExtuiTabItem
 GenericTab = {}
@@ -5,8 +7,6 @@ GenericTab.__index = GenericTab
 
 ---@param holder ExtuiTabBar
 function GenericTab:New(holder)
-    if UI.GenericTab then return end
-
     local instance = setmetatable({
         Tab = holder:AddTabItem(LCL.Get("UCT_GenericTab_Label", "Generic")),
     }, GenericTab)
@@ -30,7 +30,7 @@ function GenericTab:Init()
 
     local resetCooldownsBtn = actionsRow1:AddCell():AddButton(LCL.Get("UCT_GenericTab_ResetCooldowns", "Reset Cooldowns"))
     resetCooldownsBtn.OnClick = function()
-        local charUUID = UI.CharSelector.SelectedCharacter
+        local charUUID = UIState.SelectedCharacter
         SMS.ResetCooldowns:SendToServer({ ID = charUUID })
     end
 
@@ -38,13 +38,13 @@ function GenericTab:Init()
 
     local respecBtn = actionsRow2:AddCell():AddButton(LCL.Get("UCT_GenericTab_StartRespec", "Respec Character"))
     respecBtn.OnClick = function()
-        local charUUID = UI.CharSelector.SelectedCharacter
+        local charUUID = UIState.SelectedCharacter
         SMS.StartRespec:SendToServer({ ID = charUUID })
     end
 
     local appearanceBtn = actionsRow2:AddCell():AddButton(LCL.Get("UCT_GenericTab_ChangeAppearance", "Change Appearance"))
     appearanceBtn.OnClick = function()
-        local charUUID = UI.CharSelector.SelectedCharacter
+        local charUUID = UIState.SelectedCharacter
         SMS.StartChangeAppearance:SendToServer({ ID = charUUID })
     end
     self.Tab:AddSeparator()
@@ -62,7 +62,7 @@ function GenericTab:Init()
     for _, amount in ipairs(goldAmounts) do
         local btn = goldRow:AddCell():AddButton("Add " .. amount .. "##Gold" .. tostring(amount))
         btn.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
+            local charUUID = UIState.SelectedCharacter
             SMS.AddGold:SendToServer({ ID = charUUID, Amount = amount })
         end
     end
@@ -85,7 +85,7 @@ function GenericTab:Init()
     for _, amount in ipairs(inspirationAmounts) do
         local btn = inspirationRow:AddCell():AddButton("Add " .. amount .. "##Inspiration" .. tostring(amount))
         btn.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
+            local charUUID = UIState.SelectedCharacter
             SMS.AddInspiration:SendToServer({ ID = charUUID, Amount = amount })
         end
     end
@@ -97,7 +97,7 @@ function GenericTab:Init()
     for _, amount in ipairs(tadpoleAmounts) do
         local btn = tadpoleRow:AddCell():AddButton("Add " .. amount .. "##Tadpole" .. tostring(amount))
         btn.OnClick = function()
-            local charUUID = UI.CharSelector.SelectedCharacter
+            local charUUID = UIState.SelectedCharacter
             SMS.AddTadpoles:SendToServer({ ID = charUUID, Amount = amount })
         end
     end

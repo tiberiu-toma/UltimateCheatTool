@@ -1,5 +1,6 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
+local UIState = Ext.Require("Client/UI/UIState.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class PassiveTab : BaseTab
 ---@field AddedPassives table
@@ -8,9 +9,7 @@ PassiveTab = {}
 setmetatable(PassiveTab, { __index = BaseTab })
 PassiveTab.__index = PassiveTab
 
-function PassiveTab:New(holder)
-    if UI.PassiveTab then return end
-
+function PassiveTab:New(holder, parentUI)
     local config = {
         tabName = "Passives",
         tabNameHandle = "UCT_PassiveTab_Label",
@@ -25,6 +24,7 @@ function PassiveTab:New(holder)
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, PassiveTab) -- Re-set metatable to the child class
     instance.AddedPassives = {}
+    instance.ParentUI = parentUI -- Store the parent UI context
     return instance
 end
 
@@ -79,31 +79,46 @@ function PassiveTab:DrawGrid()
         actionsTable.SizingFixedSame = false
         actionsTable.NoHostExtendX = true
 
-        local row1 = actionsTable:AddRow()
-        local addPassiveBtn = row1:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Add", "Add") .. "##Add" .. uuid)
-        local removePassiveBtn = row1:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Remove", "Remove") .. "##Remove" .. uuid)
+        if self.ParentUI == "CharacterTools" then
+            local row1 = actionsTable:AddRow()
+            local addPassiveBtn = row1:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Add", "Add") .. "##Add" .. uuid)
+            local removePassiveBtn = row1:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Remove", "Remove") .. "##Remove" .. uuid)
 
-        local row2 = actionsTable:AddRow()
-        local addForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_PassiveTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
-        local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_PassiveTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
+            local row2 = actionsTable:AddRow()
+            local addForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_PassiveTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
+            local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_PassiveTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
 
-        local row3 = actionsTable:AddRow()
-        local addToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_PassiveTab_AddToSelectedItem", "Add to Selected Item") .. "##AddItem" .. uuid)
-        local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_PassiveTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
-        
-        local equipmentData = UI.EquipmentSelector.SelectedEquipment
-        if not equipmentData then
-            addToSelectedItem.Disabled = true
-            removeFromSelectedItem.Disabled = true
-        else
-            addToSelectedItem.OnClick = function()
-                if equipmentData and equipmentData.id then
-                    SMS.AddPassiveOnItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
-                end
+            addPassiveBtn.OnClick = function()
+                SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, amount=1, data=data })
             end
-            removeFromSelectedItem.OnClick = function()
-                if equipmentData and equipmentData.id then
-                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
+            removePassiveBtn.OnClick = function()
+                SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1})
+            end
+            addForPartyBtn.OnClick = function()
+                SMS.AddPassiveForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
+            end
+            removeForPartyBtn.OnClick = function()
+                SMS.RemovePassiveForParty:SendToServer({ ID = USERID, uuid = uuid })
+            end
+        elseif self.ParentUI == "ItemTools" then
+            local row3 = actionsTable:AddRow()
+            local addToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_PassiveTab_AddToSelectedItem", "Add to Selected Item") .. "##AddItem" .. uuid)
+            local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_PassiveTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
+
+            local equipmentData = UIState.SelectedEquipment
+            if not equipmentData then
+                addToSelectedItem.Disabled = true
+                removeFromSelectedItem.Disabled = true
+            else
+                addToSelectedItem.OnClick = function()
+                    if equipmentData and equipmentData.id then
+                        SMS.AddPassiveOnItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
+                    end
+                end
+                removeFromSelectedItem.OnClick = function()
+                    if equipmentData and equipmentData.id then
+                        SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
+                    end
                 end
             end
         end
@@ -125,22 +140,6 @@ function PassiveTab:DrawGrid()
             { key = "modName", label = "Mod Name" },
         }
         InfoPopup:AddInfo(popup, data, passiveInfoFields)
-        
-        removePassiveBtn.OnClick = function()
-            SMS.AddPassive:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, remove=1})
-        end
-
-        addPassiveBtn.OnClick = function()
-            SMS.AddPassive:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
-        end
-
-        addForPartyBtn.OnClick = function()
-            SMS.AddPassiveForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
-        end
-
-        removeForPartyBtn.OnClick = function()
-            SMS.RemovePassiveForParty:SendToServer({ ID = USERID, uuid = uuid })
-        end
 
         i = i + 1
 
@@ -217,7 +216,7 @@ end
 function PassiveTab:GetAddedPassives()
     self.AddedPassives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
 
-    UI.DestroyChildren(self.AddedPassivesArea)
+    UI_Utils.DestroyChildren(self.AddedPassivesArea)
 
     local header = self.AddedPassivesArea:AddCollapsingHeader(LCL.Get("UCT_AddedPassivesHeader", "Added Passives"))
 
@@ -226,42 +225,44 @@ function PassiveTab:GetAddedPassives()
     layoutTable.NoHostExtendX = true
 
     local row = layoutTable:AddRow()
-    local charPassivesCell = row:AddCell()
-    local itemPassivesCell = row:AddCell()
 
-    -- Column 1: Character Passives
-    charPassivesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
-    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
-    if not charUUID then
-        charPassivesCell:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
-    else
-        local addedForChar = self.AddedPassives[charUUID] or {}
-        if HLP.Count(addedForChar) == 0 then
-            charPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
+    if self.ParentUI == "CharacterTools" then
+        local charPassivesCell = row:AddCell()
+        -- Column 1: Character Passives
+        charPassivesCell:AddSeparatorText(LCL.Get("UCT_OnCharacter", "On Character"))
+        local charUUID = UIState.SelectedCharacter
+        if not charUUID then
+            charPassivesCell:AddText(LCL.Get("UCT_SelectCharacter", "Select a character."))
         else
-            self:_DrawPassiveGrid(charPassivesCell, addedForChar, 3, function(uuid, data)
-                SMS.AddPassive:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid = uuid, remove = 1 })
-            end, "CharAddedPassivesGrid")
+            local addedForChar = self.AddedPassives[charUUID] or {}
+            if HLP.Count(addedForChar) == 0 then
+                charPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
+            else
+                self:_DrawPassiveGrid(charPassivesCell, addedForChar, 3, function(uuid, data)
+                    SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
+                end, "CharAddedPassivesGrid")
+            end
         end
-    end
-
-    -- Column 2: Item Passives
-    itemPassivesCell:AddSeparatorText(LCL.Get("UCT_OnSelectedItem", "On Selected Item"))
-    local equipmentData = UI.EquipmentSelector.SelectedEquipment
-    if not equipmentData then
-        itemPassivesCell:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
-    else
-        local itemTemplateUUID = equipmentData.id
-        local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-        local itemMods = modifiedEquipment[itemTemplateUUID]
-        local itemPassives = itemMods and itemMods.passives
-
-        if not itemPassives or HLP.Count(itemPassives) == 0 then
-            itemPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
+    elseif self.ParentUI == "ItemTools" then
+        local itemPassivesCell = row:AddCell()
+        -- Column 2: Item Passives
+        itemPassivesCell:AddSeparatorText(LCL.Get("UCT_OnSelectedItem", "On Selected Item"))
+        local equipmentData = UIState.SelectedEquipment
+        if not equipmentData then
+            itemPassivesCell:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
         else
-            self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 3, function(uuid, data)
-                SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
-            end, "ItemAddedPassivesGrid")
+            local itemTemplateUUID = equipmentData.id
+            local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+            local itemMods = modifiedEquipment[itemTemplateUUID]
+            local itemPassives = itemMods and itemMods.passives
+
+            if not itemPassives or HLP.Count(itemPassives) == 0 then
+                itemPassivesCell:AddText(LCL.Get("UCT_NoCustomPassives", "No custom passives."))
+            else
+                self:_DrawPassiveGrid(itemPassivesCell, itemPassives, 3, function(uuid, data)
+                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemTemplateUUID = itemTemplateUUID, passiveUUID = uuid })
+                end, "ItemAddedPassivesGrid")
+            end
         end
     end
 end

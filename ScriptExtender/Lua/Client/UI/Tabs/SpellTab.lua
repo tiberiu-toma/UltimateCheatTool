@@ -1,5 +1,6 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
+local UIState = Ext.Require("Client/UI/UIState.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class SpellTab : BaseTab
 ---@field LearnedSpells table
@@ -9,8 +10,6 @@ setmetatable(SpellTab, { __index = BaseTab })
 SpellTab.__index = SpellTab
 
 function SpellTab:New(holder)
-    if UI.SpellTab then return end 
-
     local config = {
         tabName = "Spells",
         tabNameHandle = "UCT_SpellTab_Label",
@@ -101,11 +100,11 @@ function SpellTab:DrawGrid()
                 InfoPopup:AddInfo(popup, data, spellInfoFields)
         
         removeSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, unlearn=1 })
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, unlearn=1 })
         end
 
         selectSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, amount=1, data=data })
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, amount=1, data=data })
         end
 
         learnForParty.OnClick = function()
@@ -125,9 +124,9 @@ end
 function SpellTab:GetLearnedSpells()
     self.LearnedSpells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
 
-    UI.DestroyChildren(self.LearnedSpellsArea)
+    UI_Utils.DestroyChildren(self.LearnedSpellsArea)
 
-    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
+    local charUUID = UIState.SelectedCharacter
     if not charUUID then
         self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_SelectCharacter", "Select a character to see their spells."))
         return
@@ -194,7 +193,7 @@ function SpellTab:GetLearnedSpells()
 
         local removeSpell = popup:AddButton(LCL.Get("hc056102aefe641d4be93e011426432082", "Unlearn") .. "##" .. uuid)
         removeSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, unlearn=1 })
+            SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, unlearn=1 })
         end
 
         i = i + 1

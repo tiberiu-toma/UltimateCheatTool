@@ -1,5 +1,6 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
+local UIState = Ext.Require("Client/UI/UIState.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class TagTab : BaseTab
 ---@field AppliedTags table
@@ -9,8 +10,6 @@ setmetatable(TagTab, { __index = BaseTab })
 TagTab.__index = TagTab
 
 function TagTab:New(holder)
-    if UI.TagTab then return end
-
     local config = {
         tabName = "Tags",
         tabNameHandle = "UCT_TagTab_Label",
@@ -89,11 +88,11 @@ function TagTab:DrawGrid()
         InfoPopup:AddInfo(popup, data, tagInfoFields)
 
         removeButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
         end
 
         addButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, data=data })
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data })
         end
 
         addForPartyBtn.OnClick = function()
@@ -112,9 +111,9 @@ end
 function TagTab:GetAppliedTags()
     self.AppliedTags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
 
-    UI.DestroyChildren(self.AppliedTagsArea)
+    UI_Utils.DestroyChildren(self.AppliedTagsArea)
 
-    local charUUID = UI.CharSelector and UI.CharSelector.SelectedCharacter
+    local charUUID = UIState.SelectedCharacter
     if not charUUID then
         self.AppliedTagsArea:AddText(LCL.Get("UCT_TagTab_SelectCharacter", "Select a character to see their tags."))
         return
@@ -178,7 +177,7 @@ function TagTab:GetAppliedTags()
 
         local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid)
         removeButton.OnClick = function()
-            SMS.ManageTag:SendToServer({ ID = USERID, character = UI.CharSelector.SelectedCharacter, uuid=uuid, remove=1 })
+            SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
         end
 
         i = i + 1

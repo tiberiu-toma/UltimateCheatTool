@@ -97,6 +97,16 @@ function EKP.GetAll(search, page)
     return UTL.Paginate(allMatchingEquipment, page, pageSize)
 end
 
+function EKP.GetAllEquippedItems()
+    local allPartyItems = {}
+    local partyMembers = HLP.GetAllChars()
+
+    for _, charUUID in ipairs(partyMembers) do
+        allPartyItems[charUUID] = EKP.GetEquippedItems(charUUID)
+    end
+    return allPartyItems
+end
+
 function EKP.GetEquippedItems(characterUUID)
     local equippedItems = {}
     local slots = {

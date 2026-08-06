@@ -1,4 +1,4 @@
-local Pagination = Ext.Require("Client/Pagination.lua")
+local Pagination = Ext.Require("Client/Utils/Pagination.lua")
 
 ---@class BaseTab
 ---@field Tab ExtuiTabItem
@@ -38,9 +38,9 @@ function BaseTab:FetchData(page)
 end
 
 function BaseTab:SetData(payload)
-    UI.DestroyChildren(self.MainArea)
-    UI.DestroyChildren(self.PaginationAreaTop)
-    UI.DestroyChildren(self.PaginationAreaBottom)
+    UI_Utils.DestroyChildren(self.MainArea)
+    UI_Utils.DestroyChildren(self.PaginationAreaTop)
+    UI_Utils.DestroyChildren(self.PaginationAreaBottom)
 
     self.Items = payload.data or {}
     self.TotalItems = payload.totalItems or 0
@@ -76,7 +76,7 @@ function BaseTab:SetData(payload)
 end
 
 function BaseTab:AddSearch()
-    UI.DestroyChildren(self.SearchArea)
+    UI_Utils.DestroyChildren(self.SearchArea)
 
     self.SearchArea:AddSeparatorText(LCL.Get(self.Config.searchLabelHandle, self.Config.searchLabel or "Search:"))
 

@@ -43,7 +43,7 @@ function STAT.Apply(char, statusId, remove)
     end
 end
 
-function STAT.ApplyToItem(character, itemTemplateUUID, statusId)
+function STAT.ApplyToItem(itemTemplateUUID, statusId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
     
@@ -68,13 +68,11 @@ function STAT.ApplyToItem(character, itemTemplateUUID, statusId)
         statusOnEquip = (statusOnEquip == "" and statusId) or (statusOnEquip .. ";" .. statusId)
         originalStats.StatusOnEquip = statusOnEquip
         originalStats:Sync()
-        if character then
-            HLP.RefreshEquippedItem(character, itemTemplateUUID)
-        end
+        HLP.RefreshEquippedItem(nil, itemTemplateUUID)
     end
 end
 
-function STAT.RemoveFromItem(character, itemTemplateUUID, statusId)
+function STAT.RemoveFromItem(itemTemplateUUID, statusId)
     local template = Ext.Template.GetTemplate(itemTemplateUUID)
     if not template or not template.Stats then return end
 
@@ -111,7 +109,5 @@ function STAT.RemoveFromItem(character, itemTemplateUUID, statusId)
     end
 
     originalStats:Sync()
-    if character then
-        HLP.RefreshEquippedItem(character, itemTemplateUUID)
-    end
+    HLP.RefreshEquippedItem(nil, itemTemplateUUID)
 end
