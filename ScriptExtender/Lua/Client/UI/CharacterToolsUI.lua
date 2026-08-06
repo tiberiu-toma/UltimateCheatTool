@@ -1,5 +1,5 @@
-local UI_Events = Ext.Require("Client/UI_Events.lua")
-local UIState = Ext.Require("Client/UIState.lua")
+local UI_Events = Ext.Require("Client/UI/UIEvents.lua")
+local UIState = Ext.Require("Client/UI/UIState.lua")
 local CharacterSelector = Ext.Require("Client/UI/Components/CharacterSelector.lua")
 local GenericTab = Ext.Require("Client/UI/Tabs/GenericTab.lua")
 local PassiveTab = Ext.Require("Client/UI/Tabs/PassiveTab.lua")

@@ -1,5 +1,5 @@
 local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
-local UIState = Ext.Require("Client/UIState.lua")
+local UIState = Ext.Require("Client/UI/UIState.lua")
 local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class StatusTab : BaseTab

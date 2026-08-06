@@ -8,8 +8,8 @@ CharacterTools = nil
 ItemTools = nil
 MiscTools = nil
 
-local UI_Events = Ext.Require("Client/UI_Events.lua")
-local UIState = Ext.Require("Client/UIState.lua")
+local UI_Events = Ext.Require("Client/UI/UIEvents.lua")
+local UIState = Ext.Require("Client/UI/UIState.lua")
 local CharacterToolsUI = Ext.Require("Client/UI/CharacterToolsUI.lua")
 local ItemToolsUI = Ext.Require("Client/UI/ItemToolsUI.lua")
 local MiscToolsUI = Ext.Require("Client/UI/MiscToolsUI.lua")

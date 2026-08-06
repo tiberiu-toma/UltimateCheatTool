@@ -1,11 +1,11 @@
----@class UI_Events
+---@class UIEvents
 --- A simple global event dispatcher to decouple UI components.
-local UI_Events = {}
+local UIEvents = {}
 local listeners = {}
 
 ---@param eventName string The name of the event to subscribe to.
 ---@param callback function The function to call when the event is published.
-function UI_Events:Subscribe(eventName, callback)
+function UIEvents:Subscribe(eventName, callback)
     if not listeners[eventName] then
         listeners[eventName] = {}
     end
@@ -14,7 +14,7 @@ end
 
 ---@param eventName string The name of the event to publish.
 ---@param ... any The arguments to pass to the event listeners.
-function UI_Events:Publish(eventName, ...)
+function UIEvents:Publish(eventName, ...)
     if listeners[eventName] then
         for _, callback in ipairs(listeners[eventName]) do
             callback(...)
@@ -22,4 +22,4 @@ function UI_Events:Publish(eventName, ...)
     end
 end
 
-return UI_Events
+return UIEvents

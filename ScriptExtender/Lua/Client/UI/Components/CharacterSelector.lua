@@ -1,4 +1,4 @@
-local UIState = Ext.Require("Client/UIState.lua")
+local UIState = Ext.Require("Client/UI/UIState.lua")
 
 ---@class CharacterSelector
 ---@field Container ExtuiGroup

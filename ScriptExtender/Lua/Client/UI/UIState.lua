@@ -1,4 +1,4 @@
-local UI_Events = Ext.Require("Client/UI_Events.lua")
+local UI_Events = Ext.Require("Client/UI/UIEvents.lua")
 
 ---@class UIState
 --- Manages shared state between decoupled UI components.
