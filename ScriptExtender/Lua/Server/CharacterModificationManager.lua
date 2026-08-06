@@ -19,11 +19,10 @@ function CharacterModificationManager:ReapplyAll()
 
 		-- Re-apply resources
 		if modifications.resources then
-			for resourceId, resourceModData in pairs(modifications.resources) do
-				local amount = resourceModData.amount or 1
-				local level = resourceModData.level or 0
-				local boostString = string.format("ActionResource(%s,%s,%s)", resourceId, amount, level)
-				Osi.AddBoosts(charUUID, boostString, "", "")
+			for boostKey, resourceModData in pairs(modifications.resources) do
+				if resourceModData.boostString then
+					Osi.AddBoosts(charUUID, resourceModData.boostString, "", "")
+				end
 			end
 		end
 	end

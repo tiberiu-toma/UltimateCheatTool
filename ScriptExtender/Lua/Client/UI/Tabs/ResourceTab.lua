@@ -30,6 +30,7 @@ end
 
 function ResourceTab:Init()
     self.AddedResourcesArea = self.Tab:AddGroup("AddedResources")
+    self:GetAddedResources()
     -- This will create the search, pagination, and main areas and fetch the first page of all resources
     BaseTab.Init(self)
 end
@@ -152,6 +153,78 @@ function ResourceTab:DrawGrid()
         end
 
         i = i + 1
+        ::continue::
+    end
+end
+
+function ResourceTab:GetAddedResources()
+    local modifiedChars = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
+
+    UI_Utils.DestroyChildren(self.AddedResourcesArea)
+
+    local charUUID = UIState.SelectedCharacter
+    if not charUUID then
+        self.AddedResourcesArea:AddText(LCL.Get("UCT_ResourceTab_SelectCharacter", "Select a character to see their added resources."))
+        return
+    end
+
+    local addedForChar = (modifiedChars[charUUID] and modifiedChars[charUUID].resources) or {}
+    local totalAdded = HLP.Count(addedForChar)
+    if totalAdded == 0 then
+        self.AddedResourcesArea:AddText(LCL.Get("UCT_NoCustomResources", "This character has no custom resources added."))
+        return
+    end
+
+    local maxTableWidth = self.Config.maxTableWidth or 3
+    local tableWidth = math.min(totalAdded, maxTableWidth)
+    
+    local header = self.AddedResourcesArea:AddCollapsingHeader(LCL.Get("UCT_AddedResourcesHeader", "Added Resources"))
+
+    local t = header:AddTable("AddedResourcesGrid", tableWidth)
+    t.SizingFixedSame = true
+    t.NoHostExtendX = true
+
+    local i = 1
+    local row
+    local drawnCount = 0
+    local maxDrawn = 50 -- Performance cap
+
+    for uuid,data in kpairs(addedForChar) do
+        if drawnCount >= maxDrawn then
+            header:AddText("...and more (list truncated for performance).")
+            break
+        end
+
+        if (i - 1) % maxTableWidth == 0 then
+            row = t:AddRow()
+        end
+
+        local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
+        if not name then goto continue end
+        
+        local amount = HLP.GetAttr(data, "amount")
+        local level = HLP.GetAttr(data, "level")
+
+        local displayString = name
+        if amount then displayString = displayString .. " (x" .. amount .. ")" end
+        if level and level > 0 then displayString = displayString .. " [Lvl " .. level .. "]" end
+
+        local shortName = displayString
+        if HLP.Strlen(shortName) > 25 then shortName = HLP.Cut(shortName, 1, 25) .. "..." end
+
+        local cell = row:AddCell()
+        local resourceButton = cell:AddButton(shortName .. "##AddedResource" .. uuid)
+        local popup = cell:AddPopup("ManageResource" .. uuid)
+
+        resourceButton.OnClick = function() popup:Open() end
+
+        InfoPopup:AddInfo(popup, data, { { key = "id", label = "ID" }, { key = "displayName", label = "Name" }, { key = "description", label = "Description" }, { key = "amount", label = "Amount" }, { key = "level", label = "Level" }, { key = "maxLevel", label = "Max Level" } })
+        -- For removal, send the unique boostString (which is now 'uuid' in this loop)
+        local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##" .. uuid) 
+        removeButton.OnClick = function() SMS.ManageResource:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 }) end 
+
+        i = i + 1
+        drawnCount = drawnCount + 1
         ::continue::
     end
 end

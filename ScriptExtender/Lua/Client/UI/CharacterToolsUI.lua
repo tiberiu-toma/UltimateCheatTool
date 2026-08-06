@@ -61,7 +61,7 @@ function CharacterToolsUI:Initialize()
         if self.TagTab and self.TagTab.Tab.Visible then self.TagTab:GetAppliedTags() end
         if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
         if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
-        --if self.ResourceTab and self.ResourceTab.Tab.Visible then self.ResourceTab:GetAddedResources() end
+        if self.ResourceTab and self.ResourceTab.Tab.Visible then self.ResourceTab:GetAddedResources() end
     end)
 
     self.TabBar = self.Window:AddTabBar("UCT_CharacterTabBar")
