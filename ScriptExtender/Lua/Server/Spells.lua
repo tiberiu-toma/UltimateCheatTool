@@ -51,11 +51,3 @@ function SPLL.GetAll(search, page)
 
     return UTL.Paginate(allMatchingSpells, page, pageSize)
 end
-
-function SPLL.Learn(character, spellId, unlearn)
-    if unlearn then
-        Osi.RemoveSpell(character, spellId, 1)
-    else
-        Osi.AddSpell(character, spellId, 1, 1)
-    end
-end

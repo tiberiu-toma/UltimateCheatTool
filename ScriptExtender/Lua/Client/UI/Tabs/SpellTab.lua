@@ -23,7 +23,6 @@ function SpellTab:New(holder)
 
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, SpellTab) -- Re-set metatable to the child class
-    instance.LearnedSpells = {}
     return instance
 end
 
@@ -70,6 +69,8 @@ function SpellTab:DrawGrid()
         local spellItem = cell:AddImageButton("##Spell" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         cell:AddText(name)
         local popup = cell:AddPopup("AddItem" .. uuid)
+        local abilityPopup = cell:AddPopup("AbilityPopup" .. uuid)
+        local partyAbilityPopup = cell:AddPopup("PartyAbilityPopup" .. uuid)
 
         spellItem.OnClick = function()
             popup:Open()
@@ -99,16 +100,36 @@ function SpellTab:DrawGrid()
         }
                 InfoPopup:AddInfo(popup, data, spellInfoFields)
         
+        selectSpell.OnClick = function()
+            UI_Utils.DestroyChildren(abilityPopup)
+            abilityPopup:AddText("Select Casting Ability:")
+            abilityPopup:AddSeparator()
+            local abilities = {"Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"}
+            for _, ability in ipairs(abilities) do
+                local abilityBtn = abilityPopup:AddButton(ability)
+                abilityBtn.OnClick = function()
+                    SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data, ability = ability })
+                end
+            end
+            abilityPopup:Open()
+        end
+
         removeSpell.OnClick = function()
             SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, unlearn=1 })
         end
 
-        selectSpell.OnClick = function()
-            SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, amount=1, data=data })
-        end
-
         learnForParty.OnClick = function()
-            SMS.LearnSpellForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
+            UI_Utils.DestroyChildren(partyAbilityPopup)
+            partyAbilityPopup:AddText("Select Casting Ability for Party:")
+            partyAbilityPopup:AddSeparator()
+            local abilities = {"Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"}
+            for _, ability in ipairs(abilities) do
+                local abilityBtn = partyAbilityPopup:AddButton(ability)
+                abilityBtn.OnClick = function()
+                    SMS.LearnSpellForParty:SendToServer({ ID = USERID, uuid = uuid, data = data, ability = ability })
+                end
+            end
+            partyAbilityPopup:Open()
         end
 
         unlearnForParty.OnClick = function()
@@ -122,25 +143,25 @@ function SpellTab:DrawGrid()
 end
 
 function SpellTab:GetLearnedSpells()
-    self.LearnedSpells = Ext.Vars.GetModVariables(ModuleUUID).LearnedSpells or {}
+    local modifiedChars = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
 
     UI_Utils.DestroyChildren(self.LearnedSpellsArea)
 
     local charUUID = UIState.SelectedCharacter
     if not charUUID then
-        self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_SelectCharacter", "Select a character to see their spells."))
+        self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_SelectCharacter", "Select a character to see their learned spells."))
         return
     end
 
-    local learnedForChar = self.LearnedSpells[charUUID] or {}
-    local totalSpawned = HLP.Count(learnedForChar)
-    if totalSpawned == 0 then
-        self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_NoLearnedSpells", "You haven't learned any spells."))
+    local learnedForChar = (modifiedChars[charUUID] and modifiedChars[charUUID].spells) or {}
+    local totalLearned = HLP.Count(learnedForChar)
+    if totalLearned == 0 then
+        self.LearnedSpellsArea:AddText(LCL.Get("UCT_SpellTab_NoLearnedSpells", "This character has no custom learned spells."))
         return
     end
 
     local maxTableWidth = self.Config.maxTableWidth or 5
-    local tableWidth = math.min(totalSpawned, maxTableWidth)
+    local tableWidth = math.min(totalLearned, maxTableWidth)
 
     local header = self.LearnedSpellsArea:AddCollapsingHeader(LCL.Get("UCT_LearnedSpellsHeader", "Learned Spells"))
 
@@ -153,7 +174,7 @@ function SpellTab:GetLearnedSpells()
     local drawnCount = 0
     local maxDrawn = 50 -- Performance cap
 
-    for uuid,data in kpairs(learnedForChar) do
+    for uuid,spellMod in kpairs(learnedForChar) do
         if drawnCount >= maxDrawn then
             header:AddText("...and more (list truncated for performance).")
             break
@@ -163,6 +184,7 @@ function SpellTab:GetLearnedSpells()
             row = t:AddRow()
         end
         
+        local data = spellMod.data
         local icon = HLP.GetAttr(data, "icon")
         local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
 

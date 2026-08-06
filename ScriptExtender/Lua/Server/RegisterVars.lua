@@ -6,8 +6,8 @@ local serverAndClient = {
 }
 
 Ext.Vars.RegisterModVariable(ModuleUUID, "AllEquipment", serverAndClient) 
-Ext.Vars.RegisterModVariable(ModuleUUID, "SpawnedNPCs", serverAndClient)
-Ext.Vars.RegisterModVariable(ModuleUUID, "LearnedSpells", serverAndClient)
+Ext.Vars.RegisterModVariable(ModuleUUID, "SpawnedNPCs", serverAndClient) 
+Ext.Vars.RegisterModVariable(ModuleUUID, "CharacterModifications", serverAndClient)
 Ext.Vars.RegisterModVariable(ModuleUUID, "AddedPassives", serverAndClient)
 Ext.Vars.RegisterModVariable(ModuleUUID, "AllConsumables", serverAndClient)
 Ext.Vars.RegisterModVariable(ModuleUUID, "AppliedStatuses", serverAndClient)
