@@ -13,7 +13,7 @@ function RSRC.GetAll(search, page)
         local staticData = Ext.StaticData.Get(resourceUUID, "ActionResource")
         if staticData then
             local name = staticData.Name
-            local displayName = Ext.Loca.GetTranslatedString(staticData.DisplayName.Handle.Handle)
+            local displayName = HLP.GetTranslatedString(staticData.DisplayName.Handle.Handle, name)
             local description = Ext.Loca.GetTranslatedString(staticData.Description.Handle.Handle)
             local maxLevel = staticData.MaxLevel or 0 -- Get MaxLevel, default to 0
 

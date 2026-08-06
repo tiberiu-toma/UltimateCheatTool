@@ -27,7 +27,7 @@ function SPLL.GetAll(search, page)
         local mod = Ext.Mod.GetMod(modId)
         local modName = mod ~= nil and mod.Info ~= nil and mod.Info.Name ~= nil and mod.Info.Name or "Unknown"
 
-        local displayName = Ext.Loca.GetTranslatedString(handle, name)
+        local displayName = HLP.GetTranslatedString(handle, name)
 
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
 

@@ -18,7 +18,7 @@ function CONS.GetAll(search, page)
         local icon = HLP.GetAttr(v, "Icon")
         local name = HLP.GetAttr(v, "Name")
         local handle = HLP.GetAttr(v, "DisplayName.Handle.Handle")
-        local displayName = Ext.Loca.GetTranslatedString(handle, name)
+        local displayName = HLP.GetTranslatedString(handle, name)
 
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
 

@@ -15,8 +15,8 @@ function STAT.GetAll(search, page)
         v = Ext.Stats.Get(v)
         local icon = HLP.GetAttr(v, "Icon")
         local name = HLP.GetAttr(v, "Name")
-        local handle = HLP.GetAttr(v, "DisplayName")
-        local displayName = Ext.Loca.GetTranslatedString(handle)
+        local handle = HLP.GetAttr(v, "DisplayName") 
+        local displayName = HLP.GetTranslatedString(handle, name)
 
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName))
 
