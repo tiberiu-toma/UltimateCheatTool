@@ -59,6 +59,12 @@ SMS.SendWaypoints:SetHandler(function (payload)
     end
 end)
 
+SMS.SendAbilities:SetHandler(function(payload)
+    if CharacterTools and CharacterTools.AbilityTab then
+        CharacterTools.AbilityTab:UpdateAbilityScores(payload)
+    end
+end)
+
 SMS.SendPartyMembers:SetHandler(function (payload)
     if CharacterTools and CharacterTools.CharSelector then
         local members = payload.data
@@ -108,6 +114,9 @@ SMS.UIRefresh:SetHandler(function(payload)
     end
     if tabName == "Resource" and CharacterTools and CharacterTools.ResourceTab and CharacterTools.ResourceTab.Tab.Visible then
         CharacterTools.ResourceTab:GetAddedResources()
+    end
+    if tabName == "Ability" and CharacterTools and CharacterTools.AbilityTab and CharacterTools.AbilityTab.Tab.Visible then
+        CharacterTools.AbilityTab:FetchAbilities(true)
     end
     if tabName == "NPC" and MiscTools and MiscTools.NPCTab and MiscTools.NPCTab.Tab.Visible then
         MiscTools.NPCTab:GetSpawnedNPCs()
