@@ -31,6 +31,12 @@ SMS.SendTags:SetHandler(function (payload)
         tab:SetData(payload)
     end
 end)
+SMS.SendResources:SetHandler(function (payload)
+    if CharacterTools and CharacterTools.ResourceTab then
+        local tab = CharacterTools.ResourceTab
+        tab:SetData(payload)
+    end
+end)
 SMS.SendStatuses:SetHandler(function (payload)
     if CharacterTools and CharacterTools.StatusTab then
         CharacterTools.StatusTab:SetData(payload)
@@ -100,6 +106,9 @@ SMS.UIRefresh:SetHandler(function(payload)
     if tabName == "Tag" and CharacterTools and CharacterTools.TagTab and CharacterTools.TagTab.Tab.Visible then
         CharacterTools.TagTab:GetAppliedTags()
     end
+    --if tabName == "Resource" and CharacterTools and CharacterTools.ResourceTab and CharacterTools.ResourceTab.Tab.Visible then
+    --    CharacterTools.ResourceTab:GetAddedResources()
+    --end
     if tabName == "NPC" and MiscTools and MiscTools.NPCTab and MiscTools.NPCTab.Tab.Visible then
         MiscTools.NPCTab:GetSpawnedNPCs()
     end

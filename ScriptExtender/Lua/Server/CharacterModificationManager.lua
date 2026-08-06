@@ -16,7 +16,16 @@ function CharacterModificationManager:ReapplyAll()
 				end
 			end
 		end
-		-- Future modifications (e.g. for passives, statuses if they also move to boosts) can be added here.
+
+		-- Re-apply resources
+		if modifications.resources then
+			for resourceId, resourceModData in pairs(modifications.resources) do
+				local amount = resourceModData.amount or 1
+				local level = resourceModData.level or 0
+				local boostString = string.format("ActionResource(%s,%s,%s)", resourceId, amount, level)
+				Osi.AddBoosts(charUUID, boostString, "", "")
+			end
+		end
 	end
 end
 

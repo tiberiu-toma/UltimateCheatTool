@@ -1,3 +1,5 @@
+local RSRC = Ext.Require("Server/Resources.lua")
+
 SMS.FetchEquipment:SetHandler(function(payload)
     local search = HLP.GetAttr(payload, "search") or ""
     local page = HLP.GetAttr(payload, "page") or 1
@@ -44,6 +46,24 @@ SMS.FetchSpells:SetHandler(function(payload)
         SMS.SendSpells,
         {
             data = spells,
+            totalItems = totalItems,
+            totalPages = totalPages,
+            currentPage = currentPage
+        },
+        payload.ID
+    )
+end)
+
+SMS.FetchResources:SetHandler(function(payload)
+    local search = HLP.GetAttr(payload, "search") or ""
+    local page = HLP.GetAttr(payload, "page") or 1
+
+    local resources, totalItems, totalPages, currentPage = RSRC.GetAll(search, page)
+
+    HLP.ToClient(
+        SMS.SendResources,
+        {
+            data = resources,
             totalItems = totalItems,
             totalPages = totalPages,
             currentPage = currentPage
@@ -178,6 +198,84 @@ SMS.LearnSpell:SetHandler(function(payload)
         Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
         HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
     end
+end)
+
+SMS.ManageResource:SetHandler(function(payload)
+    local resourceId = payload.uuid -- This will be the resource name/id
+    local data = payload.data
+    local character = payload.character
+    local amount = payload.amount or 1 -- Default to 1 if not provided
+    local level = payload.level or 0   -- Default to 0 if not provided
+
+    if not character then return end
+
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
+    if not mods[character] then mods[character] = {} end
+    if not mods[character].resources then mods[character].resources = {} end
+
+    if HLP.GetAttr(payload, "remove") then
+        local boostString = string.format("ActionResource(%s,1,0)", resourceId)
+        Osi.RemoveBoosts(character, boostString, 1, "", "")
+        mods[character].resources[resourceId] = nil
+        Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Resource" }, payload.ID)
+    else
+        -- Use the provided amount and level in the boost string
+        local boostString = string.format("ActionResource(%s,%s,%s)", resourceId, amount, level)
+        Osi.AddBoosts(character, boostString, "", "")
+
+        -- Store the resource data including amount and level for persistence
+        mods[character].resources[resourceId] = { id = resourceId, name = data.name, displayName = data.displayName, description = data.description, amount = amount, level = level, maxLevel = data.maxLevel }
+        
+        Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
+        HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Resource" }, payload.ID)
+    end
+end)
+
+SMS.AddResourceForParty:SetHandler(function(payload)
+    local resourceId = payload.uuid
+    local data = payload.data
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local amount = payload.amount or 1 -- Default to 1 if not provided
+    local level = payload.level or 0   -- Default to 0 if not provided
+
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
+    local boostString = string.format("ActionResource(%s,%s,%s)", resourceId, amount, level)
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        Osi.AddBoosts(charUUID, boostString, "", "")
+        if not mods[charUUID] then mods[charUUID] = {} end
+        if not mods[charUUID].resources then mods[charUUID].resources = {} end
+        mods[charUUID].resources[resourceId] = { id = resourceId, name = data.name, displayName = data.displayName, description = data.description, amount = amount, level = level, maxLevel = data.maxLevel }
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
+
+
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Resource" }, payload.ID)
+end)
+
+SMS.RemoveResourceForParty:SetHandler(function(payload)
+    local resourceId = payload.uuid
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
+    local boostString = string.format("ActionResource(%s,1,0)", resourceId)
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        Osi.RemoveBoosts(charUUID, boostString, 1, "", "")
+        if mods[charUUID] and mods[charUUID].resources then
+            mods[charUUID].resources[resourceId] = nil
+        end
+    end
+    Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Resource" }, payload.ID)
 end)
 
 SMS.LearnSpellForParty:SetHandler(function(payload)
