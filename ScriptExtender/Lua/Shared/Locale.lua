@@ -48,6 +48,7 @@ LocaleText = {
 	UCT_ResourceTab_Label = "Resources",
 	UCT_AbilityTab_Label = "Abilities",
 	UCT_TagTab_Label = "Tags",
+	UCT_SkillTab_Label = "Skills",
 	UCT_WaypointTab_Label = "Waypoints",
 
 	-- Search Labels
@@ -60,6 +61,7 @@ LocaleText = {
 	UCT_SearchResources_Label = "Search Resources:",
 	UCT_SearchTags_Label = "Search Tags:",
 	UCT_SearchWaypoints_Label = "Search Waypoints:",
+	UCT_SearchSkills_Label = "Search Skills:",
 
 	-- Generic Tab
 	UCT_GenericTab_CharacterActions = "Character Actions",
@@ -104,6 +106,8 @@ LocaleText = {
 	UCT_ResourceTab_SelectCharacter = "Select a character to see their added resources.",
 	UCT_AbilityTab_SelectCharacter = "Select a character to see their abilities.",
 	UCT_NoCustomAbilities = "This character has no custom ability boosts.",
+	UCT_SkillTab_SelectCharacter = "Select a character to modify skills.",
+	UCT_NoCustomSkills = "This character has no custom skill boosts.",
 	UCT_AbilityTab_ClearAll = "Clear All Boosts",
 	UCT_NoCustomPassives = "No custom passives.",
 	UCT_NoCustomStatuses = "No custom statuses.",
@@ -114,6 +118,7 @@ LocaleText = {
 	UCT_SpellTab_SelectCharacter = "Select a character to see their spells.",
 	UCT_SpellTab_NoLearnedSpells = "You haven't learned any spells.",
 	UCT_TagTab_SelectCharacter = "Select a character to see their tags.",
+	UCT_SkillTab_ClearAll = "Clear All Boosts",
 	UCT_NPCTab_NoSpawnedNPCs = "You haven't spawned any NPCs.",
 	UCT_NoPartyMembers = "No party members found to spawn items for.",
 	UCT_NPCTab_SpawnedNPCsHeader = "Spawned NPCs",

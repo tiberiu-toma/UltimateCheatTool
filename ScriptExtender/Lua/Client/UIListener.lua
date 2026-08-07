@@ -85,6 +85,9 @@ local refreshHandlers = {
     Ability = function()
         if CharacterTools and CharacterTools.AbilityTab and CharacterTools.AbilityTab.Tab.Visible then CharacterTools.AbilityTab:FetchAbilities(true) end
     end,
+    Skill = function()
+        if CharacterTools and CharacterTools.SkillsTab and CharacterTools.SkillsTab.Tab.Visible then CharacterTools.SkillsTab:Draw() end
+    end,
     NPC = function()
         if MiscTools and MiscTools.NPCTab and MiscTools.NPCTab.Tab.Visible then MiscTools.NPCTab:GetSpawnedNPCs() end
     end,
