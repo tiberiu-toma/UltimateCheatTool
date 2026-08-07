@@ -6,6 +6,7 @@ local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua"
 ---@class SpellTab : BaseTab
 ---@field LearnedSpells table
 ---@field LearnedSpellsArea ExtuiGroup
+---@field ModificationGrid ModificationGrid
 SpellTab = {}
 setmetatable(SpellTab, { __index = BaseTab })
 SpellTab.__index = SpellTab

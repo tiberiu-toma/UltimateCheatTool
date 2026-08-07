@@ -89,7 +89,6 @@ function EKP.GetAll(search, page)
                 table.insert(allMatchingEquipment, data)
             end
         end
-        ::continue::
     end
 
     table.sort(allMatchingEquipment, function(a, b) return a.displayName < b.displayName end)
@@ -151,19 +150,15 @@ function EKP.GetAllNonStoryItems()
     local allNonStoryEquipment = {}
 
     for k,v in pairs(itemData) do
-        local isItem = HLP.GetAttr(v, "TemplateType") == "item"
-        if not isItem then goto continue end
-
-        if HLP.GetAttr(v, "StoryItem") then goto continue end
-
-        local isEquipment = EKP.IsEquipable(v)
-        if isEquipment then
-            local id = HLP.GetAttr(v, "Id")
-            if id then
-                table.insert(allNonStoryEquipment, id)
+        if HLP.GetAttr(v, "TemplateType") == "item" and not HLP.GetAttr(v, "StoryItem") then
+            local isEquipment = EKP.IsEquipable(v)
+            if isEquipment then
+                local id = HLP.GetAttr(v, "Id")
+                if id then
+                    table.insert(allNonStoryEquipment, id)
+                end
             end
         end
-        ::continue::
     end
 
     return allNonStoryEquipment

@@ -6,6 +6,7 @@ local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua"
 ---@class TagTab : BaseTab
 ---@field AppliedTags table
 ---@field AppliedTagsArea ExtuiGroup
+---@field ModificationGrid ModificationGrid
 TagTab = {}
 setmetatable(TagTab, { __index = BaseTab })
 TagTab.__index = TagTab

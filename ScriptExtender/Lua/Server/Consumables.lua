@@ -11,29 +11,27 @@ function CONS.GetAll(search, page)
     local allMatchingConsumables = {}
 
     for k,v in pairs(itemData) do 
-        local isItem = HLP.GetAttr(v, "TemplateType") == "item"
-        if not isItem then goto continue end
+        if HLP.GetAttr(v, "TemplateType") == "item" then
+            local id = HLP.GetAttr(v, "Id")
+            local icon = HLP.GetAttr(v, "Icon")
+            local name = HLP.GetAttr(v, "Name")
+            local handle = HLP.GetAttr(v, "DisplayName.Handle.Handle")
+            local displayName = HLP.GetTranslatedString(handle, name)
 
-        local id = HLP.GetAttr(v, "Id")
-        local icon = HLP.GetAttr(v, "Icon")
-        local name = HLP.GetAttr(v, "Name")
-        local handle = HLP.GetAttr(v, "DisplayName.Handle.Handle")
-        local displayName = HLP.GetTranslatedString(handle, name)
+            local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
 
-        local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
-
-        if matchesSearch and displayName and displayName ~= "" and icon and icon ~= "" then
-            local isConsumable = CONS.IsConsumable(v)
-            if isConsumable then
-                table.insert(allMatchingConsumables, {
-                    id = id,
-                    name = name,
-                    icon = icon,
-                    displayName = displayName
-                })
+            if matchesSearch and displayName and displayName ~= "" and icon and icon ~= "" then
+                local isConsumable = CONS.IsConsumable(v)
+                if isConsumable then
+                    table.insert(allMatchingConsumables, {
+                        id = id,
+                        name = name,
+                        icon = icon,
+                        displayName = displayName
+                    })
+                end
             end
         end
-        ::continue::
     end
 
     table.sort(allMatchingConsumables, function(a, b) return a.displayName < b.displayName end)

@@ -6,6 +6,8 @@ local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua"
 ---@class StatusTab : BaseTab
 ---@field AppliedStatuses table
 ---@field AppliedStatusesArea ExtuiGroup
+---@field ParentUI string
+---@field ModificationGrid ModificationGrid
 StatusTab = {}
 setmetatable(StatusTab, { __index = BaseTab })
 StatusTab.__index = StatusTab
