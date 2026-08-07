@@ -43,46 +43,44 @@ function WaypointTab:DrawGrid()
         local name = HLP.GetAttr(data, "name")
         local trigger = HLP.GetAttr(data, "trigger")
 
-        if not name then goto continue end
-
-        if HLP.Strlen(name) > 20 then
-            name = HLP.Cut(name, 1, 20) .. "..."
-        end
-
-        icon = "EC_Portrait_Generic"
-        local cell = row:AddCell()
-        local waypointItem = cell:AddImageButton("##Waypoint" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        cell:AddText(name)
-        local popup = cell:AddPopup("AddItem" .. uuid)
-
-        waypointItem.OnClick = function()
-            popup:Open()
-        end
-
-        local selectWaypoint = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb79", "Teleport"))
-
-        local waypointInfoFields = {
-            { key = "id", label = "ID" },
-            { key = "name", label = "Name" },
-            { key = "trigger", label = "Trigger" },
-            { key = "pos", label = "Position", formatter = function(pos)
-                if not pos then return "N/A" end
-                return string.format("X: %.2f, Y: %.2f, Z: %.2f", pos.x or 0, pos.y or 0, pos.z or 0)
-            end },
-        }
-        InfoPopup:AddInfo(popup, data, waypointInfoFields)
-
-        selectWaypoint.OnClick = function()
-            if trigger then
-                SMS.TeleportToWaypoint:SendToServer({ data=trigger })
-            else
-                Ext.Utils.PrintError("Waypoint " .. name .. " has no trigger.")
+        if name then
+            if HLP.Strlen(name) > 20 then
+                name = HLP.Cut(name, 1, 20) .. "..."
             end
+
+            icon = "EC_Portrait_Generic"
+            local cell = row:AddCell()
+            local waypointItem = cell:AddImageButton("##Waypoint" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+            cell:AddText(name)
+            local popup = cell:AddPopup("AddItem" .. uuid)
+
+            waypointItem.OnClick = function()
+                popup:Open()
+            end
+
+            local selectWaypoint = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb79", "Teleport"))
+
+            local waypointInfoFields = {
+                { key = "id", label = "ID" },
+                { key = "name", label = "Name" },
+                { key = "trigger", label = "Trigger" },
+                { key = "pos", label = "Position", formatter = function(pos)
+                    if not pos then return "N/A" end
+                    return string.format("X: %.2f, Y: %.2f, Z: %.2f", pos.x or 0, pos.y or 0, pos.z or 0)
+                end },
+            }
+            InfoPopup:AddInfo(popup, data, waypointInfoFields)
+
+            selectWaypoint.OnClick = function()
+                if trigger then
+                    SMS.TeleportToWaypoint:SendToServer({ data=trigger })
+                else
+                    Ext.Utils.PrintError("Waypoint " .. name .. " has no trigger.")
+                end
+            end
+
+            i = i + 1
         end
-
-        i = i + 1
-
-        ::continue::
     end
 end
 

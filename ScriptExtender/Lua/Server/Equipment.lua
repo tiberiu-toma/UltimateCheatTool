@@ -181,3 +181,38 @@ function EKP.IsEquipable(template)
     end
     return false
 end
+
+function EKP.Spawn(payload)
+    local uuid = payload.uuid
+    local amount = payload.amount or 1
+    local character = payload.character
+
+    if not character then return end
+
+    for i=1,amount do
+        Osi.TemplateAddTo(uuid, character, 1, 0)
+    end
+end
+
+function EKP.SpawnForParty(payload)
+    local uuid = payload.uuid
+    local amount = payload.amount or 1
+    local partyMembers = HLP.GetAllChars()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    for _, charUUID in ipairs(partyMembers) do
+        for i=1,amount do
+            Osi.TemplateAddTo(uuid, charUUID, 1, 0)
+        end
+    end
+end
+
+function EKP.SpawnAll(payload)
+    local allItems = EKP.GetAllNonStoryItems()
+    local character = payload.ID
+    if not character then return end
+
+    for _,uuid in ipairs(allItems) do
+        Osi.TemplateAddTo(uuid, character, 1, 0)
+    end
+end

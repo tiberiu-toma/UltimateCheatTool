@@ -93,86 +93,82 @@ function StatusTab:DrawGrid()
         end
         local name = HLP.GetAttr(data, "displayName")
         
-        if not name then
-            goto continue
-        end
-
-        local fullName = name
-        if HLP.Strlen(name) > 20 then
-            name = HLP.Cut(name, 1, 20) .. "..."
-        end
-
-        local cell = row:AddCell()
-        local statusItem = cell:AddImageButton("##Status" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        cell:AddText(name)
-        local popup = cell:AddPopup("AddStatus" .. uuid)
-
-        statusItem.OnClick = function()
-            popup:Open()
-        end
-
-        local actionsTable = popup:AddTable("StatusActionsTable" .. uuid, 2)
-        actionsTable.SizingFixedSame = false
-        actionsTable.NoHostExtendX = true
-
-        if self.ParentUI == "CharacterTools" then
-            local row1 = actionsTable:AddRow()
-            local applyStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432083", "Apply") .. "##Apply" .. uuid)
-            local removeStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove") .. "##Remove" .. uuid)
-
-            local row2 = actionsTable:AddRow()
-            local applyForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyForParty", "Apply for Party") .. "##ApplyParty" .. uuid)
-            local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
-
-            removeStatus.OnClick = function()
-                SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
-            end
-    
-            applyStatus.OnClick = function()
-                SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, amount=1, data=data })
-            end
-    
-            applyForPartyBtn.OnClick = function()
-                SMS.ApplyStatusForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
-            end
-    
-            removeForPartyBtn.OnClick = function()
-                SMS.RemoveStatusForParty:SendToServer({ ID = USERID, uuid = uuid })
+        if name then
+            local fullName = name
+            if HLP.Strlen(name) > 20 then
+                name = HLP.Cut(name, 1, 20) .. "..."
             end
 
-        elseif self.ParentUI == "ItemTools" then
-            local row3 = actionsTable:AddRow()
-            local applyToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyToSelectedItem", "Apply to Selected Item") .. "##ApplyItem" .. uuid)
-            local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
+            local cell = row:AddCell()
+            local statusItem = cell:AddImageButton("##Status" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+            cell:AddText(name)
+            local popup = cell:AddPopup("AddStatus" .. uuid)
 
-            local equipmentData = UIState.SelectedEquipment
-            if not equipmentData then
-                applyToSelectedItem.Disabled = true
-                removeFromSelectedItem.Disabled = true
-            else
-                applyToSelectedItem.OnClick = function()
-                    if equipmentData and equipmentData.id then
-                        SMS.ApplyStatusToItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
+            statusItem.OnClick = function()
+                popup:Open()
+            end
+
+            local actionsTable = popup:AddTable("StatusActionsTable" .. uuid, 2)
+            actionsTable.SizingFixedSame = false
+            actionsTable.NoHostExtendX = true
+
+            if self.ParentUI == "CharacterTools" then
+                local row1 = actionsTable:AddRow()
+                local applyStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432083", "Apply") .. "##Apply" .. uuid)
+                local removeStatus = row1:AddCell():AddButton(LCL.Get("hc056102aefe641d4be93e011426432084", "Remove") .. "##Remove" .. uuid)
+
+                local row2 = actionsTable:AddRow()
+                local applyForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyForParty", "Apply for Party") .. "##ApplyParty" .. uuid)
+                local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
+
+                removeStatus.OnClick = function()
+                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
+                end
+        
+                applyStatus.OnClick = function()
+                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, amount=1, data=data })
+                end
+        
+                applyForPartyBtn.OnClick = function()
+                    SMS.ApplyStatusForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
+                end
+        
+                removeForPartyBtn.OnClick = function()
+                    SMS.RemoveStatusForParty:SendToServer({ ID = USERID, uuid = uuid })
+                end
+
+            elseif self.ParentUI == "ItemTools" then
+                local row3 = actionsTable:AddRow()
+                local applyToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyToSelectedItem", "Apply to Selected Item") .. "##ApplyItem" .. uuid)
+                local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
+
+                local equipmentData = UIState.SelectedEquipment
+                if not equipmentData then
+                    applyToSelectedItem.Disabled = true
+                    removeFromSelectedItem.Disabled = true
+                else
+                    applyToSelectedItem.OnClick = function()
+                        if equipmentData and equipmentData.id then
+                            SMS.ApplyStatusToItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
+                        end
+                    end
+                    removeFromSelectedItem.OnClick = function()
+                        if equipmentData and equipmentData.id then
+                            SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
+                        end
                     end
                 end
-                removeFromSelectedItem.OnClick = function()
-                    if equipmentData and equipmentData.id then
-                        SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
-                    end
-                end
             end
+
+            data.fullName = fullName
+            local statusInfoFields = {
+                { key = "id", label = "ID" },
+                { key = "fullName", label = "Name" },
+            }
+            InfoPopup:AddInfo(popup, data, statusInfoFields)
+
+            i = i + 1
         end
-
-        data.fullName = fullName
-        local statusInfoFields = {
-            { key = "id", label = "ID" },
-            { key = "fullName", label = "Name" },
-        }
-        InfoPopup:AddInfo(popup, data, statusInfoFields)
-
-        i = i + 1
-
-        ::continue::
     end
 end
 

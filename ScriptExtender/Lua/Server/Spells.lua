@@ -51,3 +51,57 @@ function SPLL.GetAll(search, page)
 
     return UTL.Paginate(allMatchingSpells, page, pageSize)
 end
+
+function SPLL._Manage(character, uuid, data, ability, unlearn)
+    if not character then return end
+    
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
+    if not mods[character] then mods[character] = {} end
+    if not mods[character].spells then mods[character].spells = {} end
+
+    if unlearn then
+        local spellData = mods[character].spells[uuid]
+        if spellData then
+            local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", spellData.spellName, spellData.learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", spellData.castingAbility)
+            Osi.RemoveBoosts(character, boostString, 1, "", "")
+            mods[character].spells[uuid] = nil
+        end
+    else
+        local learningStrategy = "AddChildren"
+        local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", uuid, learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", ability)
+        Osi.AddBoosts(character, boostString, "", "")
+        mods[character].spells[uuid] = {
+            spellName = uuid,
+            learningStrategy = learningStrategy,
+            castingAbility = ability,
+            data = data
+        }
+    end
+    Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods
+end
+
+function SPLL.Manage(payload)
+    SPLL._Manage(payload.character, payload.uuid, payload.data, payload.ability or "Wisdom", HLP.GetAttr(payload, "unlearn"))
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
+end
+
+function SPLL.ManageForParty(payload, unlearn)
+    local uuid = payload.uuid
+    local data = payload.data
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    if unlearn then
+        for _, member in ipairs(partyMembers) do
+            SPLL._Manage(member.uuid, uuid, data, nil, true)
+        end
+    else
+        local ability = payload.ability or "Wisdom"
+        for _, member in ipairs(partyMembers) do
+            SPLL._Manage(member.uuid, uuid, data, ability, false)
+        end
+    end
+
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Spell" }, payload.ID)
+end

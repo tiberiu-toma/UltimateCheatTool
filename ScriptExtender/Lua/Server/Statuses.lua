@@ -111,3 +111,78 @@ function STAT.RemoveFromItem(itemTemplateUUID, statusId)
     originalStats:Sync()
     HLP.RefreshEquippedItem(nil, itemTemplateUUID)
 end
+
+function STAT.Manage(payload)
+    local uuid = payload.uuid
+    local data = payload.data
+    local character = payload.character
+    local remove = HLP.GetAttr(payload, "remove")
+
+    if not character then return end
+    
+    STAT.Apply(character, uuid, remove)
+
+    local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+    if not statuses[character] then statuses[character] = {} end
+
+    if remove then
+        statuses[character][uuid] = nil
+    else
+        statuses[character][uuid] = data
+    end
+    
+    Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
+end
+
+function STAT.ManageForParty(payload, remove)
+    local uuid = payload.uuid
+    local data = payload.data
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        STAT.Apply(charUUID, uuid, remove)
+        if not statuses[charUUID] then statuses[charUUID] = {} end
+        
+        if remove then
+            statuses[charUUID][uuid] = nil
+        else
+            statuses[charUUID][uuid] = data
+        end
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
+end
+
+function STAT.ManageOnItem(payload, remove)
+    local itemTemplateUUID = payload.itemTemplateUUID
+    local statusUUID = payload.statusUUID
+    local data = payload.data
+
+    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    if not modifiedEquipment[itemTemplateUUID] then modifiedEquipment[itemTemplateUUID] = {} end
+    if not modifiedEquipment[itemTemplateUUID].statuses then modifiedEquipment[itemTemplateUUID].statuses = {} end
+
+    if remove then
+        STAT.RemoveFromItem(itemTemplateUUID, statusUUID)
+        modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = nil
+        if HLP.Count(modifiedEquipment[itemTemplateUUID].statuses) == 0 then
+            modifiedEquipment[itemTemplateUUID].statuses = nil
+        end
+        if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then
+            modifiedEquipment[itemTemplateUUID] = nil
+        end
+    else
+        STAT.ApplyToItem(itemTemplateUUID, statusUUID)
+        modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = data
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
+end
