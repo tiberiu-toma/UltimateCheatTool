@@ -31,7 +31,7 @@ function GenericTab:Init()
     local resetCooldownsBtn = actionsRow1:AddCell():AddButton(LCL.Get("UCT_GenericTab_ResetCooldowns", "Reset Cooldowns"))
     resetCooldownsBtn.OnClick = function()
         local charUUID = UIState.SelectedCharacter
-        SMS.ResetCooldowns:SendToServer({ ID = charUUID })
+        SMS.ResetCooldowns:SendToServer({ character = charUUID })
     end
 
     local actionsRow2 = actionsTable:AddRow()
@@ -39,13 +39,13 @@ function GenericTab:Init()
     local respecBtn = actionsRow2:AddCell():AddButton(LCL.Get("UCT_GenericTab_StartRespec", "Respec Character"))
     respecBtn.OnClick = function()
         local charUUID = UIState.SelectedCharacter
-        SMS.StartRespec:SendToServer({ ID = charUUID })
+        SMS.StartRespec:SendToServer({ character = charUUID })
     end
 
     local appearanceBtn = actionsRow2:AddCell():AddButton(LCL.Get("UCT_GenericTab_ChangeAppearance", "Change Appearance"))
     appearanceBtn.OnClick = function()
         local charUUID = UIState.SelectedCharacter
-        SMS.StartChangeAppearance:SendToServer({ ID = charUUID })
+        SMS.StartChangeAppearance:SendToServer({ character = charUUID })
     end
     self.Tab:AddSeparator()
 
@@ -63,7 +63,7 @@ function GenericTab:Init()
         local btn = goldRow:AddCell():AddButton("Add " .. amount .. "##Gold" .. tostring(amount))
         btn.OnClick = function()
             local charUUID = UIState.SelectedCharacter
-            SMS.AddGold:SendToServer({ ID = charUUID, Amount = amount })
+            SMS.AddGold:SendToServer({ character = charUUID, Amount = amount })
         end
     end
 
@@ -74,7 +74,8 @@ function GenericTab:Init()
     for _, amount in ipairs(expAmounts) do
         local btn = expRow:AddCell():AddButton("Add " .. amount .. " XP##XP" .. tostring(amount))
         btn.OnClick = function()
-            SMS.AddExperience:SendToServer({ Amount = amount })
+            local charUUID = UIState.SelectedCharacter
+            SMS.AddExperience:SendToServer({ character = charUUID, Amount = amount })
         end
     end
 
@@ -86,7 +87,7 @@ function GenericTab:Init()
         local btn = inspirationRow:AddCell():AddButton("Add " .. amount .. "##Inspiration" .. tostring(amount))
         btn.OnClick = function()
             local charUUID = UIState.SelectedCharacter
-            SMS.AddInspiration:SendToServer({ ID = charUUID, Amount = amount })
+            SMS.AddInspiration:SendToServer({ character = charUUID, Amount = amount })
         end
     end
 
@@ -98,7 +99,7 @@ function GenericTab:Init()
         local btn = tadpoleRow:AddCell():AddButton("Add " .. amount .. "##Tadpole" .. tostring(amount))
         btn.OnClick = function()
             local charUUID = UIState.SelectedCharacter
-            SMS.AddTadpoles:SendToServer({ ID = charUUID, Amount = amount })
+            SMS.AddTadpoles:SendToServer({ character = charUUID, Amount = amount })
         end
     end
     self.Tab:AddSeparator()

@@ -326,3 +326,10 @@ function TELP.GetAll(search, page)
 
     return UTL.Paginate(allMatchingWaypoints, page, pageSize)
 end
+
+function TELP.Teleport(payload)
+    local trigger = payload.data
+    if trigger then
+        Osi.PROC_WaypointTeleportTo(GetHostCharacter(), trigger)
+    end
+end

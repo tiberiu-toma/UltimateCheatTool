@@ -75,32 +75,40 @@ end
 --                                       MCM Integration
 ---------------------------------------------------------------------------------------------------
 
+--- Initializes a tool window, either in MCM or as a standalone window.
+---@param uiClass table The class of the UI window to create (e.g., CharacterToolsUI).
+---@param globalName string The name of the global variable to assign the instance to.
+---@param tabLabel string The label for the MCM tab.
+---@param useMCM boolean True if integrating with MCM, false for standalone.
+local function _InitializeToolWindow(uiClass, globalName, tabLabel, useMCM)
+    if useMCM then
+        Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, tabLabel, function(mcm)
+            local instance = uiClass:New(mcm)
+            instance:Initialize()
+            _G[globalName] = instance -- Assign to global
+            return instance.Window
+        end)
+    else
+        local instance = uiClass:New(nil)
+        instance:Initialize()
+        _G[globalName] = instance -- Assign to global
+    end
+end
+
+local toolWindows = {
+    { class = CharacterToolsUI, global = "CharacterTools", label = "Character Tools" },
+    { class = ItemToolsUI, global = "ItemTools", label = "Item Tools" },
+    { class = MiscToolsUI, global = "MiscTools", label = "Misc Tools" },
+}
+
 if MCMActive then
-    Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Character Tools", function(mcm)
-        CharacterTools = CharacterToolsUI:New(mcm)
-        CharacterTools:Initialize()
-        return CharacterTools.Window
-    end)
-    Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Item Tools", function(mcm)
-        ItemTools = ItemToolsUI:New(mcm)
-        ItemTools:Initialize()
-        return ItemTools.Window
-    end)
-    Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Misc Tools", function(mcm)
-        MiscTools = MiscToolsUI:New(mcm)
-        MiscTools:Initialize()
-        return MiscTools.Window
-    end)
+    for _, windowConfig in ipairs(toolWindows) do
+        _InitializeToolWindow(windowConfig.class, windowConfig.global, windowConfig.label, true)
+    end
 else
-    -- For standalone mod (without MCM), create both windows
-    CharacterTools = CharacterToolsUI:New(nil)
-    CharacterTools:Initialize()
-
-    ItemTools = ItemToolsUI:New(nil)
-    ItemTools:Initialize()
-
-    MiscTools = MiscToolsUI:New(nil)
-    MiscTools:Initialize()
+    for _, windowConfig in ipairs(toolWindows) do
+        _InitializeToolWindow(windowConfig.class, windowConfig.global, windowConfig.label, false)
+    end
 end
 
 Ext.Events.GameStateChanged:Subscribe(function(ev)

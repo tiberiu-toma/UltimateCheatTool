@@ -130,3 +130,78 @@ function PASSV.RemoveFromItem(itemTemplateUUID, passiveId)
     originalStats:Sync()
     HLP.RefreshEquippedItem(nil, itemTemplateUUID)
 end
+
+function PASSV.Manage(payload)
+    local uuid = payload.uuid
+    local data = payload.data
+    local character = payload.character
+    local remove = HLP.GetAttr(payload, "remove")
+
+    if not character then return end
+    
+    PASSV.Add(character, uuid, remove)
+
+    local passives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
+    if not passives[character] then passives[character] = {} end
+
+    if remove then
+        passives[character][uuid] = nil
+    else
+        passives[character][uuid] = data
+    end
+    
+    Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
+end
+
+function PASSV.ManageForParty(payload, remove)
+    local uuid = payload.uuid
+    local data = payload.data
+
+    local partyMembers = PARTY.GetMembers()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    local passives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
+
+    for _, member in ipairs(partyMembers) do
+        local charUUID = member.uuid
+        PASSV.Add(charUUID, uuid, remove)
+        if not passives[charUUID] then passives[charUUID] = {} end
+        
+        if remove then
+            passives[charUUID][uuid] = nil
+        else
+            passives[charUUID][uuid] = data
+        end
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
+end
+
+function PASSV.ManageOnItem(payload, remove)
+    local itemTemplateUUID = payload.itemTemplateUUID
+    local passiveUUID = payload.passiveUUID
+    local data = payload.data
+
+    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    if not modifiedEquipment[itemTemplateUUID] then modifiedEquipment[itemTemplateUUID] = {} end
+    if not modifiedEquipment[itemTemplateUUID].passives then modifiedEquipment[itemTemplateUUID].passives = {} end
+
+    if remove then
+        PASSV.RemoveFromItem(itemTemplateUUID, passiveUUID)
+        modifiedEquipment[itemTemplateUUID].passives[passiveUUID] = nil
+        if HLP.Count(modifiedEquipment[itemTemplateUUID].passives) == 0 then
+            modifiedEquipment[itemTemplateUUID].passives = nil
+        end
+        if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then
+            modifiedEquipment[itemTemplateUUID] = nil
+        end
+    else
+        PASSV.AddOnItem(itemTemplateUUID, passiveUUID)
+        modifiedEquipment[itemTemplateUUID].passives[passiveUUID] = data
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
+end

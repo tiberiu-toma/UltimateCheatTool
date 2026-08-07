@@ -89,7 +89,6 @@ function EKP.GetAll(search, page)
                 table.insert(allMatchingEquipment, data)
             end
         end
-        ::continue::
     end
 
     table.sort(allMatchingEquipment, function(a, b) return a.displayName < b.displayName end)
@@ -151,19 +150,15 @@ function EKP.GetAllNonStoryItems()
     local allNonStoryEquipment = {}
 
     for k,v in pairs(itemData) do
-        local isItem = HLP.GetAttr(v, "TemplateType") == "item"
-        if not isItem then goto continue end
-
-        if HLP.GetAttr(v, "StoryItem") then goto continue end
-
-        local isEquipment = EKP.IsEquipable(v)
-        if isEquipment then
-            local id = HLP.GetAttr(v, "Id")
-            if id then
-                table.insert(allNonStoryEquipment, id)
+        if HLP.GetAttr(v, "TemplateType") == "item" and not HLP.GetAttr(v, "StoryItem") then
+            local isEquipment = EKP.IsEquipable(v)
+            if isEquipment then
+                local id = HLP.GetAttr(v, "Id")
+                if id then
+                    table.insert(allNonStoryEquipment, id)
+                end
             end
         end
-        ::continue::
     end
 
     return allNonStoryEquipment
@@ -180,4 +175,39 @@ function EKP.IsEquipable(template)
         return true
     end
     return false
+end
+
+function EKP.Spawn(payload)
+    local uuid = payload.uuid
+    local amount = payload.amount or 1
+    local character = payload.character
+
+    if not character then return end
+
+    for i=1,amount do
+        Osi.TemplateAddTo(uuid, character, 1, 0)
+    end
+end
+
+function EKP.SpawnForParty(payload)
+    local uuid = payload.uuid
+    local amount = payload.amount or 1
+    local partyMembers = HLP.GetAllChars()
+    if not partyMembers or #partyMembers == 0 then return end
+
+    for _, charUUID in ipairs(partyMembers) do
+        for i=1,amount do
+            Osi.TemplateAddTo(uuid, charUUID, 1, 0)
+        end
+    end
+end
+
+function EKP.SpawnAll(payload)
+    local allItems = EKP.GetAllNonStoryItems()
+    local character = payload.ID
+    if not character then return end
+
+    for _,uuid in ipairs(allItems) do
+        Osi.TemplateAddTo(uuid, character, 1, 0)
+    end
 end
