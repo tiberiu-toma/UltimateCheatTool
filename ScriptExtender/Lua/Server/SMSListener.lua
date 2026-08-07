@@ -47,6 +47,9 @@ SMS.FetchAbilities:SetHandler(function(payload) ABIL.Fetch(payload) end)
 
 SMS.ClearAllAbilityBoosts:SetHandler(function(payload) ABIL.ClearAllBoosts(payload) end)
 SMS.ManageAbility:SetHandler(function(payload) ABIL.Manage(payload) end)
+-- Skills
+SMS.ManageSkill:SetHandler(function(payload) SKL.Manage(payload) end)
+SMS.ClearAllSkillBoosts:SetHandler(function(payload) SKL.ClearAllBoosts(payload) end)
 
 -- Passives
 SMS.AddPassive:SetHandler(function(payload) PASSV.Manage(payload) end)

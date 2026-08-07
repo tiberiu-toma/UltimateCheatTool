@@ -107,7 +107,7 @@ function AbilityTab:Draw()
     local modGroup = self.MainContent:AddGroup("ModifyAbilities")
     modGroup:AddSeparatorText("Modify Abilities")
     local modTable = modGroup:AddTable("ModifyAbilitiesTable", #self.BoostAmounts + 1)
-    modTable.SizingFixedSame = true
+    modTable.SizingFixedFit = true
 
     for _, ability in ipairs(self.Abilities) do
         local abilityRow = modTable:AddRow()
