@@ -64,6 +64,23 @@ function SpellTab:Init()
     BaseTab.Init(self)
 end
 
+---Populates a popup with ability selection buttons.
+---@param popup ExtuiPopup The popup to populate.
+---@param title string The title to display in the popup.
+---@param onSelect function The callback function to execute when an ability is selected.
+function SpellTab:_PopulateAbilityPopup(popup, title, onSelect)
+    -- Use OnOpen to rebuild the popup content each time, ensuring it's fresh.
+    UI_Utils.DestroyChildren(popup)
+    popup:AddText(title)
+    popup:AddSeparator()
+    for _, ability in ipairs({"Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"}) do
+        local abilityBtn = popup:AddButton(ability)
+        abilityBtn.OnClick = function()
+            onSelect(ability)
+        end
+    end
+end
+
 function SpellTab:DrawGrid()
     local shownCount = HLP.Count(self.Items)
     local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
@@ -102,9 +119,7 @@ function SpellTab:DrawGrid()
         local abilityPopup = cell:AddPopup("AbilityPopup" .. uuid)
         local partyAbilityPopup = cell:AddPopup("PartyAbilityPopup" .. uuid)
 
-        spellItem.OnClick = function()
-            popup:Open()
-        end
+        spellItem.OnClick = function() popup:Open() end
 
         local actionsTable = popup:AddTable("SpellActionsTable" .. uuid, 2)
         actionsTable.SizingFixedSame = false
@@ -118,7 +133,8 @@ function SpellTab:DrawGrid()
         local unlearnForParty = row2:AddCell():AddButton(LCL.Get("UCT_SpellTab_UnlearnForParty", "Unlearn for Party") .. "##UnlearnParty" .. uuid)
 
         data.fullName = fullName
-        local spellInfoFields = {
+        local spellInfoFields = 
+        {
             { key = "id", label = "ID" },
             { key = "fullName", label = "Name" },
             { key = "spellType", label = "Spell Type" },
@@ -128,19 +144,12 @@ function SpellTab:DrawGrid()
             { key = "cooldown", label = "Cooldown" },
             { key = "modName", label = "Mod Name" },
         }
-                InfoPopup:AddInfo(popup, data, spellInfoFields)
+        InfoPopup:AddInfo(popup, data, spellInfoFields)
         
         selectSpell.OnClick = function()
-            UI_Utils.DestroyChildren(abilityPopup)
-            abilityPopup:AddText("Select Casting Ability:")
-            abilityPopup:AddSeparator()
-            local abilities = {"Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"}
-            for _, ability in ipairs(abilities) do
-                local abilityBtn = abilityPopup:AddButton(ability)
-                abilityBtn.OnClick = function()
-                    SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data, ability = ability })
-                end
-            end
+            self:_PopulateAbilityPopup(abilityPopup, "Select Casting Ability:", function(ability)
+                SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data, ability = ability })
+            end)
             abilityPopup:Open()
         end
 
@@ -149,16 +158,9 @@ function SpellTab:DrawGrid()
         end
 
         learnForParty.OnClick = function()
-            UI_Utils.DestroyChildren(partyAbilityPopup)
-            partyAbilityPopup:AddText("Select Casting Ability for Party:")
-            partyAbilityPopup:AddSeparator()
-            local abilities = {"Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"}
-            for _, ability in ipairs(abilities) do
-                local abilityBtn = partyAbilityPopup:AddButton(ability)
-                abilityBtn.OnClick = function()
-                    SMS.LearnSpellForParty:SendToServer({ ID = USERID, uuid = uuid, data = data, ability = ability })
-                end
-            end
+            self:_PopulateAbilityPopup(partyAbilityPopup, "Select Casting Ability for Party:", function(ability)
+                SMS.LearnSpellForParty:SendToServer({ ID = USERID, uuid = uuid, data = data, ability = ability })
+            end)
             partyAbilityPopup:Open()
         end
 

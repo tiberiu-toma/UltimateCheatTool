@@ -1,22 +1,24 @@
-SMS.SendEquipment:SetHandler(function (payload)
-    if ItemTools then
-        local tab = ItemTools.EquipmentTab
+--- Creates a generic handler for receiving paginated data and updating a tab.
+---@param getTab function A function that returns the tab object.
+---@return function
+local function CreateDataHandler(getTab)
+    return function(payload)
+        local tab = getTab()
+        if tab then
+            tab:SetData(payload)
+        end
+    end
+end
 
-        tab:SetData(payload)
-    end
-end)
-SMS.SendNPCs:SetHandler(function (payload)
-    if MiscTools then
-        local tab = MiscTools.NPCTab
-        tab:SetData(payload)
-    end
-end)
-SMS.SendSpells:SetHandler(function (payload)
-    if CharacterTools then
-        local tab = CharacterTools.SpellTab
-        tab:SetData(payload)
-    end
-end)
+SMS.SendEquipment:SetHandler(CreateDataHandler(function() return ItemTools and ItemTools.EquipmentTab end))
+SMS.SendNPCs:SetHandler(CreateDataHandler(function() return MiscTools and MiscTools.NPCTab end))
+SMS.SendSpells:SetHandler(CreateDataHandler(function() return CharacterTools and CharacterTools.SpellTab end))
+SMS.SendTags:SetHandler(CreateDataHandler(function() return CharacterTools and CharacterTools.TagTab end))
+SMS.SendResources:SetHandler(CreateDataHandler(function() return CharacterTools and CharacterTools.ResourceTab end))
+SMS.SendConsumables:SetHandler(CreateDataHandler(function() return ItemTools and ItemTools.ConsumableTab end))
+SMS.SendWaypoints:SetHandler(CreateDataHandler(function() return MiscTools and MiscTools.WaypointTab end))
+
+-- Handlers for tabs that exist in multiple UI contexts
 SMS.SendPassives:SetHandler(function (payload)
     if CharacterTools and CharacterTools.PassiveTab then
         CharacterTools.PassiveTab:SetData(payload)
@@ -25,37 +27,12 @@ SMS.SendPassives:SetHandler(function (payload)
         ItemTools.PassiveTab:SetData(payload)
     end
 end)
-SMS.SendTags:SetHandler(function (payload)
-    if CharacterTools then
-        local tab = CharacterTools.TagTab
-        tab:SetData(payload)
-    end
-end)
-SMS.SendResources:SetHandler(function (payload)
-    if CharacterTools and CharacterTools.ResourceTab then
-        local tab = CharacterTools.ResourceTab
-        tab:SetData(payload)
-    end
-end)
 SMS.SendStatuses:SetHandler(function (payload)
     if CharacterTools and CharacterTools.StatusTab then
         CharacterTools.StatusTab:SetData(payload)
     end
     if ItemTools and ItemTools.StatusTab then
         ItemTools.StatusTab:SetData(payload)
-    end
-end)
-SMS.SendConsumables:SetHandler(function (payload)
-    if ItemTools then
-        local tab = ItemTools.ConsumableTab
-        tab:SetData(payload)
-    end
-end)
-SMS.SendWaypoints:SetHandler(function (payload)
-    if MiscTools then
-        local tab = MiscTools.WaypointTab
-
-        tab:SetData(payload)
     end
 end)
 
@@ -87,38 +64,36 @@ SMS.SendEquippedItems:SetHandler(function(payload)
     end
 end)
 
+local refreshHandlers = {
+    Passive = function()
+        if ItemTools and ItemTools.PassiveTab and ItemTools.PassiveTab.Tab.Visible then ItemTools.PassiveTab:GetAddedPassives() end
+        if CharacterTools and CharacterTools.PassiveTab and CharacterTools.PassiveTab.Tab.Visible then CharacterTools.PassiveTab:GetAddedPassives() end
+    end,
+    Status = function()
+        if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.Tab.Visible then ItemTools.StatusTab:GetAppliedStatuses() end
+        if CharacterTools and CharacterTools.StatusTab and CharacterTools.StatusTab.Tab.Visible then CharacterTools.StatusTab:GetAppliedStatuses() end
+    end,
+    Spell = function()
+        if CharacterTools and CharacterTools.SpellTab and CharacterTools.SpellTab.Tab.Visible then CharacterTools.SpellTab:GetLearnedSpells() end
+    end,
+    Tag = function()
+        if CharacterTools and CharacterTools.TagTab and CharacterTools.TagTab.Tab.Visible then CharacterTools.TagTab:GetAppliedTags() end
+    end,
+    Resource = function()
+        if CharacterTools and CharacterTools.ResourceTab and CharacterTools.ResourceTab.Tab.Visible then CharacterTools.ResourceTab:GetAddedResources() end
+    end,
+    Ability = function()
+        if CharacterTools and CharacterTools.AbilityTab and CharacterTools.AbilityTab.Tab.Visible then CharacterTools.AbilityTab:FetchAbilities(true) end
+    end,
+    NPC = function()
+        if MiscTools and MiscTools.NPCTab and MiscTools.NPCTab.Tab.Visible then MiscTools.NPCTab:GetSpawnedNPCs() end
+    end,
+}
+
 SMS.UIRefresh:SetHandler(function(payload)
     if not CharacterTools and not ItemTools then return end
     local tabName = payload.tab
-    if tabName == "Passive" then
-        if ItemTools and ItemTools.PassiveTab and ItemTools.PassiveTab.Tab.Visible then
-            ItemTools.PassiveTab:GetAddedPassives()
-        end
-        if CharacterTools and CharacterTools.PassiveTab and CharacterTools.PassiveTab.Tab.Visible then
-            CharacterTools.PassiveTab:GetAddedPassives()
-        end
-    end
-    if tabName == "Status" then
-        if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.Tab.Visible then
-            ItemTools.StatusTab:GetAppliedStatuses()
-        end
-        if CharacterTools and CharacterTools.StatusTab and CharacterTools.StatusTab.Tab.Visible then
-            CharacterTools.StatusTab:GetAppliedStatuses()
-        end
-    end
-    if tabName == "Spell" and CharacterTools and CharacterTools.SpellTab and CharacterTools.SpellTab.Tab.Visible then
-        CharacterTools.SpellTab:GetLearnedSpells()
-    end
-    if tabName == "Tag" and CharacterTools and CharacterTools.TagTab and CharacterTools.TagTab.Tab.Visible then
-        CharacterTools.TagTab:GetAppliedTags()
-    end
-    if tabName == "Resource" and CharacterTools and CharacterTools.ResourceTab and CharacterTools.ResourceTab.Tab.Visible then
-        CharacterTools.ResourceTab:GetAddedResources()
-    end
-    if tabName == "Ability" and CharacterTools and CharacterTools.AbilityTab and CharacterTools.AbilityTab.Tab.Visible then
-        CharacterTools.AbilityTab:FetchAbilities(true)
-    end
-    if tabName == "NPC" and MiscTools and MiscTools.NPCTab and MiscTools.NPCTab.Tab.Visible then
-        MiscTools.NPCTab:GetSpawnedNPCs()
+    if refreshHandlers[tabName] then
+        refreshHandlers[tabName]()
     end
 end)

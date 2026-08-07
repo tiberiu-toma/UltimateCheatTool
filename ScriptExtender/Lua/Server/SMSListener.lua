@@ -1,166 +1,38 @@
 local RSRC = Ext.Require("Server/Resources.lua")
 
-SMS.FetchEquipment:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
+--- Creates a generic handler for fetching paginated data from a module and sending it to the client.
+---@param dataModule table The data module with a `GetAll(search, page)` function.
+---@param sendMessage ExtNet.Channel The network channel to send the response on.
+---@return function
+local function CreateFetchHandler(dataModule, sendMessage)
+    return function(payload)
+        local search = HLP.GetAttr(payload, "search") or ""
+        local page = HLP.GetAttr(payload, "page") or 1
 
-    local equipment, totalItems, totalPages, currentPage = EKP.GetAll(search, page)
+        local items, totalItems, totalPages, currentPage = dataModule.GetAll(search, page)
 
-    HLP.ToClient(
-        SMS.SendEquipment,
-        {
-            data = equipment,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
+        HLP.ToClient(
+            sendMessage,
+            {
+                data = items,
+                totalItems = totalItems,
+                totalPages = totalPages,
+                currentPage = currentPage
+            },
+            payload.ID
+        )
+    end
+end
 
-SMS.FetchNPCs:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
-
-    local NPCs, totalItems, totalPages, currentPage = ENPC.GetAll(search, page)
-
-    HLP.ToClient(
-        SMS.SendNPCs,
-        {
-            data = NPCs,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
-
-SMS.FetchSpells:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
-
-    local spells, totalItems, totalPages, currentPage = SPLL.GetAll(search, page)
-
-    HLP.ToClient(
-        SMS.SendSpells,
-        {
-            data = spells,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
-
-SMS.FetchResources:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
-
-    local resources, totalItems, totalPages, currentPage = RSRC.GetAll(search, page)
-
-    HLP.ToClient(
-        SMS.SendResources,
-        {
-            data = resources,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
-
-SMS.FetchWaypoints:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
-
-    local waypoints, totalItems, totalPages, currentPage = TELP.GetAll(search, page)
-
-    HLP.ToClient(
-        SMS.SendWaypoints,
-        {
-            data = waypoints,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
-
-SMS.FetchConsumables:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
-
-    local Consumables, totalItems, totalPages, currentPage = CONS.GetAll(search, page)
-
-    HLP.ToClient(
-        SMS.SendConsumables,
-        {
-            data = Consumables,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
-
-SMS.FetchPassives:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
- 
-    local passives, totalItems, totalPages, currentPage = PASSV.GetAll(search, page)
-
-    HLP.ToClient(
-        SMS.SendPassives,
-        {
-            data = passives,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
-
-SMS.FetchStatuses:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
-
-    local statuses, totalItems, totalPages, currentPage = STAT.GetAll(search, page)
-
-    HLP.ToClient(
-        SMS.SendStatuses,
-        {
-            data = statuses,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
-
-SMS.FetchTags:SetHandler(function(payload)
-    local search = HLP.GetAttr(payload, "search") or ""
-    local page = HLP.GetAttr(payload, "page") or 1
-
-    local tags, totalItems, totalPages, currentPage = TAGS.GetAll(search, page)
-
-    HLP.ToClient(
-        SMS.SendTags,
-        {
-            data = tags,
-            totalItems = totalItems,
-            totalPages = totalPages,
-            currentPage = currentPage
-        },
-        payload.ID
-    )
-end)
+SMS.FetchEquipment:SetHandler(CreateFetchHandler(EKP, SMS.SendEquipment))
+SMS.FetchNPCs:SetHandler(CreateFetchHandler(ENPC, SMS.SendNPCs))
+SMS.FetchSpells:SetHandler(CreateFetchHandler(SPLL, SMS.SendSpells))
+SMS.FetchResources:SetHandler(CreateFetchHandler(RSRC, SMS.SendResources))
+SMS.FetchWaypoints:SetHandler(CreateFetchHandler(TELP, SMS.SendWaypoints))
+SMS.FetchConsumables:SetHandler(CreateFetchHandler(CONS, SMS.SendConsumables))
+SMS.FetchPassives:SetHandler(CreateFetchHandler(PASSV, SMS.SendPassives))
+SMS.FetchStatuses:SetHandler(CreateFetchHandler(STAT, SMS.SendStatuses))
+SMS.FetchTags:SetHandler(CreateFetchHandler(TAGS, SMS.SendTags))
 
 SMS.LearnSpell:SetHandler(function(payload)
     local uuid = payload.uuid
