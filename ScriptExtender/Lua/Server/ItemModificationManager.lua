@@ -20,6 +20,7 @@ function ItemModificationManager:ResetAllModifiedStats()
                     local needsSync = false
                     local backupPassives = HLP.GetAttr(backupStat, "PassivesOnEquip") or ""
                     local backupStatuses = HLP.GetAttr(backupStat, "StatusOnEquip") or ""
+                    local backupBoosts = HLP.GetAttr(backupStat, "Boosts") or ""
 
                     if (HLP.GetAttr(stat, "PassivesOnEquip") or "") ~= backupPassives then
                         stat.PassivesOnEquip = backupPassives
@@ -27,6 +28,10 @@ function ItemModificationManager:ResetAllModifiedStats()
                     end
                     if (HLP.GetAttr(stat, "StatusOnEquip") or "") ~= backupStatuses then
                         stat.StatusOnEquip = backupStatuses
+                        needsSync = true
+                    end
+                    if (HLP.GetAttr(stat, "Boosts") or "") ~= backupBoosts then
+                        stat.Boosts = backupBoosts
                         needsSync = true
                     end
 
@@ -109,6 +114,9 @@ function ItemModificationManager:ReapplyAll()
 			end
 		end
 	end
+
+	-- Re-apply instance-based boosts (e.g., from the Damage tab)
+    DMG.ReapplyAll()
 end
 
 -- Subscribe to the session loaded event.

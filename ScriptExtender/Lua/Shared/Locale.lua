@@ -50,6 +50,7 @@ LocaleText = {
 	UCT_TagTab_Label = "Tags",
 	UCT_SkillTab_Label = "Skills",
 	UCT_WaypointTab_Label = "Waypoints",
+	UCT_DamageTab_Label = "Damage",
 
 	-- Search Labels
 	UCT_SearchEquipment_Label = "Search Equipment:",
@@ -132,4 +133,9 @@ LocaleText = {
 	UCT_TagTab_RemoveForParty = "Remove for Party",
 	UCT_ResourceTab_AddForParty = "Add for Party",
 	UCT_ResourceTab_RemoveForParty = "Remove for Party",
+
+	-- Damage Tab
+	UCT_DamageTab_AddBoost = "Add Damage Boost",
+	UCT_DamageTab_AddedBoosts = "Added Damage Boosts",
+	UCT_DamageTab_NoBoosts = "No custom damage boosts applied to this item.",
 }

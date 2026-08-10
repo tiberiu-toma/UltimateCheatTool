@@ -5,6 +5,7 @@ local EquipmentTab = Ext.Require("Client/UI/Tabs/EquipmentTab.lua")
 local ConsumableTab = Ext.Require("Client/UI/Tabs/ConsumableTab.lua")
 local PassiveTab = Ext.Require("Client/UI/Tabs/PassiveTab.lua")
 local StatusTab = Ext.Require("Client/UI/Tabs/StatusTab.lua")
+local DamageTab = Ext.Require("Client/UI/Tabs/DamageTab.lua")
 
 ---@class ItemToolsUI
 ---@field Ready boolean
@@ -15,6 +16,9 @@ local StatusTab = Ext.Require("Client/UI/Tabs/StatusTab.lua")
 ---@field TabBar ExtuiTabBar
 ---@field EquipmentTab EquipmentTab
 ---@field ConsumableTab ConsumableTab
+---@field PassiveTab PassiveTab
+---@field StatusTab StatusTab
+---@field DamageTab DamageTab
 ---@field PartyMembers table
 ItemToolsUI = {}
 ItemToolsUI.__index = ItemToolsUI
@@ -75,17 +79,23 @@ function ItemToolsUI:Initialize()
                 currentPage = self.StatusTab.CurrentPage
             })
         end
+        if self.DamageTab and self.DamageTab.Tab.Visible then
+            self.DamageTab:Draw() -- Redraw builder UI
+            self.DamageTab:GetAddedDamage() -- Redraw the list of applied boosts
+        end
     end)
 
     self.TabBar = self.Window:AddTabBar("UCT_ItemTabBar")
 
     self.EquipmentTab = EquipmentTab:New(self.TabBar)
     self.ConsumableTab = ConsumableTab:New(self.TabBar)
+    self.DamageTab = DamageTab:New(self.TabBar)
     self.PassiveTab = PassiveTab:New(self.TabBar, "ItemTools") -- Add PassiveTab to ItemTools
     self.StatusTab = StatusTab:New(self.TabBar, "ItemTools") -- Add StatusTab to ItemTools
 
     self.EquipmentTab:Init()
     self.ConsumableTab:Init()
+    self.DamageTab:Init()
     self.PassiveTab:Init() -- Initialize ItemTools' PassiveTab
     self.StatusTab:Init() -- Initialize ItemTools' StatusTab
     self.Ready = true
