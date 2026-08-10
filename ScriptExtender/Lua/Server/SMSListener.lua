@@ -70,6 +70,9 @@ SMS.RemoveStatusForParty:SetHandler(function(payload) STAT.ManageForParty(payloa
 SMS.ApplyStatusToItem:SetHandler(function(payload) STAT.ManageOnItem(payload) end)
 SMS.RemoveStatusFromItem:SetHandler(function(payload) STAT.ManageOnItem(payload, true) end)
 
+-- Damage
+SMS.ManageDamageOnItem:SetHandler(function(payload) DMG.ManageOnItem(payload, payload.remove) end)
+
 -- Spawning
 SMS.SpawnTemplate:SetHandler(function(payload) EKP.Spawn(payload) end)
 SMS.SpawnAllOfTemplateForParty:SetHandler(function(payload) EKP.SpawnForParty(payload) end)
