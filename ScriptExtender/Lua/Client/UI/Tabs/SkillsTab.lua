@@ -1,3 +1,4 @@
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UI/UIState.lua")
 local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua")
 
@@ -8,20 +9,17 @@ local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua"
 ---@field ModificationGrid ModificationGrid
 ---@field MainContent ExtuiGroup
 SkillsTab = {}
+setmetatable(SkillsTab, { __index = BaseTab })
 SkillsTab.__index = SkillsTab
 
 function SkillsTab:New(holder)
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("UCT_SkillTab_Label", "Skills")),
-        Skills = {
-            Strength = { "Athletics" },
-            Dexterity = { "Acrobatics", "SleightOfHand", "Stealth" },
-            Intelligence = { "Arcana", "History", "Investigation", "Nature", "Religion" },
-            Wisdom = { "AnimalHandling", "Insight", "Medicine", "Perception", "Survival" },
-            Charisma = { "Deception", "Intimidation", "Performance", "Persuasion" }
-        },
-        BoostAmounts = { -5, -4, -3, -2, -1, 1, 2, 3, 4, 5 },
-    }, SkillsTab)
+    local config = {
+        tabName = "Skills",
+        tabNameHandle = "UCT_SkillTab_Label",
+        idPrefix = "Skill"
+    }
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, SkillsTab)
 
     local gridConfig = {
         headerText = "Applied Skill Boosts",
@@ -43,7 +41,16 @@ function SkillsTab:New(holder)
             end
         end
     }
-    instance.ModificationGrid = ModificationGrid:New(nil, gridConfig)
+    instance.ModificationGrid = ModificationGrid:New(instance.ModificationGridArea, gridConfig)
+
+    instance.Skills = {
+        Strength = { "Athletics" },
+        Dexterity = { "Acrobatics", "SleightOfHand", "Stealth" },
+        Intelligence = { "Arcana", "History", "Investigation", "Nature", "Religion" },
+        Wisdom = { "AnimalHandling", "Insight", "Medicine", "Perception", "Survival" },
+        Charisma = { "Deception", "Intimidation", "Performance", "Persuasion" }
+    }
+    instance.BoostAmounts = { -5, -4, -3, -2, -1, 1, 2, 3, 4, 5 }
 
     return instance
 end
@@ -109,7 +116,6 @@ function SkillsTab:Draw()
         end
     end
 
-    self.ModificationGrid.Parent = self.MainContent:AddGroup("AppliedSkills")
     self.ModificationGrid:Draw(appliedForChar)
 end
 

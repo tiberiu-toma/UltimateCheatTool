@@ -19,7 +19,8 @@ function PassiveTab:New(holder, parentUI)
         searchLabel = "Search Passives:",
         searchLabelHandle = "UCT_SearchPassives_Label",
         noItemsText = "No passives found.",
-        maxTableWidth = 5
+        maxTableWidth = 5,
+        filters = { mod = true }
     }
 
     local instance = BaseTab:New(holder, config)
@@ -59,7 +60,9 @@ function PassiveTab:New(holder, parentUI)
             end
         end
     }
-    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("AddedPassives"), gridConfig)
+    instance.ModificationGrid = ModificationGrid:New(instance.ModificationGridArea, gridConfig)
+
+    SMS.FetchPassiveModNames:SendToServer({ ID = USERID })
 
     return instance
 end

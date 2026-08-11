@@ -1,18 +1,6 @@
 EKP = {}
 EKP.Max = 50
 
-function tableToString(tbl)
-    if type(tbl) ~= "table" then
-        return tostring(tbl)
-    end
-    local str = "{ "
-    for k, v in pairs(tbl) do
-        str = str .. "[" .. tostring(k) .. "] = " .. tableToString(v) .. ", "
-    end
-    str = str:sub(1, -3) .. " }"
-    return str
-end   
-
 function EKP.GetTemplateData(v)
     if not v then return nil end
 
@@ -70,7 +58,7 @@ function EKP.GetTemplateData(v)
     return { id = id, name = name, icon = icon, displayName = displayName, modName = modName, rarity = rarity, armorClass = armorClass, armorType = armorType, slot = slot, defaultBoosts = defaultBoosts, boosts = boosts, boostsOnEquipMainHand = boostsOnEquipMainHand, boostsOnEquipOffHand = boostsOnEquipOffHand, passivesOnEquip = passivesOnEquip, modifierList = stats.ModifierList }
 end
 
-function EKP.GetAll(search, page)
+function EKP.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = EKP.Max
@@ -85,15 +73,16 @@ function EKP.GetAll(search, page)
             local displayName = data.displayName
             local name = data.name
             local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
+
             if matchesSearch then
                 table.insert(allMatchingEquipment, data)
             end
         end
     end
 
-    table.sort(allMatchingEquipment, function(a, b) return a.displayName < b.displayName end)
-
-    return UTL.Paginate(allMatchingEquipment, page, pageSize)
+    local filtered = FLTR.Apply(allMatchingEquipment, filters)
+    table.sort(filtered, function(a, b) return a.displayName < b.displayName end)
+    return UTL.Paginate(filtered, page, pageSize)
 end
 
 function EKP.GetAllEquippedItems()

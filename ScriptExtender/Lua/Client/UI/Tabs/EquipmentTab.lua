@@ -17,11 +17,16 @@ function EquipmentTab:New(holder)
         searchLabelHandle = "UCT_SearchEquipment_Label",
         noItemsText = "No equipment found.",
         maxTableWidth = 5,
-        amountOptions = {1, 2, 5, 10, 99}
+        amountOptions = {1, 2, 5, 10, 99},
+        filters = { mod = true, rarity = true, modifierList = true, slot = true }
     }
 
     local instance = BaseTab:New(holder, config)
-    setmetatable(instance, EquipmentTab) -- Re-set metatable to the child class
+    setmetatable(instance, EquipmentTab)
+
+    -- Fetch mod names to populate the filter
+    SMS.FetchEquipmentModNames:SendToServer({ ID = USERID })
+
     return instance
 end
 

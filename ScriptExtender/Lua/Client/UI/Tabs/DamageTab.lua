@@ -1,3 +1,4 @@
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UI/UIState.lua")
 local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua")
 
@@ -9,19 +10,21 @@ local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua"
 ---@field SelectedDiceType number
 ---@field SelectedNumDice number
 DamageTab = {}
+setmetatable(DamageTab, { __index = BaseTab })
 DamageTab.__index = DamageTab
 
 function DamageTab:New(holder)
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("UCT_DamageTab_Label", "Damage")),
-        SelectedDamageType = "Fire",
-        SelectedDiceType = 4,
-        SelectedNumDice = 1,
-    }, DamageTab)
+    local config = {
+        tabName = "Damage",
+        tabNameHandle = "UCT_DamageTab_Label",
+        idPrefix = "Damage"
+    }
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, DamageTab)
 
     local gridConfig = {
         headerText = LCL.Get("UCT_DamageTab_AddedBoosts", "Added Damage Boosts"),
-        noItemsText = LCL.Get("UCT_DamageTab_NoBoosts", "No custom damage boosts applied."),
+        noItemsText = LCL.Get("UCT_DamageTab_NoBoosts", "No custom damage boosts applied to this item."),
         maxTableWidth = 3,
         idPrefix = "Damage",
         renderItem = function(cell, uniqueKey, data)
@@ -42,13 +45,17 @@ function DamageTab:New(holder)
             end
         end
     }
-    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("AppliedDamageBoosts"), gridConfig)
+    instance.ModificationGrid = ModificationGrid:New(instance.ModificationGridArea, gridConfig)
+
+    instance.SelectedDamageType = "Fire"
+    instance.SelectedDiceType = 4
+    instance.SelectedNumDice = 1
 
     return instance
 end
 
 function DamageTab:Init()
-    self:GetAddedDamage()
+    -- self:GetAddedDamage() -- This is called in Draw, and Draw is called when equipment changes
     self:Draw()
 end
 

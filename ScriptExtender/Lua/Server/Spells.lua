@@ -1,7 +1,7 @@
 SPLL = {}
 SPLL.Max = 50
 
-function SPLL.GetAll(search, page)
+function SPLL.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = SPLL.Max
@@ -47,9 +47,9 @@ function SPLL.GetAll(search, page)
         end
     end
 
-    table.sort(allMatchingSpells, function(a, b) return a.displayName < b.displayName end)
-
-    return UTL.Paginate(allMatchingSpells, page, pageSize)
+    local filtered = FLTR.Apply(allMatchingSpells, filters)
+    table.sort(filtered, function(a, b) return a.displayName < b.displayName end)
+    return UTL.Paginate(filtered, page, pageSize)
 end
 
 function SPLL._Manage(character, uuid, data, ability, unlearn)

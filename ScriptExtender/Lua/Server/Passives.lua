@@ -1,7 +1,7 @@
 PASSV = {}
 PASSV.Max = 50
 
-function PASSV.GetAll(search, page)
+function PASSV.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = PASSV.Max
@@ -43,9 +43,9 @@ function PASSV.GetAll(search, page)
         end
     end
 
-    table.sort(allMatchingPassives, function(a, b) return a.displayName < b.displayName end)
-
-    return UTL.Paginate(allMatchingPassives, page, pageSize)
+    local filtered = FLTR.Apply(allMatchingPassives, filters)
+    table.sort(filtered, function(a, b) return a.displayName < b.displayName end)
+    return UTL.Paginate(filtered, page, pageSize)
 end
 
 function PASSV.Add(character, passiveId, remove)
@@ -202,5 +202,5 @@ function PASSV.ManageOnItem(payload, remove)
     end
 
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID, 20)
 end

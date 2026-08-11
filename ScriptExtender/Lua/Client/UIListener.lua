@@ -4,7 +4,7 @@
 local function CreateDataHandler(getTab)
     return function(payload)
         local tab = getTab()
-        if tab then
+        if tab and payload.tabInstanceId == tab.InstanceId then
             tab:SetData(payload)
         end
     end
@@ -20,19 +20,55 @@ SMS.SendWaypoints:SetHandler(CreateDataHandler(function() return MiscTools and M
 
 -- Handlers for tabs that exist in multiple UI contexts
 SMS.SendPassives:SetHandler(function (payload)
-    if CharacterTools and CharacterTools.PassiveTab then
+    if CharacterTools and CharacterTools.PassiveTab and payload.tabInstanceId == CharacterTools.PassiveTab.InstanceId then
         CharacterTools.PassiveTab:SetData(payload)
     end
-    if ItemTools and ItemTools.PassiveTab then
+    if ItemTools and ItemTools.PassiveTab and payload.tabInstanceId == ItemTools.PassiveTab.InstanceId then
         ItemTools.PassiveTab:SetData(payload)
     end
 end)
 SMS.SendStatuses:SetHandler(function (payload)
-    if CharacterTools and CharacterTools.StatusTab then
+    if CharacterTools and CharacterTools.StatusTab and payload.tabInstanceId == CharacterTools.StatusTab.InstanceId then
         CharacterTools.StatusTab:SetData(payload)
     end
-    if ItemTools and ItemTools.StatusTab then
+    if ItemTools and ItemTools.StatusTab and payload.tabInstanceId == ItemTools.StatusTab.InstanceId then
         ItemTools.StatusTab:SetData(payload)
+    end
+end)
+
+SMS.SendEquipmentModNames:SetHandler(function (payload)
+    if ItemTools and ItemTools.EquipmentTab and ItemTools.EquipmentTab.FilterComponent then
+        ItemTools.EquipmentTab.FilterComponent:SetModNameOptions(payload.data)
+    end
+end)
+
+SMS.SendSpellModNames:SetHandler(function (payload)
+    if CharacterTools and CharacterTools.SpellTab and CharacterTools.SpellTab.FilterComponent then
+        CharacterTools.SpellTab.FilterComponent:SetModNameOptions(payload.data)
+    end
+end)
+
+SMS.SendPassiveModNames:SetHandler(function (payload)
+    if CharacterTools and CharacterTools.PassiveTab and CharacterTools.PassiveTab.FilterComponent then
+        CharacterTools.PassiveTab.FilterComponent:SetModNameOptions(payload.data)
+    end
+    if ItemTools and ItemTools.PassiveTab and ItemTools.PassiveTab.FilterComponent then
+        ItemTools.PassiveTab.FilterComponent:SetModNameOptions(payload.data)
+    end
+end)
+
+SMS.SendStatusModNames:SetHandler(function (payload)
+    if CharacterTools and CharacterTools.StatusTab and CharacterTools.StatusTab.FilterComponent then
+        CharacterTools.StatusTab.FilterComponent:SetModNameOptions(payload.data)
+    end
+    if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.FilterComponent then
+        ItemTools.StatusTab.FilterComponent:SetModNameOptions(payload.data)
+    end
+end)
+
+SMS.SendConsumableModNames:SetHandler(function (payload)
+    if ItemTools and ItemTools.ConsumableTab and ItemTools.ConsumableTab.FilterComponent then
+        ItemTools.ConsumableTab.FilterComponent:SetModNameOptions(payload.data)
     end
 end)
 

@@ -20,7 +20,8 @@ function TagTab:New(holder)
         searchLabel = "Search Tags:",
         searchLabelHandle = "UCT_SearchTags_Label",
         noItemsText = "No tags found.",
-        maxTableWidth = 3
+        maxTableWidth = 3,
+        filters = {}
     }
 
     local instance = BaseTab:New(holder, config)
@@ -48,7 +49,7 @@ function TagTab:New(holder)
             removeButton.OnClick = function() SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 }) end
         end
     }
-    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("AppliedTags"), gridConfig)
+    instance.ModificationGrid = ModificationGrid:New(instance.ModificationGridArea, gridConfig)
 
     return instance
 end

@@ -1,7 +1,7 @@
 ENPC = {}
 ENPC.Max = 50
 
-function ENPC.GetAll(search, page)
+function ENPC.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = ENPC.Max
