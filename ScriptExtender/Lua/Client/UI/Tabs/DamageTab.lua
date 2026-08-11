@@ -33,8 +33,8 @@ function DamageTab:New(holder)
             removeButton.OnClick = function()
                 if UIState.SelectedEquipment then
                     SMS.ManageDamageOnItem:SendToServer({
-                        ID = USERID,
-                        itemTemplateUUID = UIState.SelectedEquipment.id,
+                        ID = USERID,                        
+                        itemInstanceUUID = UIState.SelectedEquipment.instanceUUID,
                         uniqueKey = uniqueKey,
                         remove = 1
                     })
@@ -60,7 +60,8 @@ function DamageTab:GetAddedDamage()
         return
     end
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-    local itemMods = modifiedEquipment[equipmentData.id]
+    -- Data is now stored per instance UUID
+    local itemMods = modifiedEquipment[equipmentData.instanceUUID]
     local data = (itemMods and itemMods.damage) or {}
     self.ModificationGrid:Draw(data)
 end
@@ -72,8 +73,15 @@ function DamageTab:Draw()
         self.MainContent = self.Tab:AddGroup("DamageTabMainContent")
     end
 
-    if not UIState.SelectedEquipment then
+    local equipmentData = UIState.SelectedEquipment
+    if not equipmentData then
         self.MainContent:AddText(LCL.Get("UCT_NoItemSelected", "No item selected."))
+        return
+    end
+
+    -- Only show the damage builder for weapons
+    if equipmentData.modifierList ~= "Weapon" then
+        self.MainContent:AddText(LCL.Get("UCT_DamageTab_OnlyOnWeapons", "Damage boosts can only be applied to weapons."))
         return
     end
 
@@ -138,7 +146,13 @@ function DamageTab:Draw()
     addButton.OnClick = function()
         local boostString = string.format("WeaponDamage(%dd%d,%s)", self.SelectedNumDice, self.SelectedDiceType, self.SelectedDamageType)
         local displayString = string.format("%dd%d %s", self.SelectedNumDice, self.SelectedDiceType, self.SelectedDamageType)
-        SMS.ManageDamageOnItem:SendToServer({ ID = USERID, itemTemplateUUID = UIState.SelectedEquipment.id, boostString = boostString, display = displayString })
+        SMS.ManageDamageOnItem:SendToServer({
+            ID = USERID,
+            itemInstanceUUID = UIState.SelectedEquipment.instanceUUID,
+            templateUUID = UIState.SelectedEquipment.id, -- Send template for re-application logic
+            boostString = boostString,
+            display = displayString
+        })
     end
 end
 

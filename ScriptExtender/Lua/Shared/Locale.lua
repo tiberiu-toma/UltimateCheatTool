@@ -138,4 +138,5 @@ LocaleText = {
 	UCT_DamageTab_AddBoost = "Add Damage Boost",
 	UCT_DamageTab_AddedBoosts = "Added Damage Boosts",
 	UCT_DamageTab_NoBoosts = "No custom damage boosts applied to this item.",
+	UCT_DamageTab_OnlyOnWeapons = "Damage boosts can only be applied to weapons.",
 }

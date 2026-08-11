@@ -54,7 +54,7 @@ function PassiveTab:New(holder, parentUI)
                 if instance.ParentUI == "CharacterTools" then
                     SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
                 elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment then
-                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemTemplateUUID = UIState.SelectedEquipment.id, passiveUUID = uuid })
+                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, passiveUUID = uuid })
                 end
             end
         end
@@ -147,12 +147,12 @@ function PassiveTab:DrawGrid()
             else
                 addToSelectedItem.OnClick = function()
                     if equipmentData and equipmentData.id then
-                        SMS.AddPassiveOnItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid, data = data })
+                        SMS.AddPassiveOnItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, passiveUUID = uuid, data = data })
                     end
                 end
                 removeFromSelectedItem.OnClick = function()
                     if equipmentData and equipmentData.id then
-                        SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, passiveUUID = uuid })
+                        SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, passiveUUID = uuid })
                     end
                 end
             end
@@ -201,7 +201,7 @@ function PassiveTab:GetAddedPassives()
             return
         end
         local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-        local itemMods = modifiedEquipment[equipmentData.id]
+        local itemMods = modifiedEquipment[equipmentData.instanceUUID]
         local data = (itemMods and itemMods.passives) or {}
         self.ModificationGrid:Draw(data)
     end
