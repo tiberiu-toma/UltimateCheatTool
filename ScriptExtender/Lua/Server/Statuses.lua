@@ -189,5 +189,5 @@ function STAT.ManageOnItem(payload, remove)
     end
 
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID, 20)
 end

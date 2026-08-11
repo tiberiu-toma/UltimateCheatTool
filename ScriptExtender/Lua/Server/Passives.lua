@@ -202,5 +202,5 @@ function PASSV.ManageOnItem(payload, remove)
     end
 
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID, 20)
 end

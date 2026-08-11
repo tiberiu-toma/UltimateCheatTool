@@ -1,6 +1,5 @@
 Ext.Require("Client/RegisterVars.lua")
 Ext.Require("Client/Utils/LocaleOverride.lua")
-Ext.Require("Client/Utils/Movement.lua")
 Ext.Require("Client/Utils/Pagination.lua")
 Ext.Require("Client/Utils/InfoPopup.lua")
 Ext.Require("Client/UI/Tabs/BaseTab.lua")
