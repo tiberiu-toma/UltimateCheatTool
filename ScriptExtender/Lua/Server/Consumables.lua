@@ -66,6 +66,10 @@ function CONS.IsConsumable(template)
         return true
     end
 
+    if stats.ItemUseType ~= nil and stats.ItemUseType == "Potion" then
+        return true
+    end
+
     if stats.DefaultBoosts ~= nil and stats.DefaultBoosts == "Tag(CAMPSUPPLIES)" then
         return true
     end
@@ -81,5 +85,10 @@ function CONS.IsConsumable(template)
     if stats.ItemUseType ~= nil and stats.ItemUseType == "Scroll" then
         return true
     end
+
+    if stats.Name ~= nil and (stats.Name == "OBJ_Kit_ThievesTools" or stats.Name == "OBJ_Kit_TrapDisarm") then
+        return true
+    end
+
     return false
 end
