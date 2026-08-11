@@ -1,7 +1,7 @@
 TELP = {}
 TELP.Max = 50
 
-function TELP.GetAll(search, page)
+function TELP.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = TELP.Max

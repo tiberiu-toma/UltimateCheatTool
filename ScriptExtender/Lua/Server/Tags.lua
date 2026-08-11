@@ -1,7 +1,7 @@
 TAGS = {}
 TAGS.Max = 50
 
-function TAGS.GetAll(search, page)
+function TAGS.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = TAGS.Max

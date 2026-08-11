@@ -36,6 +36,12 @@ SMS.SendStatuses:SetHandler(function (payload)
     end
 end)
 
+SMS.SendEquipmentModNames:SetHandler(function (payload)
+    if ItemTools and ItemTools.EquipmentTab then
+        ItemTools.EquipmentTab:SetModNameOptions(payload.data)
+    end
+end)
+
 SMS.SendAbilities:SetHandler(function(payload)
     if CharacterTools and CharacterTools.AbilityTab then
         CharacterTools.AbilityTab:UpdateAbilityScores(payload)

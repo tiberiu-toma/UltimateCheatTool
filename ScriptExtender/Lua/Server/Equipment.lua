@@ -70,7 +70,7 @@ function EKP.GetTemplateData(v)
     return { id = id, name = name, icon = icon, displayName = displayName, modName = modName, rarity = rarity, armorClass = armorClass, armorType = armorType, slot = slot, defaultBoosts = defaultBoosts, boosts = boosts, boostsOnEquipMainHand = boostsOnEquipMainHand, boostsOnEquipOffHand = boostsOnEquipOffHand, passivesOnEquip = passivesOnEquip, modifierList = stats.ModifierList }
 end
 
-function EKP.GetAll(search, page)
+function EKP.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = EKP.Max
@@ -85,7 +85,31 @@ function EKP.GetAll(search, page)
             local displayName = data.displayName
             local name = data.name
             local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
-            if matchesSearch then
+
+            local matchesFilters = true
+            if filters then
+                if filters.modifierList and filters.modifierList ~= "All" and data.modifierList ~= filters.modifierList then
+                    matchesFilters = false
+                end
+                if filters.slot and filters.slot ~= "All" and data.slot ~= filters.slot then
+                    matchesFilters = false
+                end
+                if filters.rarity and filters.rarity ~= "All" and data.rarity ~= filters.rarity then
+                    matchesFilters = false
+                end
+                if filters.modName and filters.modName ~= "All" then
+                    if filters.modName == "Larian" then
+                        local vanillaMods = { Gustav = true, GustavDev = true, GustavX = true, SharedDev = true }
+                        if not vanillaMods[data.modName] then
+                            matchesFilters = false
+                        end
+                    elseif data.modName ~= filters.modName then
+                        matchesFilters = false
+                    end
+                end
+            end
+
+            if matchesSearch and matchesFilters then
                 table.insert(allMatchingEquipment, data)
             end
         end
@@ -94,6 +118,38 @@ function EKP.GetAll(search, page)
     table.sort(allMatchingEquipment, function(a, b) return a.displayName < b.displayName end)
 
     return UTL.Paginate(allMatchingEquipment, page, pageSize)
+end
+
+function EKP.GetAllModNames()
+    local itemData = Ext.Template.GetAllRootTemplates()
+    local modNames = { All = true } -- Use a set to store unique names
+    local vanillaMods = { Gustav = true, GustavDev = true, GustavX = true, SharedDev = true }
+    local hasLarianContent = false
+
+    for k,v in pairs(itemData) do 
+        local data = EKP.GetTemplateData(v)
+        if data and data.modName and data.modName ~= "Unknown" and data.modName ~= "Shared" then
+            if vanillaMods[data.modName] then
+                hasLarianContent = true
+            else
+                modNames[data.modName] = true
+            end
+        end
+    end
+
+    if hasLarianContent then
+        modNames["Larian"] = true
+    end
+
+    local sortedModNames = { "All" }
+    for name, _ in pairs(modNames) do
+        if name ~= "All" then
+            table.insert(sortedModNames, name)
+        end
+    end
+    table.sort(sortedModNames)
+    
+    return sortedModNames
 end
 
 function EKP.GetAllEquippedItems()

@@ -1,7 +1,7 @@
 STAT = {}
 STAT.Max = 50
 
-function STAT.GetAll(search, page)
+function STAT.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = STAT.Max

@@ -1,7 +1,7 @@
 CONS = {}
 CONS.Max = 50
 
-function CONS.GetAll(search, page)
+function CONS.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = CONS.Max

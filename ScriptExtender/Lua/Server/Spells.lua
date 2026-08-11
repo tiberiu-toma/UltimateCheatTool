@@ -1,7 +1,7 @@
 SPLL = {}
 SPLL.Max = 50
 
-function SPLL.GetAll(search, page)
+function SPLL.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = SPLL.Max

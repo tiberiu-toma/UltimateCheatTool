@@ -1,7 +1,7 @@
 RSRC = {}
 RSRC.Max = 50
 
-function RSRC.GetAll(search, page)
+function RSRC.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = RSRC.Max

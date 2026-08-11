@@ -7,7 +7,7 @@ local function CreateFetchHandler(dataModule, sendMessage)
         local search = HLP.GetAttr(payload, "search") or ""
         local page = HLP.GetAttr(payload, "page") or 1
 
-        local items, totalItems, totalPages, currentPage = dataModule.GetAll(search, page)
+        local items, totalItems, totalPages, currentPage = dataModule.GetAll(search, page, payload)
 
         HLP.ToClient(
             sendMessage,
@@ -129,6 +129,17 @@ SMS.FetchEquippedItems:SetHandler(function(payload)
         { 
             party = partyMembers,
             items = itemsData 
+        },
+        payload.ID
+    )
+end)
+
+SMS.FetchEquipmentModNames:SetHandler(function(payload)
+    local modNames = EKP.GetAllModNames()
+    HLP.ToClient(
+        SMS.SendEquipmentModNames,
+        {
+            data = modNames
         },
         payload.ID
     )

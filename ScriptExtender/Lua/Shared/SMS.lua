@@ -7,6 +7,8 @@ end
 SMS:New("FetchEquipment")
 SMS:New("FetchNPCs")
 SMS:New("SendEquipment")
+SMS:New("FetchEquipmentModNames")
+SMS:New("SendEquipmentModNames")
 SMS:New("SendNPCs")
 SMS:New("SpawnTemplate")
 SMS:New("SpawnAllEquipment")

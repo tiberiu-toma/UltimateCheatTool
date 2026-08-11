@@ -1,7 +1,7 @@
 PASSV = {}
 PASSV.Max = 50
 
-function PASSV.GetAll(search, page)
+function PASSV.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = PASSV.Max
