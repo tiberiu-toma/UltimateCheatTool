@@ -1,17 +1,15 @@
+local UIState = Ext.Require("Client/UI/UIState.lua")
+
 ---@class CharacterSelector
 ---@field Container ExtuiGroup
 ---@field PartyMembers table
----@field SelectedCharacter string
----@field OnChange function
 CharacterSelector = {}
 CharacterSelector.__index = CharacterSelector
 
-function CharacterSelector:New(parent, onChange)
+function CharacterSelector:New(parent)
     local instance = setmetatable({
         Container = parent:AddGroup("CharacterSelector"),
         PartyMembers = {},
-        SelectedCharacter = _C().Uuid.EntityUuid,
-        OnChange = onChange,
     }, CharacterSelector)
     return instance
 end
@@ -21,7 +19,7 @@ function CharacterSelector:SetPartyMembers(members)
     -- If current selection is not in party, default to first member
     local found = false
     for _, member in ipairs(self.PartyMembers) do
-        if member.uuid == self.SelectedCharacter then
+        if member.uuid == UIState.SelectedCharacter then
             found = true
             break
         end
@@ -35,22 +33,19 @@ function CharacterSelector:SetPartyMembers(members)
 end
 
 function CharacterSelector:SetSelectedCharacter(charUUID)
-    if self.SelectedCharacter ~= charUUID then
-        self.SelectedCharacter = charUUID
-        if self.OnChange then
-            self.OnChange(charUUID)
-        end
+    if UIState.SelectedCharacter ~= charUUID then
+        UIState:SetSelectedCharacter(charUUID)
         self:Draw() -- Redraw to update selection visual
     end
 end
 
 function CharacterSelector:Draw()
-    UI.DestroyChildren(self.Container)
+    UI_Utils.DestroyChildren(self.Container)
 
     local selectedName = "None"
     local selectedIcon = "EC_Portrait_Generic"
     for _, member in ipairs(self.PartyMembers) do
-        if member.uuid == self.SelectedCharacter then
+        if member.uuid == UIState.SelectedCharacter then
             selectedName = member.name
             selectedIcon = member.icon or "EC_Portrait_Generic"
             break
@@ -101,7 +96,7 @@ end
 
 function CharacterSelector:Init()
     SMS.FetchPartyMembers:SendToServer({ ID = USERID })
-    self:SetSelectedCharacter(_C().Uuid.EntityUuid)
+    UIState:SetSelectedCharacter(_C().Uuid.EntityUuid)
     self:Draw()
 end
 

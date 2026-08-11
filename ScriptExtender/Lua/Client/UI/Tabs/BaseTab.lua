@@ -1,7 +1,9 @@
-local Pagination = Ext.Require("Client/Pagination.lua")
+local Pagination = Ext.Require("Client/Utils/Pagination.lua")
+local FilterComponent = Ext.Require("Client/UI/Components/FilterComponent.lua")
 
 ---@class BaseTab
 ---@field Tab ExtuiTabItem
+---@field InstanceId string
 ---@field Items table
 ---@field SearchText string
 ---@field CurrentPage number
@@ -12,12 +14,14 @@ local Pagination = Ext.Require("Client/Pagination.lua")
 ---@field MainArea ExtuiGroup
 ---@field PaginationAreaBottom ExtuiGroup
 ---@field Config table
+---@field FilterComponent FilterComponent
 BaseTab = {}
 BaseTab.__index = BaseTab
 
 function BaseTab:New(holder, config)
     local tabLabel = LCL.Get(config.tabNameHandle, config.tabName)
     local instance = setmetatable({
+        InstanceId = HLP.MakeUUID(config.idPrefix .. tostring(Ext.Timer.MonotonicTime()) .. tostring(math.random(1, 1000000))),
         Tab = holder:AddTabItem(tabLabel),
         Items = {},
         SearchText = "",
@@ -26,21 +30,34 @@ function BaseTab:New(holder, config)
         TotalItems = 0,
         Config = config,
     }, BaseTab)
+
+    -- Create placeholder groups in the desired order.
+    instance.ModificationGridArea = instance.Tab:AddGroup(config.idPrefix .. "ModificationGridArea")
+
+    if config.filters then
+        local filterGroup = instance.Tab:AddGroup(config.idPrefix .. "Filters")
+        instance.FilterComponent = FilterComponent:New(filterGroup, config.filters, function() instance:FetchData(1) end)
+    end
+
     return instance
 end
 
 function BaseTab:FetchData(page)
     self.CurrentPage = page or 1
     local fetchMessage = self.Config.fetchMessage
+    local payload = { ID = USERID, search = self.SearchText, page = self.CurrentPage, tabInstanceId = self.InstanceId }
+    if self.FilterComponent then
+        payload = HLP.Merge(payload, self.FilterComponent:GetState())
+    end
     if fetchMessage then
-        fetchMessage:SendToServer({ ID = USERID, search = self.SearchText, page = self.CurrentPage })
+        fetchMessage:SendToServer(payload)
     end
 end
 
 function BaseTab:SetData(payload)
-    UI.DestroyChildren(self.MainArea)
-    UI.DestroyChildren(self.PaginationAreaTop)
-    UI.DestroyChildren(self.PaginationAreaBottom)
+    UI_Utils.DestroyChildren(self.MainArea)
+    UI_Utils.DestroyChildren(self.PaginationAreaTop)
+    UI_Utils.DestroyChildren(self.PaginationAreaBottom)
 
     self.Items = payload.data or {}
     self.TotalItems = payload.totalItems or 0
@@ -76,7 +93,7 @@ function BaseTab:SetData(payload)
 end
 
 function BaseTab:AddSearch()
-    UI.DestroyChildren(self.SearchArea)
+    UI_Utils.DestroyChildren(self.SearchArea)
 
     self.SearchArea:AddSeparatorText(LCL.Get(self.Config.searchLabelHandle, self.Config.searchLabel or "Search:"))
 
@@ -91,6 +108,10 @@ function BaseTab:AddSearch()
     -- Allow child classes to add more buttons to the search area
     if self.AddExtraSearchButtons then
         self:AddExtraSearchButtons(self.SearchArea)
+    end
+
+    if self.FilterComponent then
+        self.FilterComponent:Draw()
     end
 end
 

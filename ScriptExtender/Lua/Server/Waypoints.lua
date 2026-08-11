@@ -1,7 +1,7 @@
 TELP = {}
 TELP.Max = 50
 
-function TELP.GetAll(search, page)
+function TELP.GetAll(search, page, filters)
     search = search or ""
     page = page or 1
     local pageSize = TELP.Max
@@ -325,4 +325,11 @@ function TELP.GetAll(search, page)
     table.sort(allMatchingWaypoints, function(a, b) return a.name < b.name end)
 
     return UTL.Paginate(allMatchingWaypoints, page, pageSize)
+end
+
+function TELP.Teleport(payload)
+    local trigger = payload.data
+    if trigger then
+        Osi.PROC_WaypointTeleportTo(GetHostCharacter(), trigger)
+    end
 end

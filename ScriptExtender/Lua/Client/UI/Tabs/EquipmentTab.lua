@@ -1,5 +1,6 @@
-local BaseTab = Ext.Require("Client/BaseTab.lua")
-local InfoPopup = Ext.Require("Client/InfoPopup.lua")
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
+local UIState = Ext.Require("Client/UI/UIState.lua")
+local InfoPopup = Ext.Require("Client/Utils/InfoPopup.lua")
 
 ---@class EquipmentTab : BaseTab
 EquipmentTab = {}
@@ -7,8 +8,6 @@ setmetatable(EquipmentTab, { __index = BaseTab })
 EquipmentTab.__index = EquipmentTab
 
 function EquipmentTab:New(holder)
-    if UI.EquipmentTab then return end 
-
     local config = {
         tabName = "Equipment",
         tabNameHandle = "UCT_EquipmentTab_Label",
@@ -18,18 +17,23 @@ function EquipmentTab:New(holder)
         searchLabelHandle = "UCT_SearchEquipment_Label",
         noItemsText = "No equipment found.",
         maxTableWidth = 5,
-        amountOptions = {1, 2, 5, 10, 99}
+        amountOptions = {1, 2, 5, 10, 99},
+        filters = { mod = true, rarity = true, modifierList = true, slot = true }
     }
 
     local instance = BaseTab:New(holder, config)
-    setmetatable(instance, EquipmentTab) -- Re-set metatable to the child class
+    setmetatable(instance, EquipmentTab)
+
+    -- Fetch mod names to populate the filter
+    SMS.FetchEquipmentModNames:SendToServer({ ID = USERID })
+
     return instance
 end
 
 function EquipmentTab:AddExtraSearchButtons(searchArea)
     local spawnAllBtn = searchArea:AddButton(LCL.Get("UCT_EquipmentTab_SpawnAll", "Spawn All (Non-Story)"))
     spawnAllBtn.OnClick = function()
-        local charUUID = UI.CharSelector.SelectedCharacter
+        local charUUID = UIState.SelectedCharacter
         SMS.SpawnAllEquipment:SendToServer({ ID = charUUID })
     end
 end
@@ -66,30 +70,29 @@ function EquipmentTab:DrawGrid()
         local equipmentItem = cell:AddImageButton("##Equipment" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
         cell:AddText(name)
         local popup = cell:AddPopup("AddItem" .. uuid)
+        local spawnTargetPopup = cell:AddPopup("SpawnTarget_Equipment_" .. uuid)
 
         equipmentItem.OnClick = function()
             popup:Open()
         end
         
-        local spawnTable = popup:AddTable("SpawnAmountTable" .. uuid, 5)
-        spawnTable.SizingFixedSame = false
-        spawnTable.NoHostExtendX = true
-        local spawnRow = spawnTable:AddRow()
-
-        for _,num in ipairs(self.Config.amountOptions) do
-            local selectEquipment = spawnRow:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. " " .. num .. "##Spawn" .. uuid .. tostring(num))
-
-            selectEquipment.OnClick = function()
-                local charUUID = UI.CharSelector.SelectedCharacter
-                SMS.SpawnTemplate:SendToServer({ character = charUUID, uuid=uuid, amount=num })
+        local spawnForBtn = popup:AddButton(LCL.Get("UCT_SpawnFor", "Spawn For..."))
+        spawnForBtn.OnClick = function()
+            UI_Utils.DestroyChildren(spawnTargetPopup) -- Rebuild on open to get latest party
+            if ItemTools and ItemTools.PartyMembers and #ItemTools.PartyMembers > 0 then
+                for _, member in ipairs(ItemTools.PartyMembers) do
+                    local spawnForCharBtn = spawnTargetPopup:AddButton(LCL.Get("UCT_SpawnForChar", "Spawn for") .. " " .. member.name)
+                    spawnForCharBtn.OnClick = function()
+                        SMS.SpawnTemplate:SendToServer({ character = member.uuid, uuid = uuid, amount = 1 })
+                    end
+                end
+                spawnTargetPopup:AddSeparator()
+                local spawnForAllBtn = spawnTargetPopup:AddButton(LCL.Get("UCT_SpawnForAll", "Spawn for Entire Party"))
+                spawnForAllBtn.OnClick = function()
+                    SMS.SpawnAllOfTemplateForParty:SendToServer({ uuid = uuid, amount = 1 })
+                end
             end
-        end
-
-        local setAsSelectedBtn = popup:AddButton(LCL.Get("UCT_EquipmentTab_SetAsSelected", "Set as Selected Equipment") .. "##SetSelected" .. uuid)
-        setAsSelectedBtn.OnClick = function()
-            if UI and UI.EquipmentSelector then
-                UI.EquipmentSelector:SetSelectedEquipment(data)
-            end
+            spawnTargetPopup:Open()
         end
 
         data.fullName = fullName
