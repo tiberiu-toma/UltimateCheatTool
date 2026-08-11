@@ -17,27 +17,12 @@ function EquipmentTab:New(holder)
         searchLabelHandle = "UCT_SearchEquipment_Label",
         noItemsText = "No equipment found.",
         maxTableWidth = 5,
-        amountOptions = {1, 2, 5, 10, 99}
+        amountOptions = {1, 2, 5, 10, 99},
+        filters = { mod = true, rarity = true, modifierList = true, slot = true }
     }
 
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, EquipmentTab)
-
-    -- Add filter state
-    instance.SelectedModifierList = "All"
-    instance.SelectedSlot = "All"
-    instance.SelectedRarity = "All"
-    instance.SelectedModName = "All"
-    
-    -- Define filter options
-    instance.ModifierListOptions = { "All", "Weapon", "Armor" }
-    instance.SlotOptions = {
-        "All", "Helmet", "Breast", "Gloves", "Boots", "Melee Main Weapon", 
-        "Melee Offhand Weapon", "Ranged Main Weapon", "Ranged Offhand Weapon", 
-        "Amulet", "Ring", "Ring2", "Underwear", "Cloak", "MusicalInstrument"
-    }
-    instance.RarityOptions = { "All", "Common", "Uncommon", "Rare", "VeryRare", "Legendary" }
-    instance.ModNameOptions = { "All" } -- Will be populated from server
 
     -- Fetch mod names to populate the filter
     SMS.FetchEquipmentModNames:SendToServer({ ID = USERID })
@@ -45,98 +30,11 @@ function EquipmentTab:New(holder)
     return instance
 end
 
-function EquipmentTab:FetchData(page)
-    self.CurrentPage = page or 1
-    local fetchMessage = self.Config.fetchMessage
-    if fetchMessage then
-        fetchMessage:SendToServer({ 
-            ID = USERID, 
-            search = self.SearchText, 
-            page = self.CurrentPage,
-            modifierList = self.SelectedModifierList,
-            slot = self.SelectedSlot,
-            rarity = self.SelectedRarity,
-            modName = self.SelectedModName
-        })
-    end
-end
-
 function EquipmentTab:AddExtraSearchButtons(searchArea)
     local spawnAllBtn = searchArea:AddButton(LCL.Get("UCT_EquipmentTab_SpawnAll", "Spawn All (Non-Story)"))
     spawnAllBtn.OnClick = function()
         local charUUID = UIState.SelectedCharacter
         SMS.SpawnAllEquipment:SendToServer({ ID = charUUID })
-    end
-
-    searchArea:AddSeparator()
-    searchArea:AddSeparatorText("Filters")
-    local filterTable = searchArea:AddTable("EquipmentFilters", 8)
-    filterTable.SizingFixedSame = false
-    
-    local row1 = filterTable:AddRow()
-
-    row1:AddCell():AddText("Mod:")
-    local selectedModNameIndex = 1
-    for i, v in ipairs(self.ModNameOptions) do
-        if v == self.SelectedModName then
-            selectedModNameIndex = i
-            break
-        end
-    end
-    local modNameCombo = row1:AddCell():AddCombo("##ModNameFilter")
-    modNameCombo.Options = self.ModNameOptions
-    modNameCombo.SelectedIndex = selectedModNameIndex - 1
-    modNameCombo.OnChange = function(combo)
-        self.SelectedModName = self.ModNameOptions[combo.SelectedIndex + 1]
-        self:FetchData(1)
-    end
-
-    row1:AddCell():AddText("Type:")
-    local selectedModifierListIndex = 1
-    for i, v in ipairs(self.ModifierListOptions) do
-        if v == self.SelectedModifierList then
-            selectedModifierListIndex = i
-            break
-        end
-    end
-    local modifierListCombo = row1:AddCell():AddCombo("##ModifierListFilter")
-    modifierListCombo.Options = self.ModifierListOptions
-    modifierListCombo.SelectedIndex = selectedModifierListIndex - 1
-    modifierListCombo.OnChange = function(combo)
-        self.SelectedModifierList = self.ModifierListOptions[combo.SelectedIndex + 1]
-        self:FetchData(1)
-    end
-
-    row1:AddCell():AddText("Slot:")
-    local selectedSlotIndex = 1
-    for i, v in ipairs(self.SlotOptions) do
-        if v == self.SelectedSlot then
-            selectedSlotIndex = i
-            break
-        end
-    end
-    local slotCombo = row1:AddCell():AddCombo("##SlotFilter")
-    slotCombo.Options = self.SlotOptions
-    slotCombo.SelectedIndex = selectedSlotIndex - 1
-    slotCombo.OnChange = function(combo)
-        self.SelectedSlot = self.SlotOptions[combo.SelectedIndex + 1]
-        self:FetchData(1)
-    end
-
-    row1:AddCell():AddText("Rarity:")
-    local selectedRarityIndex = 1
-    for i, v in ipairs(self.RarityOptions) do
-        if v == self.SelectedRarity then
-            selectedRarityIndex = i
-            break
-        end
-    end
-    local rarityCombo = row1:AddCell():AddCombo("##RarityFilter")
-    rarityCombo.Options = self.RarityOptions
-    rarityCombo.SelectedIndex = selectedRarityIndex - 1
-    rarityCombo.OnChange = function(combo)
-        self.SelectedRarity = self.RarityOptions[combo.SelectedIndex + 1]
-        self:FetchData(1)
     end
 end
 
@@ -229,11 +127,6 @@ function EquipmentTab:DrawGrid()
         ::continue::
     end
 
-end
-
-function EquipmentTab:SetModNameOptions(modNames)
-    self.ModNameOptions = modNames
-    self:AddSearch() -- Redraw search area to update the mod dropdown
 end
 
 return EquipmentTab

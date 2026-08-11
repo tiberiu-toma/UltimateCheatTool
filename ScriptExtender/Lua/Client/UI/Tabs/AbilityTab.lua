@@ -1,18 +1,27 @@
+local BaseTab = Ext.Require("Client/UI/Tabs/BaseTab.lua")
 local UIState = Ext.Require("Client/UI/UIState.lua")
 local ModificationGrid = Ext.Require("Client/UI/Components/ModificationGrid.lua")
 
 ---@class AbilityTab
+---@field Tab ExtuiTabItem
+---@field Abilities string[]
+---@field BoostAmounts number[]
+---@field AbilityScores table<string, number>
+---@field LastFetchedChar string
+---@field ModificationGrid ModificationGrid
+---@field MainContent ExtuiGroup
 AbilityTab = {}
+setmetatable(AbilityTab, { __index = BaseTab })
 AbilityTab.__index = AbilityTab
 
 function AbilityTab:New(holder)
-    local instance = setmetatable({
-        Tab = holder:AddTabItem(LCL.Get("UCT_AbilityTab_Label", "Abilities")),
-        Abilities = { "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma" },
-        BoostAmounts = { -5, -4, -3, -2, -1, 1, 2, 3, 4, 5 },
-        AbilityScores = {},
-        LastFetchedChar = nil
-    }, AbilityTab)
+    local config = {
+        tabName = "Abilities",
+        tabNameHandle = "UCT_AbilityTab_Label",
+        idPrefix = "Ability"
+    }
+    local instance = BaseTab:New(holder, config)
+    setmetatable(instance, AbilityTab)
 
     local gridConfig = {
         headerText = "Applied Ability Boosts",
@@ -34,7 +43,12 @@ function AbilityTab:New(holder)
             end
         end
     }
-    instance.ModificationGrid = ModificationGrid:New(nil, gridConfig)
+    instance.ModificationGrid = ModificationGrid:New(instance.ModificationGridArea, gridConfig)
+
+    instance.Abilities = { "Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma" }
+    instance.BoostAmounts = { -5, -4, -3, -2, -1, 1, 2, 3, 4, 5 }
+    instance.AbilityScores = {}
+    instance.LastFetchedChar = nil
 
     return instance
 end
@@ -132,7 +146,6 @@ function AbilityTab:Draw()
         end
     end
 
-    self.ModificationGrid.Parent = self.MainContent:AddGroup("AppliedAbilities")
     self.ModificationGrid:Draw(appliedForChar)
 end
 

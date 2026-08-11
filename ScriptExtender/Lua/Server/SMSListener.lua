@@ -12,6 +12,7 @@ local function CreateFetchHandler(dataModule, sendMessage)
         HLP.ToClient(
             sendMessage,
             {
+                tabInstanceId = payload.tabInstanceId,
                 data = items,
                 totalItems = totalItems,
                 totalPages = totalPages,
@@ -135,12 +136,55 @@ SMS.FetchEquippedItems:SetHandler(function(payload)
 end)
 
 SMS.FetchEquipmentModNames:SetHandler(function(payload)
-    local modNames = EKP.GetAllModNames()
+    local itemData = Ext.Template.GetAllRootTemplates()
+    local extractor = function(template)
+        local data = EKP.GetTemplateData(template)
+        return data and data.modName
+    end
+    local modNames = FLTR.GetModNames(itemData, extractor)
     HLP.ToClient(
         SMS.SendEquipmentModNames,
-        {
-            data = modNames
-        },
+        { data = modNames },
         payload.ID
     )
 end)
+
+SMS.FetchConsumableModNames:SetHandler(function(payload)
+    local itemData = Ext.Template.GetAllRootTemplates()
+    local extractor = function(template)
+        if CONS.IsConsumable(template) then
+            local stats = Ext.Stats.Get(template.Stats)
+            if stats then
+                local modId = HLP.GetAttr(stats, "ModId")
+                local mod = Ext.Mod.GetMod(modId)
+                return mod and mod.Info and mod.Info.Name or "Unknown"
+            end
+        end
+        return nil
+    end
+    local modNames = FLTR.GetModNames(itemData, extractor)
+    HLP.ToClient(
+        SMS.SendConsumableModNames,
+        { data = modNames },
+        payload.ID
+    )
+end)
+
+local function CreateStatsModNameFetchHandler(statsType, sendMessage)
+    return function(payload)
+        local itemData = Ext.Stats.GetStats(statsType)
+        local extractor = function(statName)
+            local v = Ext.Stats.Get(statName)
+            if not v then return nil end
+            local modId = HLP.GetAttr(v, "ModId")
+            local mod = Ext.Mod.GetMod(modId)
+            return mod and mod.Info and mod.Info.Name or "Unknown"
+        end
+        local modNames = FLTR.GetModNames(itemData, extractor)
+        HLP.ToClient(sendMessage, { data = modNames }, payload.ID)
+    end
+end
+
+SMS.FetchSpellModNames:SetHandler(CreateStatsModNameFetchHandler("SpellData", SMS.SendSpellModNames))
+SMS.FetchPassiveModNames:SetHandler(CreateStatsModNameFetchHandler("PassiveData", SMS.SendPassiveModNames))
+SMS.FetchStatusModNames:SetHandler(CreateStatsModNameFetchHandler("StatusData", SMS.SendStatusModNames))

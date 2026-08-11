@@ -47,9 +47,9 @@ function SPLL.GetAll(search, page, filters)
         end
     end
 
-    table.sort(allMatchingSpells, function(a, b) return a.displayName < b.displayName end)
-
-    return UTL.Paginate(allMatchingSpells, page, pageSize)
+    local filtered = FLTR.Apply(allMatchingSpells, filters)
+    table.sort(filtered, function(a, b) return a.displayName < b.displayName end)
+    return UTL.Paginate(filtered, page, pageSize)
 end
 
 function SPLL._Manage(character, uuid, data, ability, unlearn)

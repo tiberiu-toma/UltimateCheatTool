@@ -20,7 +20,8 @@ function ResourceTab:New(holder)
         searchLabelHandle = "UCT_SearchResources_Label",
         noItemsText = "No resources found.",
         maxTableWidth = 3,
-        amountOptions = {1, 5, 10, 50, 99} -- Add common amount options
+        amountOptions = {1, 5, 10, 50, 99}, -- Add common amount options
+        filters = {}
     }
 
     local instance = BaseTab:New(holder, config)
@@ -55,7 +56,7 @@ function ResourceTab:New(holder)
             removeButton.OnClick = function() SMS.ManageResource:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 }) end 
         end
     }
-    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("AddedResources"), gridConfig)
+    instance.ModificationGrid = ModificationGrid:New(instance.ModificationGridArea, gridConfig)
 
     return instance
 end

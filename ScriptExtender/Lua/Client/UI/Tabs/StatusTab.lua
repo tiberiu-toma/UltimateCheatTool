@@ -21,7 +21,8 @@ function StatusTab:New(holder, parentUI)
         searchLabel = "Search Statuses:",
         searchLabelHandle = "UCT_SearchStatuses_Label",
         noItemsText = "No statuses found.",
-        maxTableWidth = 5
+        maxTableWidth = 5,
+        filters = { mod = true }
     }
 
     local instance = BaseTab:New(holder, config)
@@ -61,7 +62,9 @@ function StatusTab:New(holder, parentUI)
             end
         end
     }
-    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("AppliedStatuses"), gridConfig)
+    instance.ModificationGrid = ModificationGrid:New(instance.ModificationGridArea, gridConfig)
+
+    SMS.FetchStatusModNames:SendToServer({ ID = USERID })
 
     return instance
 end

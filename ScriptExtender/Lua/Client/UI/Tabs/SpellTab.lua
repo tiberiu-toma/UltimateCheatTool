@@ -20,7 +20,8 @@ function SpellTab:New(holder)
         searchLabel = "Search Spells:",
         searchLabelHandle = "UCT_SearchSpells_Label",
         noItemsText = "No spells found.",
-        maxTableWidth = 5
+        maxTableWidth = 5,
+        filters = { mod = true }
     }
 
     local instance = BaseTab:New(holder, config)
@@ -53,7 +54,10 @@ function SpellTab:New(holder)
             removeSpell.OnClick = function() SMS.LearnSpell:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, unlearn=1 }) end
         end
     }
-    instance.ModificationGrid = ModificationGrid:New(instance.Tab:AddGroup("LearnedSpells"), gridConfig)
+    instance.ModificationGrid = ModificationGrid:New(instance.ModificationGridArea, gridConfig)
+
+    -- Fetch mod names to populate the filter
+    SMS.FetchSpellModNames:SendToServer({ ID = USERID })
 
     return instance
 end

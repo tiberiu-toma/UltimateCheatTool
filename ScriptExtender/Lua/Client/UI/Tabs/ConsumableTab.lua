@@ -17,11 +17,15 @@ function ConsumableTab:New(holder)
         searchLabelHandle = "UCT_SearchConsumables_Label",
         noItemsText = "No consumables found.",
         maxTableWidth = 5,
-        amountOptions = {1, 2, 5, 10, 99}
+        amountOptions = {1, 2, 5, 10, 99},
+        filters = { mod = true }
     }
 
     local instance = BaseTab:New(holder, config)
     setmetatable(instance, ConsumableTab) -- Re-set metatable to the child class
+
+    SMS.FetchConsumableModNames:SendToServer({ ID = USERID })
+
     return instance
 end
 

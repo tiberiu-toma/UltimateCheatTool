@@ -1,18 +1,6 @@
 EKP = {}
 EKP.Max = 50
 
-function tableToString(tbl)
-    if type(tbl) ~= "table" then
-        return tostring(tbl)
-    end
-    local str = "{ "
-    for k, v in pairs(tbl) do
-        str = str .. "[" .. tostring(k) .. "] = " .. tableToString(v) .. ", "
-    end
-    str = str:sub(1, -3) .. " }"
-    return str
-end   
-
 function EKP.GetTemplateData(v)
     if not v then return nil end
 
@@ -86,70 +74,15 @@ function EKP.GetAll(search, page, filters)
             local name = data.name
             local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
 
-            local matchesFilters = true
-            if filters then
-                if filters.modifierList and filters.modifierList ~= "All" and data.modifierList ~= filters.modifierList then
-                    matchesFilters = false
-                end
-                if filters.slot and filters.slot ~= "All" and data.slot ~= filters.slot then
-                    matchesFilters = false
-                end
-                if filters.rarity and filters.rarity ~= "All" and data.rarity ~= filters.rarity then
-                    matchesFilters = false
-                end
-                if filters.modName and filters.modName ~= "All" then
-                    if filters.modName == "Larian" then
-                        local vanillaMods = { Gustav = true, GustavDev = true, GustavX = true, SharedDev = true }
-                        if not vanillaMods[data.modName] then
-                            matchesFilters = false
-                        end
-                    elseif data.modName ~= filters.modName then
-                        matchesFilters = false
-                    end
-                end
-            end
-
-            if matchesSearch and matchesFilters then
+            if matchesSearch then
                 table.insert(allMatchingEquipment, data)
             end
         end
     end
 
-    table.sort(allMatchingEquipment, function(a, b) return a.displayName < b.displayName end)
-
-    return UTL.Paginate(allMatchingEquipment, page, pageSize)
-end
-
-function EKP.GetAllModNames()
-    local itemData = Ext.Template.GetAllRootTemplates()
-    local modNames = { All = true } -- Use a set to store unique names
-    local vanillaMods = { Gustav = true, GustavDev = true, GustavX = true, SharedDev = true }
-    local hasLarianContent = false
-
-    for k,v in pairs(itemData) do 
-        local data = EKP.GetTemplateData(v)
-        if data and data.modName and data.modName ~= "Unknown" and data.modName ~= "Shared" then
-            if vanillaMods[data.modName] then
-                hasLarianContent = true
-            else
-                modNames[data.modName] = true
-            end
-        end
-    end
-
-    if hasLarianContent then
-        modNames["Larian"] = true
-    end
-
-    local sortedModNames = { "All" }
-    for name, _ in pairs(modNames) do
-        if name ~= "All" then
-            table.insert(sortedModNames, name)
-        end
-    end
-    table.sort(sortedModNames)
-    
-    return sortedModNames
+    local filtered = FLTR.Apply(allMatchingEquipment, filters)
+    table.sort(filtered, function(a, b) return a.displayName < b.displayName end)
+    return UTL.Paginate(filtered, page, pageSize)
 end
 
 function EKP.GetAllEquippedItems()

@@ -43,9 +43,9 @@ function PASSV.GetAll(search, page, filters)
         end
     end
 
-    table.sort(allMatchingPassives, function(a, b) return a.displayName < b.displayName end)
-
-    return UTL.Paginate(allMatchingPassives, page, pageSize)
+    local filtered = FLTR.Apply(allMatchingPassives, filters)
+    table.sort(filtered, function(a, b) return a.displayName < b.displayName end)
+    return UTL.Paginate(filtered, page, pageSize)
 end
 
 function PASSV.Add(character, passiveId, remove)

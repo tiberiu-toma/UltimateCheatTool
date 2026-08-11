@@ -14,6 +14,11 @@ function STAT.GetAll(search, page, filters)
         local id = v
         v = Ext.Stats.Get(v)
         local icon = HLP.GetAttr(v, "Icon")
+
+        local modId = HLP.GetAttr(v, "ModId")
+        local mod = Ext.Mod.GetMod(modId)
+        local modName = mod ~= nil and mod.Info ~= nil and mod.Info.Name ~= nil and mod.Info.Name or "Unknown"
+
         local name = HLP.GetAttr(v, "Name")
         local handle = HLP.GetAttr(v, "DisplayName") 
         local displayName = HLP.GetTranslatedString(handle, name)
@@ -26,13 +31,14 @@ function STAT.GetAll(search, page, filters)
                 name = name,
                 icon = icon,
                 displayName = displayName,
+                modName = modName
             })
         end
     end
 
-    table.sort(allMatchingStatuses, function(a, b) return a.displayName < b.displayName end)
-
-    return UTL.Paginate(allMatchingStatuses, page, pageSize)
+    local filtered = FLTR.Apply(allMatchingStatuses, filters)
+    table.sort(filtered, function(a, b) return a.displayName < b.displayName end)
+    return UTL.Paginate(filtered, page, pageSize)
 end
 
 function STAT.Apply(char, statusId, remove)
