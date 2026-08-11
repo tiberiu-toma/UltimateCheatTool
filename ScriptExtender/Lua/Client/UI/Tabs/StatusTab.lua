@@ -56,7 +56,7 @@ function StatusTab:New(holder, parentUI)
                 if instance.ParentUI == "CharacterTools" then
                     SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
                 elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment then
-                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemTemplateUUID = UIState.SelectedEquipment.id, statusUUID = uuid })
+                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, statusUUID = uuid })
                 end
             end
         end
@@ -151,12 +151,12 @@ function StatusTab:DrawGrid()
                 else
                     applyToSelectedItem.OnClick = function()
                         if equipmentData and equipmentData.id then
-                            SMS.ApplyStatusToItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, statusUUID = uuid, data = data })
+                            SMS.ApplyStatusToItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, statusUUID = uuid, data = data })
                         end
                     end
                     removeFromSelectedItem.OnClick = function()
                         if equipmentData and equipmentData.id then
-                            SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemTemplateUUID = equipmentData.id, statusUUID = uuid })
+                            SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, statusUUID = uuid })
                         end
                     end
                 end
@@ -193,7 +193,7 @@ function StatusTab:GetAppliedStatuses()
             return
         end
         local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-        local itemMods = modifiedEquipment[equipmentData.id]
+        local itemMods = modifiedEquipment[equipmentData.instanceUUID]
         local data = (itemMods and itemMods.statuses) or {}
         self.ModificationGrid:Draw(data)
     end

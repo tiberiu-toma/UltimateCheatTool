@@ -66,11 +66,19 @@ end)
 
 local refreshHandlers = {
     Passive = function()
-        if ItemTools and ItemTools.PassiveTab and ItemTools.PassiveTab.Tab.Visible then ItemTools.PassiveTab:GetAddedPassives() end
+        if ItemTools and ItemTools.PassiveTab and ItemTools.PassiveTab.Tab.Visible then
+            ItemTools.PassiveTab:GetAddedPassives()
+            -- The unequip/re-equip on the server can change item stats, so refresh the quick pick dropdown
+            ItemTools.EquipmentSelector:FetchEquippedItems()
+        end
         if CharacterTools and CharacterTools.PassiveTab and CharacterTools.PassiveTab.Tab.Visible then CharacterTools.PassiveTab:GetAddedPassives() end
     end,
     Status = function()
-        if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.Tab.Visible then ItemTools.StatusTab:GetAppliedStatuses() end
+        if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.Tab.Visible then
+            ItemTools.StatusTab:GetAppliedStatuses()
+            -- The unequip/re-equip on the server can change item stats, so refresh the quick pick dropdown
+            ItemTools.EquipmentSelector:FetchEquippedItems()
+        end
         if CharacterTools and CharacterTools.StatusTab and CharacterTools.StatusTab.Tab.Visible then CharacterTools.StatusTab:GetAppliedStatuses() end
     end,
     Spell = function()
@@ -90,6 +98,11 @@ local refreshHandlers = {
     end,
     Damage = function()
         if ItemTools and ItemTools.DamageTab and ItemTools.DamageTab.Tab.Visible then ItemTools.DamageTab:GetAddedDamage() end
+    end,
+    Inventory = function()
+        if ItemTools and ItemTools.EquipmentSelector then
+            ItemTools.EquipmentSelector:FetchEquippedItems()
+        end
     end,
     NPC = function()
         if MiscTools and MiscTools.NPCTab and MiscTools.NPCTab.Tab.Visible then MiscTools.NPCTab:GetSpawnedNPCs() end

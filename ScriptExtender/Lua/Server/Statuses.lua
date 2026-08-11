@@ -43,73 +43,70 @@ function STAT.Apply(char, statusId, remove)
     end
 end
 
-function STAT.ApplyToItem(itemTemplateUUID, statusId)
-    local template = Ext.Template.GetTemplate(itemTemplateUUID)
-    if not template or not template.Stats then return end
-    
-    local originalStats = Ext.Stats.Get(template.Stats)
+function STAT.ApplyToItem(itemInstanceUUID, templateUUID, statusId)
+    local item = Ext.Entity.Get(itemInstanceUUID)
+    if not item then return end
+
+    local originalStatsName = Ext.Template.GetTemplate(templateUUID).Stats
+    local originalStats = Ext.Stats.Get(originalStatsName)
     if not originalStats then return end
 
-    local backupStatsName = originalStats.Name .. "_UCT_BACKUP"
-    local backupStats = Ext.Stats.Get(backupStatsName)
+    local instanceStatsName = originalStatsName .. "_UCT_" .. itemInstanceUUID
+    local instanceStats = Ext.Stats.Get(instanceStatsName)
 
-    if not backupStats then
-        local modifierList = originalStats.ModifierList
-        if modifierList == "Weapon" or modifierList == "Armor" then
-            backupStats = Ext.Stats.Create(backupStatsName, modifierList, originalStats.Name)
-            if not backupStats then return end
-        else
-            return
-        end
+    if not instanceStats then
+        instanceStats = Ext.Stats.Create(instanceStatsName, originalStats.ModifierList, originalStatsName)
+        if not instanceStats then return end
     end
- 
-    local statusOnEquip = HLP.GetAttr(originalStats, "StatusOnEquip") or ""
-    if not string.find(statusOnEquip, statusId, 1, true) then
-        statusOnEquip = (statusOnEquip == "" and statusId) or (statusOnEquip .. ";" .. statusId)
-        originalStats.StatusOnEquip = statusOnEquip
-        originalStats:Sync()
-        HLP.RefreshEquippedItem(nil, itemTemplateUUID)
+
+    local statusOnEquip = HLP.GetAttr(instanceStats, "StatusOnEquip") or ""
+    if string.find(statusOnEquip, statusId, 1, true) then
+        return -- Status already applied, do nothing.
     end
+
+    statusOnEquip = (statusOnEquip == "" and statusId) or (statusOnEquip .. ";" .. statusId)
+    instanceStats.StatusOnEquip = statusOnEquip
+    instanceStats:Sync()
+
+    if item.Data.StatsId ~= instanceStatsName then
+        item.Data.StatsId = instanceStatsName
+        item:Replicate("Data")
+    end
+
+    HLP.RefreshEquippedItem(nil, templateUUID)
 end
 
-function STAT.RemoveFromItem(itemTemplateUUID, statusId)
-    local template = Ext.Template.GetTemplate(itemTemplateUUID)
-    if not template or not template.Stats then return end
+function STAT.RemoveFromItem(itemInstanceUUID, templateUUID, statusId)
+    local item = Ext.Entity.Get(itemInstanceUUID)
+    if not item then return end
 
-    local originalStats = Ext.Stats.Get(template.Stats)
-    if not originalStats then return end
+    local originalStatsName = Ext.Template.GetTemplate(templateUUID).Stats
+    local instanceStatsName = originalStatsName .. "_UCT_" .. itemInstanceUUID
+    local instanceStats = Ext.Stats.Get(instanceStatsName)
 
-    local backupStatsName = originalStats.Name .. "_UCT_BACKUP"
-    local backupStats = Ext.Stats.Get(backupStatsName)
+    if not instanceStats then return end
 
-    if not backupStats then return end
-
-    local statusOnEquip = HLP.GetAttr(originalStats, "StatusOnEquip") or ""
+    local statusOnEquip = HLP.GetAttr(instanceStats, "StatusOnEquip") or ""
     if not string.find(statusOnEquip, statusId, 1, true) then
         return
     end
 
     local items = {}
-    for item in string.gmatch(statusOnEquip, "([^;]+)") do
-        if item ~= statusId then
-            table.insert(items, item)
+    for s in string.gmatch(statusOnEquip, "([^;]+)") do
+        if s ~= statusId then
+            table.insert(items, s)
         end
     end
+    instanceStats.StatusOnEquip = table.concat(items, ";")
 
-    local newStatuses = table.concat(items, ";")
-    originalStats.StatusOnEquip = newStatuses
-    
-    local currentPassives = HLP.GetAttr(originalStats, "PassivesOnEquip") or ""
-    local backupPassives = HLP.GetAttr(backupStats, "PassivesOnEquip") or ""
-    local backupStatuses = HLP.GetAttr(backupStats, "StatusOnEquip") or ""
-
-    if newStatuses == backupStatuses and currentPassives == backupPassives then
-        originalStats.PassivesOnEquip = backupStats.PassivesOnEquip
-        originalStats.StatusOnEquip = backupStats.StatusOnEquip
+    local passivesOnEquip = HLP.GetAttr(instanceStats, "PassivesOnEquip") or ""
+    if instanceStats.StatusOnEquip == "" and passivesOnEquip == "" then
+        item.Data.StatsId = originalStatsName
     end
 
-    originalStats:Sync()
-    HLP.RefreshEquippedItem(nil, itemTemplateUUID)
+    instanceStats:Sync()
+    item:Replicate("Data")
+    HLP.RefreshEquippedItem(nil, templateUUID)
 end
 
 function STAT.Manage(payload)
@@ -161,26 +158,28 @@ function STAT.ManageForParty(payload, remove)
 end
 
 function STAT.ManageOnItem(payload, remove)
-    local itemTemplateUUID = payload.itemTemplateUUID
+    local itemInstanceUUID = payload.itemInstanceUUID
+    local templateUUID = payload.templateUUID
     local statusUUID = payload.statusUUID
     local data = payload.data
 
     local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-    if not modifiedEquipment[itemTemplateUUID] then modifiedEquipment[itemTemplateUUID] = {} end
-    if not modifiedEquipment[itemTemplateUUID].statuses then modifiedEquipment[itemTemplateUUID].statuses = {} end
+    if not modifiedEquipment[itemInstanceUUID] then modifiedEquipment[itemInstanceUUID] = {} end
+    if not modifiedEquipment[itemInstanceUUID].statuses then modifiedEquipment[itemInstanceUUID].statuses = {} end
 
     if remove then
-        STAT.RemoveFromItem(itemTemplateUUID, statusUUID)
-        modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = nil
-        if HLP.Count(modifiedEquipment[itemTemplateUUID].statuses) == 0 then
-            modifiedEquipment[itemTemplateUUID].statuses = nil
+        STAT.RemoveFromItem(itemInstanceUUID, templateUUID, statusUUID)
+        modifiedEquipment[itemInstanceUUID].statuses[statusUUID] = nil
+        if HLP.Count(modifiedEquipment[itemInstanceUUID].statuses) == 0 then
+            modifiedEquipment[itemInstanceUUID].statuses = nil
         end
-        if HLP.Count(modifiedEquipment[itemTemplateUUID]) == 0 then
-            modifiedEquipment[itemTemplateUUID] = nil
+        if HLP.Count(modifiedEquipment[itemInstanceUUID]) == 0 then
+            modifiedEquipment[itemInstanceUUID] = nil
         end
     else
-        STAT.ApplyToItem(itemTemplateUUID, statusUUID)
-        modifiedEquipment[itemTemplateUUID].statuses[statusUUID] = data
+        STAT.ApplyToItem(itemInstanceUUID, templateUUID, statusUUID)
+        modifiedEquipment[itemInstanceUUID].statuses[statusUUID] = data
+        modifiedEquipment[itemInstanceUUID].templateUUID = templateUUID
     end
 
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment

@@ -67,7 +67,7 @@ function EKP.GetTemplateData(v)
         return nil
     end
 
-    return { id = id, name = name, icon = icon, displayName = displayName, modName = modName, rarity = rarity, armorClass = armorClass, armorType = armorType, slot = slot, defaultBoosts = defaultBoosts, boosts = boosts, boostsOnEquipMainHand = boostsOnEquipMainHand, boostsOnEquipOffHand = boostsOnEquipOffHand, passivesOnEquip = passivesOnEquip }
+    return { id = id, name = name, icon = icon, displayName = displayName, modName = modName, rarity = rarity, armorClass = armorClass, armorType = armorType, slot = slot, defaultBoosts = defaultBoosts, boosts = boosts, boostsOnEquipMainHand = boostsOnEquipMainHand, boostsOnEquipOffHand = boostsOnEquipOffHand, passivesOnEquip = passivesOnEquip, modifierList = stats.ModifierList }
 end
 
 function EKP.GetAll(search, page)
@@ -124,6 +124,7 @@ function EKP.GetEquippedItems(characterUUID)
                 if template then
                     local itemData = EKP.GetTemplateData(template)
                     if itemData then
+                        itemData.instanceUUID = item.Uuid.EntityUuid
                         table.insert(equippedItems, itemData)
                     end
                 end
@@ -135,11 +136,17 @@ end
 
 function EKP.GetByUUIDs(uuids)
     local items = {}
-    for _, uuid in ipairs(uuids) do
-        local template = Ext.Template.GetTemplate(uuid)
-        local data = EKP.GetTemplateData(template)
-        if data then
-            items[uuid] = data
+    for _, instanceUUID in ipairs(uuids) do
+        local item = Ext.Entity.Get(instanceUUID)
+        if item and item.GameObjectVisual and item.GameObjectVisual.RootTemplateId then
+            local template = Ext.Template.GetTemplate(item.GameObjectVisual.RootTemplateId)
+            if template then
+                local data = EKP.GetTemplateData(template)
+                if data then
+                    data.instanceUUID = instanceUUID -- Add the instance UUID to the data payload
+                    items[instanceUUID] = data
+                end
+            end
         end
     end
     return items

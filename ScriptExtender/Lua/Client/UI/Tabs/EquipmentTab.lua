@@ -90,11 +90,6 @@ function EquipmentTab:DrawGrid()
             spawnTargetPopup:Open()
         end
 
-        local setAsSelectedBtn = popup:AddButton(LCL.Get("UCT_EquipmentTab_SetAsSelected", "Set as Selected Equipment") .. "##SetSelected" .. uuid)
-        setAsSelectedBtn.OnClick = function()
-            UIState:SetSelectedEquipment(data)
-        end
-
         data.fullName = fullName
         local equipmentInfoFields = {
             { key = "id", label = "ID", sameLine = false },
