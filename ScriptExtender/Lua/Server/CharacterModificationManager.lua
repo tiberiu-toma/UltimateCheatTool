@@ -3,43 +3,58 @@ local reapplyOnLoad = false
 
 -- Called when a session is loaded to re-apply all saved modifications.
 function CharacterModificationManager:ReapplyAll()
-	local modifiedCharacters = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
-	if not modifiedCharacters or HLP.Count(modifiedCharacters) == 0 then return end
+	-- Re-apply boosts from CharacterModifications
+	local modifiedCharacters = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications
+	if modifiedCharacters and HLP.Count(modifiedCharacters) > 0 then
+		for charUUID, modifications in pairs(modifiedCharacters) do
+			-- Re-apply spells
+			if modifications.spells then
+				for spellId, spellData in pairs(modifications.spells) do
+					if spellData.spellName and spellData.learningStrategy and spellData.castingAbility then
+						local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", spellData.spellName, spellData.learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", spellData.castingAbility)
+						Osi.AddBoosts(charUUID, boostString, "", "")
+					end
+				end
+			end
 
-	for charUUID, modifications in pairs(modifiedCharacters) do
-		-- Re-apply spells
-		if modifications.spells then
-			for spellId, spellData in pairs(modifications.spells) do
-				if spellData.spellName and spellData.learningStrategy and spellData.castingAbility then
-					local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", spellData.spellName, spellData.learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", spellData.castingAbility)
-					Osi.AddBoosts(charUUID, boostString, "", "")
+			-- Re-apply resources
+			if modifications.resources then
+				for boostKey, resourceModData in pairs(modifications.resources) do
+					if resourceModData.boostString then
+						Osi.AddBoosts(charUUID, resourceModData.boostString, "", "")
+					end
+				end
+			end
+
+			-- Re-apply abilities
+			if modifications.abilities then
+				for boostKey, abilityModData in pairs(modifications.abilities) do
+					if abilityModData.boostString then
+						Osi.AddBoosts(charUUID, abilityModData.boostString, "", "")
+					end
+				end
+			end
+
+			-- Re-apply skills
+			if modifications.skills then
+				for boostKey, skillModData in pairs(modifications.skills) do
+					if skillModData.boostString then
+						Osi.AddBoosts(charUUID, skillModData.boostString, "", "")
+					end
 				end
 			end
 		end
+	end
 
-		-- Re-apply resources
-		if modifications.resources then
-			for boostKey, resourceModData in pairs(modifications.resources) do
-				if resourceModData.boostString then
-					Osi.AddBoosts(charUUID, resourceModData.boostString, "", "")
-				end
-			end
-		end
-
-		-- Re-apply abilities
-		if modifications.abilities then
-			for boostKey, abilityModData in pairs(modifications.abilities) do
-				if abilityModData.boostString then
-					Osi.AddBoosts(charUUID, abilityModData.boostString, "", "")
-				end
-			end
-		end
-
-		-- Re-apply skills
-		if modifications.skills then
-			for boostKey, skillModData in pairs(modifications.skills) do
-				if skillModData.boostString then
-					Osi.AddBoosts(charUUID, skillModData.boostString, "", "")
+	-- Re-apply statuses from AppliedStatuses, which are often cleared on load/long rest.
+	local appliedStatuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
+	if appliedStatuses and HLP.Count(appliedStatuses) > 0 then
+		for charUUID, statuses in pairs(appliedStatuses) do
+			if Ext.Entity.Get(charUUID) then -- Check if character exists
+				for statusId, _ in pairs(statuses) do
+					-- Remove first to prevent stacking, then re-apply with infinite duration.
+					Osi.RemoveStatus(charUUID, statusId)
+					Osi.ApplyStatus(charUUID, statusId, -1, 1)
 				end
 			end
 		end
@@ -59,6 +74,20 @@ Ext.Events.GameStateChanged:Subscribe(function(ev)
     if reapplyOnLoad and ev.ToState == "Running" and GetHostCharacter() then
         reapplyOnLoad = false
         CharacterModificationManager:ReapplyAll()
+    end
+
+    -- After a long rest or loading a save, re-apply modifications that might have been cleared.
+    if ev.FromState == "Save" and ev.ToState == "Running" then
+        -- A small delay is needed to ensure all characters and the game world are fully loaded.
+        local ticks = 0
+        local e
+        e = Ext.Events.Tick:Subscribe(function()
+            ticks = ticks + 1
+            if ticks >= 10 then -- Wait a few ticks
+                CharacterModificationManager:ReapplyAll()
+                Ext.Events.Tick:Unsubscribe(e)
+            end
+        end)
     end
 end)
 
