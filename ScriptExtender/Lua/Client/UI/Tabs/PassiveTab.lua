@@ -32,7 +32,7 @@ function PassiveTab:New(holder, parentUI)
         noItemsText = LCL.Get("UCT_NoCustomPassives", "No custom passives."),
         maxTableWidth = 3,
         idPrefix = "Passive",
-        renderItem = function(cell, uuid, data)
+        renderItem = function(cell, uniqueKey, data)
             local icon = HLP.GetAttr(data, "icon") or "EC_Portrait_Generic"
             if icon == "unknown" or icon == "" then icon = "EC_Portrait_Generic" end
             local fullName = HLP.GetAttr(data, "displayName")
@@ -42,9 +42,13 @@ function PassiveTab:New(holder, parentUI)
             local name = fullName
             if HLP.Strlen(name) > 20 then name = HLP.Cut(name, 1, 20) .. "..." end
 
-            local itemButton = cell:AddImageButton("##PassiveGrid" .. uuid, icon, {100 * ViewPortScale, 100 * ViewPortScale})
+            if data.source then
+                name = name .. " (" .. data.source .. ")"
+            end
+
+            local itemButton = cell:AddImageButton("##PassiveGrid" .. uniqueKey, icon, {100 * ViewPortScale, 100 * ViewPortScale})
             cell:AddText(name)
-            local popup = cell:AddPopup("ManagePassive_" .. uuid)
+            local popup = cell:AddPopup("ManagePassive_" .. uniqueKey)
 
             itemButton.OnClick = function() popup:Open() end
 
@@ -52,10 +56,17 @@ function PassiveTab:New(holder, parentUI)
 
             local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
             removeButton.OnClick = function()
+                local passiveUUID, sourceType = uniqueKey:match("^(.*)_(.*)$")
+                if not passiveUUID then passiveUUID = uniqueKey end
+
                 if instance.ParentUI == "CharacterTools" then
-                    SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
-                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment then
-                    SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, passiveUUID = uuid })
+                    SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = passiveUUID, remove = 1 })
+                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment and sourceType then
+                    if sourceType == "equip" then
+                        SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, passiveUUID = passiveUUID })
+                    elseif sourceType == "direct" then
+                        SMS.RemoveDirectPassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, passiveUUID = passiveUUID })
+                    end
                 end
             end
         end
@@ -127,10 +138,10 @@ function PassiveTab:DrawGrid()
             local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_PassiveTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
 
             addPassiveBtn.OnClick = function()
-                SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, amount=1, data=data })
+                SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, amount = 1, data = data })
             end
             removePassiveBtn.OnClick = function()
-                SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1})
+                SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
             end
             addForPartyBtn.OnClick = function()
                 SMS.AddPassiveForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
@@ -139,23 +150,53 @@ function PassiveTab:DrawGrid()
                 SMS.RemovePassiveForParty:SendToServer({ ID = USERID, uuid = uuid })
             end
         elseif self.ParentUI == "ItemTools" then
-            local row3 = actionsTable:AddRow()
-            local addToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_PassiveTab_AddToSelectedItem", "Add to Selected Item") .. "##AddItem" .. uuid)
-            local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_PassiveTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
-
             local equipmentData = UIState.SelectedEquipment
+
+            -- Method 1: Equip Effect
+            popup:AddSeparatorText(LCL.Get("UCT_PassiveTab_AddAsEquipEffect", "As Equip Effect (On Wielder)"))
+            popup:AddText(LCL.Get("UCT_PassiveTab_EquipEffectDesc", "Applies to the character when equipped. Standard method."))
+            local equipEffectTable = popup:AddTable("PassiveEquipEffectActions" .. uuid, 2)
+            local equipEffectRow = equipEffectTable:AddRow()
+            local addEquipEffectBtn = equipEffectRow:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Add", "Add") .. "##AddEquipEffect" .. uuid)
+            local removeEquipEffectBtn = equipEffectRow:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Remove", "Remove") .. "##RemoveEquipEffect" .. uuid)
+
+            popup:AddSeparator()
+
+            -- Method 2: Direct Boost
+            popup:AddSeparatorText(LCL.Get("UCT_PassiveTab_AddAsDirectBoost", "As Direct Boost (On Item)"))
+            popup:AddText(LCL.Get("UCT_PassiveTab_DirectBoostDesc", "Applies directly to the item. Experimental, may have unintended effects."))
+            local directBoostTable = popup:AddTable("PassiveDirectBoostActions" .. uuid, 2)
+            local directBoostRow = directBoostTable:AddRow()
+            local addDirectBoostBtn = directBoostRow:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Add", "Add") .. "##AddDirectBoost" .. uuid)
+            local removeDirectBoostBtn = directBoostRow:AddCell():AddButton(LCL.Get("UCT_PassiveTab_Remove", "Remove") .. "##RemoveDirectBoost" .. uuid)
+
             if not equipmentData then
-                addToSelectedItem.Disabled = true
-                removeFromSelectedItem.Disabled = true
+                addEquipEffectBtn.Disabled = true
+                removeEquipEffectBtn.Disabled = true
+                addDirectBoostBtn.Disabled = true
+                removeDirectBoostBtn.Disabled = true
             else
-                addToSelectedItem.OnClick = function()
+                -- Equip Effect (current logic)
+                addEquipEffectBtn.OnClick = function()
                     if equipmentData and equipmentData.id then
                         SMS.AddPassiveOnItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, passiveUUID = uuid, data = data })
                     end
                 end
-                removeFromSelectedItem.OnClick = function()
+                removeEquipEffectBtn.OnClick = function()
                     if equipmentData and equipmentData.id then
                         SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, passiveUUID = uuid })
+                    end
+                end
+
+                -- Direct Boost (new logic)
+                addDirectBoostBtn.OnClick = function()
+                    if equipmentData and equipmentData.id then
+                        SMS.AddDirectPassiveToItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, passiveUUID = uuid, data = data })
+                    end
+                end
+                removeDirectBoostBtn.OnClick = function()
+                    if equipmentData and equipmentData.id then
+                        SMS.RemoveDirectPassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, passiveUUID = uuid })
                     end
                 end
             end
@@ -204,9 +245,26 @@ function PassiveTab:GetAddedPassives()
             return
         end
         local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-        local itemMods = modifiedEquipment[equipmentData.instanceUUID]
-        local data = (itemMods and itemMods.passives) or {}
-        self.ModificationGrid:Draw(data)
+        local itemMods = modifiedEquipment[equipmentData.instanceUUID] or {}
+
+        local allPassives = {}
+        -- Add passives from equip effect
+        if itemMods.passives then
+            for uuid, data in pairs(itemMods.passives) do
+                local d = HLP.Merge({}, data) -- Create a copy to avoid modifying the persisted data
+                d.source = "Equip"
+                allPassives[uuid .. "_equip"] = d
+            end
+        end
+        -- Add passives from direct boost
+        if itemMods.directPassives then
+            for uuid, pdata in pairs(itemMods.directPassives) do
+                local d = HLP.Merge({}, pdata.data) -- Create a copy
+                d.source = "Direct"
+                allPassives[uuid .. "_direct"] = d
+            end
+        end
+        self.ModificationGrid:Draw(allPassives)
     end
 end
 
