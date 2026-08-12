@@ -18,6 +18,20 @@ function ItemModificationManager:ReapplyAll()
 				end
 			end
 
+			-- Re-apply direct passive boosts
+			if modifications.directPassives then
+                for passiveId, _ in pairs(modifications.directPassives) do
+                    Osi.AddPassive(itemInstanceUUID, passiveId)
+                end
+			end
+
+			-- Re-apply direct statuses
+			if modifications.directStatuses then
+				for statusId, _ in pairs(modifications.directStatuses) do
+					Osi.ApplyStatus(itemInstanceUUID, statusId, -1, 1)
+				end
+			end
+
 			-- Re-apply passives and statuses (stats modification)
 			if modifications.passives or modifications.statuses then
 				local templateUUID = modifications.templateUUID

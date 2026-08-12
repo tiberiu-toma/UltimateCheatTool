@@ -34,7 +34,7 @@ function StatusTab:New(holder, parentUI)
         noItemsText = LCL.Get("UCT_NoCustomStatuses", "No custom statuses."),
         maxTableWidth = 3,
         idPrefix = "Status",
-        renderItem = function(cell, uuid, data)
+        renderItem = function(cell, uniqueKey, data)
             local icon = HLP.GetAttr(data, "icon") or "EC_Portrait_Generic"
             if icon == "unknown" or icon == "" then icon = "EC_Portrait_Generic" end
             local fullName = HLP.GetAttr(data, "displayName")
@@ -44,9 +44,13 @@ function StatusTab:New(holder, parentUI)
             local name = fullName
             if HLP.Strlen(name) > 20 then name = HLP.Cut(name, 1, 20) .. "..." end
 
-            local itemButton = cell:AddImageButton("##StatusGrid" .. uuid, icon, {100 * ViewPortScale, 100 * ViewPortScale})
+            if data.source then
+                name = name .. " (" .. data.source .. ")"
+            end
+
+            local itemButton = cell:AddImageButton("##StatusGrid" .. uniqueKey, icon, {100 * ViewPortScale, 100 * ViewPortScale})
             cell:AddText(name)
-            local popup = cell:AddPopup("ManageStatus_" .. uuid)
+            local popup = cell:AddPopup("ManageStatus_" .. uniqueKey)
 
             itemButton.OnClick = function() popup:Open() end
 
@@ -54,10 +58,17 @@ function StatusTab:New(holder, parentUI)
 
             local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
             removeButton.OnClick = function()
+                local statusUUID, sourceType = uniqueKey:match("^(.*)_(.*)$")
+                if not statusUUID then statusUUID = uniqueKey end
+
                 if instance.ParentUI == "CharacterTools" then
-                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uuid, remove = 1 })
-                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment then
-                    SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, statusUUID = uuid })
+                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = statusUUID, remove = 1 })
+                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment and sourceType then
+                    if sourceType == "equip" then
+                        SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, statusUUID = statusUUID })
+                    elseif sourceType == "direct" then
+                        SMS.RemoveDirectStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, statusUUID = statusUUID })
+                    end
                 end
             end
         end
@@ -143,23 +154,53 @@ function StatusTab:DrawGrid()
                 end
 
             elseif self.ParentUI == "ItemTools" then
-                local row3 = actionsTable:AddRow()
-                local applyToSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_ApplyToSelectedItem", "Apply to Selected Item") .. "##ApplyItem" .. uuid)
-                local removeFromSelectedItem = row3:AddCell():AddButton(LCL.Get("UCT_StatusTab_RemoveFromSelectedItem", "Remove from Selected") .. "##RemoveItem" .. uuid)
-
                 local equipmentData = UIState.SelectedEquipment
+
+                -- Method 1: Equip Effect
+                popup:AddSeparatorText(LCL.Get("UCT_StatusTab_AddAsEquipEffect", "As Equip Effect (On Wielder)"))
+                popup:AddText(LCL.Get("UCT_StatusTab_EquipEffectDesc", "Applies to the character when equipped. Standard method."))
+                local equipEffectTable = popup:AddTable("StatusEquipEffectActions" .. uuid, 2)
+                local equipEffectRow = equipEffectTable:AddRow()
+                local addEquipEffectBtn = equipEffectRow:AddCell():AddButton(LCL.Get("UCT_StatusTab_Apply", "Apply") .. "##AddEquipEffect" .. uuid)
+                local removeEquipEffectBtn = equipEffectRow:AddCell():AddButton(LCL.Get("UCT_StatusTab_Remove", "Remove") .. "##RemoveEquipEffect" .. uuid)
+
+                popup:AddSeparator()
+
+                -- Method 2: Direct Boost
+                popup:AddSeparatorText(LCL.Get("UCT_StatusTab_AddAsDirectBoost", "As Direct Boost (On Item)"))
+                popup:AddText(LCL.Get("UCT_StatusTab_DirectBoostDesc", "Applies directly to the item. Experimental, may have unintended effects."))
+                local directBoostTable = popup:AddTable("StatusDirectBoostActions" .. uuid, 2)
+                local directBoostRow = directBoostTable:AddRow()
+                local addDirectBoostBtn = directBoostRow:AddCell():AddButton(LCL.Get("UCT_StatusTab_Apply", "Apply") .. "##AddDirectBoost" .. uuid)
+                local removeDirectBoostBtn = directBoostRow:AddCell():AddButton(LCL.Get("UCT_StatusTab_Remove", "Remove") .. "##RemoveDirectBoost" .. uuid)
+
                 if not equipmentData then
-                    applyToSelectedItem.Disabled = true
-                    removeFromSelectedItem.Disabled = true
+                    addEquipEffectBtn.Disabled = true
+                    removeEquipEffectBtn.Disabled = true
+                    addDirectBoostBtn.Disabled = true
+                    removeDirectBoostBtn.Disabled = true
                 else
-                    applyToSelectedItem.OnClick = function()
+                    -- Equip Effect (current logic)
+                    addEquipEffectBtn.OnClick = function()
                         if equipmentData and equipmentData.id then
                             SMS.ApplyStatusToItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, statusUUID = uuid, data = data })
                         end
                     end
-                    removeFromSelectedItem.OnClick = function()
+                    removeEquipEffectBtn.OnClick = function()
                         if equipmentData and equipmentData.id then
-                            SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, statusUUID = uuid })
+                            SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, statusUUID = uuid })
+                        end
+                    end
+
+                    -- Direct Boost (new logic)
+                    addDirectBoostBtn.OnClick = function()
+                        if equipmentData and equipmentData.id then
+                            SMS.AddDirectStatusToItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, templateUUID = equipmentData.id, statusUUID = uuid, data = data })
+                        end
+                    end
+                    removeDirectBoostBtn.OnClick = function()
+                        if equipmentData and equipmentData.id then
+                            SMS.RemoveDirectStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = equipmentData.instanceUUID, statusUUID = uuid })
                         end
                     end
                 end
@@ -196,9 +237,26 @@ function StatusTab:GetAppliedStatuses()
             return
         end
         local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-        local itemMods = modifiedEquipment[equipmentData.instanceUUID]
-        local data = (itemMods and itemMods.statuses) or {}
-        self.ModificationGrid:Draw(data)
+        local itemMods = modifiedEquipment[equipmentData.instanceUUID] or {}
+
+        local allStatuses = {}
+        -- Add statuses from equip effect
+        if itemMods.statuses then
+            for uuid, data in pairs(itemMods.statuses) do
+                local d = HLP.Merge({}, data) -- Create a copy to avoid modifying the persisted data
+                d.source = "Equip"
+                allStatuses[uuid .. "_equip"] = d
+            end
+        end
+        -- Add statuses from direct boost
+        if itemMods.directStatuses then
+            for uuid, sdata in pairs(itemMods.directStatuses) do
+                local d = HLP.Merge({}, sdata.data) -- Create a copy
+                d.source = "Direct"
+                allStatuses[uuid .. "_direct"] = d
+            end
+        end
+        self.ModificationGrid:Draw(allStatuses)
     end
 end
 

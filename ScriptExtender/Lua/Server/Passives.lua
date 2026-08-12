@@ -68,6 +68,22 @@ function PASSV.AddOnItem(itemInstanceUUID, templateUUID, passiveId)
     local instanceStatsName = originalStatsName .. "_UCT_" .. itemInstanceUUID
     local instanceStats = Ext.Stats.Get(instanceStatsName)
 
+    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    local itemModEntry = modifiedEquipment[itemInstanceUUID]
+
+    -- If a custom stats object exists, check if its PassivesOnEquip/StatusOnEquip need to be cleared.
+    -- This prevents stale data from previous save sessions from reappearing.
+    if instanceStats then
+        -- Clear PassivesOnEquip if no equip passives are tracked for this item in the current save
+        if not itemModEntry or not itemModEntry.passives or HLP.Count(itemModEntry.passives) == 0 then
+            instanceStats.PassivesOnEquip = ""
+        end
+        -- Clear StatusOnEquip if no equip statuses are tracked for this item in the current save
+        if not itemModEntry or not itemModEntry.statuses or HLP.Count(itemModEntry.statuses) == 0 then
+            instanceStats.StatusOnEquip = ""
+        end
+    end
+    
     -- If it doesn't exist, create it by copying the original
     if not instanceStats then
         instanceStats = Ext.Stats.Create(instanceStatsName, originalStats.ModifierList, originalStatsName)
@@ -203,4 +219,39 @@ function PASSV.ManageOnItem(payload, remove)
 
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
     HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID, 20)
+end
+
+function PASSV.ManageDirectOnItem(payload, remove)
+    local itemInstanceUUID = payload.itemInstanceUUID
+    if not itemInstanceUUID then return end
+
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    if not mods[itemInstanceUUID] then mods[itemInstanceUUID] = {} end
+    if not mods[itemInstanceUUID].directPassives then mods[itemInstanceUUID].directPassives = {} end
+
+    local passiveUUID = payload.passiveUUID
+    if not passiveUUID then return end
+
+    if remove then
+        Osi.RemovePassive(itemInstanceUUID, passiveUUID)
+        mods[itemInstanceUUID].directPassives[passiveUUID] = nil
+    else
+        Osi.AddPassive(itemInstanceUUID, passiveUUID)
+        mods[itemInstanceUUID].directPassives[passiveUUID] = {
+            data = payload.data
+        }
+        -- Store template UUID for re-application logic
+        mods[itemInstanceUUID].templateUUID = payload.templateUUID
+    end
+
+    -- Cleanup logic
+    if HLP.Count(mods[itemInstanceUUID].directPassives) == 0 then
+        mods[itemInstanceUUID].directPassives = nil
+    end
+    if HLP.Count(mods[itemInstanceUUID]) == 0 then
+        mods[itemInstanceUUID] = nil
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = mods
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
 end

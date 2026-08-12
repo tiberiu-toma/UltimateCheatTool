@@ -58,6 +58,8 @@ SMS.AddPassiveForParty:SetHandler(function(payload) PASSV.ManageForParty(payload
 SMS.RemovePassiveForParty:SetHandler(function(payload) PASSV.ManageForParty(payload, true) end)
 SMS.AddPassiveOnItem:SetHandler(function(payload) PASSV.ManageOnItem(payload) end)
 SMS.RemovePassiveFromItem:SetHandler(function(payload) PASSV.ManageOnItem(payload, true) end)
+SMS.AddDirectPassiveToItem:SetHandler(function(payload) PASSV.ManageDirectOnItem(payload) end)
+SMS.RemoveDirectPassiveFromItem:SetHandler(function(payload) PASSV.ManageDirectOnItem(payload, true) end)
 
 -- Tags
 SMS.ManageTag:SetHandler(function(payload) TAGS.Manage(payload) end)
@@ -70,6 +72,8 @@ SMS.ApplyStatusForParty:SetHandler(function(payload) STAT.ManageForParty(payload
 SMS.RemoveStatusForParty:SetHandler(function(payload) STAT.ManageForParty(payload, true) end)
 SMS.ApplyStatusToItem:SetHandler(function(payload) STAT.ManageOnItem(payload) end)
 SMS.RemoveStatusFromItem:SetHandler(function(payload) STAT.ManageOnItem(payload, true) end)
+SMS.AddDirectStatusToItem:SetHandler(function(payload) STAT.ManageDirectOnItem(payload) end)
+SMS.RemoveDirectStatusFromItem:SetHandler(function(payload) STAT.ManageDirectOnItem(payload, true) end)
 
 -- Damage
 SMS.ManageDamageOnItem:SetHandler(function(payload) DMG.ManageOnItem(payload, payload.remove) end)

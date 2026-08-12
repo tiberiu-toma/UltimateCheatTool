@@ -60,6 +60,22 @@ function STAT.ApplyToItem(itemInstanceUUID, templateUUID, statusId)
     local instanceStatsName = originalStatsName .. "_UCT_" .. itemInstanceUUID
     local instanceStats = Ext.Stats.Get(instanceStatsName)
 
+    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    local itemModEntry = modifiedEquipment[itemInstanceUUID]
+
+    -- If a custom stats object exists, check if its PassivesOnEquip/StatusOnEquip need to be cleared.
+    -- This prevents stale data from previous save sessions from reappearing.
+    if instanceStats then
+        -- Clear StatusOnEquip if no equip statuses are tracked for this item in the current save
+        if not itemModEntry or not itemModEntry.statuses or HLP.Count(itemModEntry.statuses) == 0 then
+            instanceStats.StatusOnEquip = ""
+        end
+        -- Clear PassivesOnEquip if no equip passives are tracked for this item in the current save
+        if not itemModEntry or not itemModEntry.passives or HLP.Count(itemModEntry.passives) == 0 then
+            instanceStats.PassivesOnEquip = ""
+        end
+    end
+    
     if not instanceStats then
         instanceStats = Ext.Stats.Create(instanceStatsName, originalStats.ModifierList, originalStatsName)
         if not instanceStats then return end
@@ -190,4 +206,40 @@ function STAT.ManageOnItem(payload, remove)
 
     Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = modifiedEquipment
     HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID, 20)
+end
+
+function STAT.ManageDirectOnItem(payload, remove)
+    local itemInstanceUUID = payload.itemInstanceUUID
+    if not itemInstanceUUID then return end
+
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
+    if not mods[itemInstanceUUID] then mods[itemInstanceUUID] = {} end
+    if not mods[itemInstanceUUID].directStatuses then mods[itemInstanceUUID].directStatuses = {} end
+
+    local statusUUID = payload.statusUUID
+    if not statusUUID then return end
+
+    if remove then
+        Osi.RemoveStatus(itemInstanceUUID, statusUUID)
+        mods[itemInstanceUUID].directStatuses[statusUUID] = nil
+    else
+        -- Apply status with infinite duration
+        Osi.ApplyStatus(itemInstanceUUID, statusUUID, -1, 1)
+        mods[itemInstanceUUID].directStatuses[statusUUID] = {
+            data = payload.data
+        }
+        -- Store template UUID for re-application logic
+        mods[itemInstanceUUID].templateUUID = payload.templateUUID
+    end
+
+    -- Cleanup logic
+    if HLP.Count(mods[itemInstanceUUID].directStatuses) == 0 then
+        mods[itemInstanceUUID].directStatuses = nil
+    end
+    if HLP.Count(mods[itemInstanceUUID]) == 0 then
+        mods[itemInstanceUUID] = nil
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment = mods
+    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
 end
