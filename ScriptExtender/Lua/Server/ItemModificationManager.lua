@@ -11,16 +11,41 @@ function ItemModificationManager:ReapplyAll()
 		if item then
 			-- Re-apply damage boosts (direct boosts)
 			if modifications.damage then
+				local boostsToApply = {}
+				-- First, count how many of each boost string we need to apply to handle stacking correctly.
 				for _, boostData in pairs(modifications.damage) do
 					if boostData and boostData.boostString then
-						Osi.AddBoosts(itemInstanceUUID, boostData.boostString, "", "")
+						boostsToApply[boostData.boostString] = (boostsToApply[boostData.boostString] or 0) + 1
 					end
 				end
+
+				-- Remove all instances of these boosts first to prevent stacking issues from Remove/Add calls.
+				for boostString, _ in pairs(boostsToApply) do
+					Osi.RemoveBoosts(itemInstanceUUID, boostString, 99, "", "") -- Remove all
+				end
+
+				-- After a short delay, add all the boosts back. This helps with timing issues on game load.
+				local ticks = 0
+				local e
+				e = Ext.Events.Tick:Subscribe(function()
+					ticks = ticks + 1
+					if ticks >= 5 then -- Wait a few ticks
+						for boostString, count in pairs(boostsToApply) do
+							for i = 1, count do
+								Osi.AddBoosts(itemInstanceUUID, boostString, "", "")
+							end
+						end
+						local currentItem = Ext.Entity.Get(itemInstanceUUID)
+						if currentItem then currentItem:Replicate("BoostsContainer") end
+						Ext.Events.Tick:Unsubscribe(e)
+					end
+				end)
 			end
 
 			-- Re-apply direct passive boosts
 			if modifications.directPassives then
                 for passiveId, _ in pairs(modifications.directPassives) do
+                    Osi.RemovePassive(itemInstanceUUID, passiveId)
                     Osi.AddPassive(itemInstanceUUID, passiveId)
                 end
 			end
@@ -28,6 +53,7 @@ function ItemModificationManager:ReapplyAll()
 			-- Re-apply direct statuses
 			if modifications.directStatuses then
 				for statusId, _ in pairs(modifications.directStatuses) do
+					Osi.RemoveStatus(itemInstanceUUID, statusId)
 					Osi.ApplyStatus(itemInstanceUUID, statusId, -1, 1)
 				end
 			end
@@ -80,14 +106,28 @@ Ext.Events.SessionLoaded:Subscribe(function()
     reapplyOnLoad = true
 end)
 
--- Wait for the game to enter a safe state before running the logic.
+-- Wait for a safe game state before running the logic.
 Ext.Events.GameStateChanged:Subscribe(function(ev)
-    -- When the game is running and we have a pending re-apply, execute it.
+    -- When the game is running and we have a pending re-apply from session load, execute it.
     if reapplyOnLoad and ev.ToState == "Running" and GetHostCharacter() then
         reapplyOnLoad = false
         ItemModificationManager:ReapplyAll()
         -- Tell the client to refresh its inventory after a delay to account for the re-equip ticks.
         HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Inventory" }, GetHostCharacter(), 20)
+    end
+
+    -- After a long rest or loading a save, re-apply statuses that might have been cleared.
+    if ev.FromState == "Save" and ev.ToState == "Running" then
+        -- A small delay is needed to ensure all characters and the game world are fully loaded.
+        local ticks = 0
+        local e
+        e = Ext.Events.Tick:Subscribe(function()
+            ticks = ticks + 1
+            if ticks >= 10 then -- Wait a few ticks
+                ItemModificationManager:ReapplyAll()
+                Ext.Events.Tick:Unsubscribe(e)
+            end
+        end)
     end
 end)
 
