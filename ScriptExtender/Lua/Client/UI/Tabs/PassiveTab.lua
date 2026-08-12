@@ -56,16 +56,18 @@ function PassiveTab:New(holder, parentUI)
 
             local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
             removeButton.OnClick = function()
-                local passiveUUID, sourceType = uniqueKey:match("^(.*)_(.*)$")
-                if not passiveUUID then passiveUUID = uniqueKey end
-
                 if instance.ParentUI == "CharacterTools" then
-                    SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = passiveUUID, remove = 1 })
-                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment and sourceType then
-                    if sourceType == "equip" then
-                        SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, passiveUUID = passiveUUID })
-                    elseif sourceType == "direct" then
-                        SMS.RemoveDirectPassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, passiveUUID = passiveUUID })
+                    -- For characters, the uniqueKey is just the passive UUID.
+                    SMS.AddPassive:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uniqueKey, remove = 1 })
+                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment then
+                    -- For items, the key is composite: passiveUUID_sourceType
+                    local passiveUUID, sourceType = uniqueKey:match("^(.*)_(.*)$")
+                    if passiveUUID and sourceType then
+                        if sourceType == "equip" then
+                            SMS.RemovePassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, passiveUUID = passiveUUID })
+                        elseif sourceType == "direct" then
+                            SMS.RemoveDirectPassiveFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, passiveUUID = passiveUUID })
+                        end
                     end
                 end
             end

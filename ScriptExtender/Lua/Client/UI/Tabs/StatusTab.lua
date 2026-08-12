@@ -58,16 +58,18 @@ function StatusTab:New(holder, parentUI)
 
             local removeButton = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove"))
             removeButton.OnClick = function()
-                local statusUUID, sourceType = uniqueKey:match("^(.*)_(.*)$")
-                if not statusUUID then statusUUID = uniqueKey end
-
                 if instance.ParentUI == "CharacterTools" then
-                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = statusUUID, remove = 1 })
-                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment and sourceType then
-                    if sourceType == "equip" then
-                        SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, statusUUID = statusUUID })
-                    elseif sourceType == "direct" then
-                        SMS.RemoveDirectStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, statusUUID = statusUUID })
+                    -- For characters, the uniqueKey is just the status UUID.
+                    SMS.ApplyStatus:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid = uniqueKey, remove = 1 })
+                elseif instance.ParentUI == "ItemTools" and UIState.SelectedEquipment then
+                    -- For items, the key is composite: statusUUID_sourceType
+                    local statusUUID, sourceType = uniqueKey:match("^(.*)_(.*)$")
+                    if statusUUID and sourceType then
+                        if sourceType == "equip" then
+                            SMS.RemoveStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, templateUUID = UIState.SelectedEquipment.id, statusUUID = statusUUID })
+                        elseif sourceType == "direct" then
+                            SMS.RemoveDirectStatusFromItem:SendToServer({ ID = USERID, itemInstanceUUID = UIState.SelectedEquipment.instanceUUID, statusUUID = statusUUID })
+                        end
                     end
                 end
             end
