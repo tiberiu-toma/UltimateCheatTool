@@ -20,11 +20,11 @@ function LCL.Get(str, fallback)
 	end
 
     local translated = Ext.Loca.GetTranslatedString(str, fallback)
-    if translated and translated ~= "" then
-        return LCL.PreprocessXML(translated)
+    if not translated or translated == "" or translated == " " or string.sub(translated, 1, 3) == "%%%" then
+        return fallback
     end
 
-    return fallback
+    return LCL.PreprocessXML(translated)
 end
 
 function LCL.PreprocessXML(str)

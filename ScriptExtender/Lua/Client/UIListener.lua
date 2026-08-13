@@ -103,19 +103,19 @@ end)
 local refreshHandlers = {
     Passive = function()
         if ItemTools and ItemTools.PassiveTab and ItemTools.PassiveTab.Tab.Visible then
-            ItemTools.PassiveTab:GetAddedPassives()
+            ItemTools.PassiveTab:GetAppliedModifications()
             -- The unequip/re-equip on the server can change item stats, so refresh the quick pick dropdown
             ItemTools.EquipmentSelector:FetchEquippedItems()
         end
-        if CharacterTools and CharacterTools.PassiveTab and CharacterTools.PassiveTab.Tab.Visible then CharacterTools.PassiveTab:GetAddedPassives() end
+        if CharacterTools and CharacterTools.PassiveTab and CharacterTools.PassiveTab.Tab.Visible then CharacterTools.PassiveTab:GetAppliedModifications() end
     end,
     Status = function()
         if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.Tab.Visible then
-            ItemTools.StatusTab:GetAppliedStatuses()
+            ItemTools.StatusTab:GetAppliedModifications()
             -- The unequip/re-equip on the server can change item stats, so refresh the quick pick dropdown
             ItemTools.EquipmentSelector:FetchEquippedItems()
         end
-        if CharacterTools and CharacterTools.StatusTab and CharacterTools.StatusTab.Tab.Visible then CharacterTools.StatusTab:GetAppliedStatuses() end
+        if CharacterTools and CharacterTools.StatusTab and CharacterTools.StatusTab.Tab.Visible then CharacterTools.StatusTab:GetAppliedModifications() end
     end,
     Spell = function()
         if CharacterTools and CharacterTools.SpellTab and CharacterTools.SpellTab.Tab.Visible then CharacterTools.SpellTab:GetLearnedSpells() end

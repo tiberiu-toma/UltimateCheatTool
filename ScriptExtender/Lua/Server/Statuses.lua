@@ -50,133 +50,20 @@ function STAT.Apply(char, statusId, remove)
 end
 
 function STAT.ApplyToItem(itemInstanceUUID, templateUUID, statusId)
-    local item = Ext.Entity.Get(itemInstanceUUID)
-    if not item then return end
-
-    local originalStatsName = Ext.Template.GetTemplate(templateUUID).Stats
-    local originalStats = Ext.Stats.Get(originalStatsName)
-    if not originalStats then return end
-
-    local instanceStatsName = originalStatsName .. "_UCT_" .. itemInstanceUUID
-    local instanceStats = Ext.Stats.Get(instanceStatsName)
-
-    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-    local itemModEntry = modifiedEquipment[itemInstanceUUID]
-
-    -- If a custom stats object exists, check if its PassivesOnEquip/StatusOnEquip need to be cleared.
-    -- This prevents stale data from previous save sessions from reappearing.
-    if instanceStats then
-        -- Clear StatusOnEquip if no equip statuses are tracked for this item in the current save
-        if not itemModEntry or not itemModEntry.statuses or HLP.Count(itemModEntry.statuses) == 0 then
-            instanceStats.StatusOnEquip = ""
-        end
-        -- Clear PassivesOnEquip if no equip passives are tracked for this item in the current save
-        if not itemModEntry or not itemModEntry.passives or HLP.Count(itemModEntry.passives) == 0 then
-            instanceStats.PassivesOnEquip = ""
-        end
-    end
-    
-    if not instanceStats then
-        instanceStats = Ext.Stats.Create(instanceStatsName, originalStats.ModifierList, originalStatsName)
-        if not instanceStats then return end
-    end
-
-    local statusOnEquip = HLP.GetAttr(instanceStats, "StatusOnEquip") or ""
-    if string.find(statusOnEquip, statusId, 1, true) then
-        return -- Status already applied, do nothing.
-    end
-
-    statusOnEquip = (statusOnEquip == "" and statusId) or (statusOnEquip .. ";" .. statusId)
-    instanceStats.StatusOnEquip = statusOnEquip
-    instanceStats:Sync()
-
-    if item.Data.StatsId ~= instanceStatsName then
-        item.Data.StatsId = instanceStatsName
-        item:Replicate("Data")
-    end
-
-    HLP.RefreshEquippedItem(nil, templateUUID)
+    HLP.ManageStatOnItem(itemInstanceUUID, templateUUID, statusId, "StatusOnEquip", "PassivesOnEquip", false)
 end
 
 function STAT.RemoveFromItem(itemInstanceUUID, templateUUID, statusId)
-    local item = Ext.Entity.Get(itemInstanceUUID)
-    if not item then return end
-
-    local originalStatsName = Ext.Template.GetTemplate(templateUUID).Stats
-    local instanceStatsName = originalStatsName .. "_UCT_" .. itemInstanceUUID
-    local instanceStats = Ext.Stats.Get(instanceStatsName)
-
-    if not instanceStats then return end
-
-    local statusOnEquip = HLP.GetAttr(instanceStats, "StatusOnEquip") or ""
-    if not string.find(statusOnEquip, statusId, 1, true) then
-        return
-    end
-
-    local items = {}
-    for s in string.gmatch(statusOnEquip, "([^;]+)") do
-        if s ~= statusId then
-            table.insert(items, s)
-        end
-    end
-    instanceStats.StatusOnEquip = table.concat(items, ";")
-
-    local passivesOnEquip = HLP.GetAttr(instanceStats, "PassivesOnEquip") or ""
-    if instanceStats.StatusOnEquip == "" and passivesOnEquip == "" then
-        item.Data.StatsId = originalStatsName
-    end
-
-    instanceStats:Sync()
-    item:Replicate("Data")
-    HLP.RefreshEquippedItem(nil, templateUUID)
+    HLP.ManageStatOnItem(itemInstanceUUID, templateUUID, statusId, "StatusOnEquip", "PassivesOnEquip", true)
 end
 
 function STAT.Manage(payload)
-    local uuid = payload.uuid
-    local data = payload.data
-    local character = payload.character
     local remove = HLP.GetAttr(payload, "remove")
-
-    if not character then return end
-    
-    STAT.Apply(character, uuid, remove)
-
-    local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
-    if not statuses[character] then statuses[character] = {} end
-
-    if remove then
-        statuses[character][uuid] = nil
-    else
-        statuses[character][uuid] = data
-    end
-    
-    Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
+    HLP.ManageCharacterStat(payload, remove, "AppliedStatuses", STAT.Apply, Osi.RemoveStatus, "Status")
 end
 
 function STAT.ManageForParty(payload, remove)
-    local uuid = payload.uuid
-    local data = payload.data
-
-    local partyMembers = PARTY.GetMembers()
-    if not partyMembers or #partyMembers == 0 then return end
-
-    local statuses = Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses or {}
-
-    for _, member in ipairs(partyMembers) do
-        local charUUID = member.uuid
-        STAT.Apply(charUUID, uuid, remove)
-        if not statuses[charUUID] then statuses[charUUID] = {} end
-        
-        if remove then
-            statuses[charUUID][uuid] = nil
-        else
-            statuses[charUUID][uuid] = data
-        end
-    end
-
-    Ext.Vars.GetModVariables(ModuleUUID).AppliedStatuses = statuses
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Status" }, payload.ID)
+    HLP.ManageCharacterStatForParty(payload, remove, "AppliedStatuses", STAT.Apply, Osi.RemoveStatus, "Status")
 end
 
 function STAT.ManageOnItem(payload, remove)

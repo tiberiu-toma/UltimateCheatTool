@@ -24,64 +24,48 @@ function WaypointTab:New(holder)
 end
 
 function WaypointTab:DrawGrid()
-    local shownCount = HLP.Count(self.Items)
-    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
-    
-    local t = self.MainArea:AddTable("WaypointGrid", tableWidth)
-    t.SizingFixedSame = true
-    t.NoHostExtendX = true
+    UI_Utils.CreateItemGrid(self.MainArea, self.Items, {
+        maxTableWidth = self.Config.maxTableWidth,
+        idPrefix = "Waypoint",
+        sizingFixedSame = true,
+        renderItem = function(cell, uuid, data)
+            local icon = HLP.GetAttr(data, "icon")
+            local name = HLP.GetAttr(data, "name")
+            local trigger = HLP.GetAttr(data, "trigger")
 
-    local i = 1
-    local row
+            if name then
+                if HLP.Strlen(name) > 20 then name = HLP.Cut(name, 1, 20) .. "..." end
 
-    for uuid,data in kpairs(self.Items) do
-        if (i - 1) % self.Config.maxTableWidth == 0 then
-            row = t:AddRow()
-        end
-        
-        local icon = HLP.GetAttr(data, "icon")
-        local name = HLP.GetAttr(data, "name")
-        local trigger = HLP.GetAttr(data, "trigger")
+                icon = "EC_Portrait_Generic"
+                local waypointItem = cell:AddImageButton("##Waypoint" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+                cell:AddText(name)
+                local popup = cell:AddPopup("AddItem" .. uuid)
 
-        if name then
-            if HLP.Strlen(name) > 20 then
-                name = HLP.Cut(name, 1, 20) .. "..."
-            end
+                waypointItem.OnClick = function() popup:Open() end
 
-            icon = "EC_Portrait_Generic"
-            local cell = row:AddCell()
-            local waypointItem = cell:AddImageButton("##Waypoint" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-            cell:AddText(name)
-            local popup = cell:AddPopup("AddItem" .. uuid)
+                local selectWaypoint = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb79", "Teleport"))
 
-            waypointItem.OnClick = function()
-                popup:Open()
-            end
+                local waypointInfoFields = {
+                    { key = "id", label = "ID" },
+                    { key = "name", label = "Name" },
+                    { key = "trigger", label = "Trigger" },
+                    { key = "pos", label = "Position", formatter = function(pos)
+                        if not pos then return "N/A" end
+                        return string.format("X: %.2f, Y: %.2f, Z: %.2f", pos.x or 0, pos.y or 0, pos.z or 0)
+                    end },
+                }
+                InfoPopup:AddInfo(popup, data, waypointInfoFields)
 
-            local selectWaypoint = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb79", "Teleport"))
-
-            local waypointInfoFields = {
-                { key = "id", label = "ID" },
-                { key = "name", label = "Name" },
-                { key = "trigger", label = "Trigger" },
-                { key = "pos", label = "Position", formatter = function(pos)
-                    if not pos then return "N/A" end
-                    return string.format("X: %.2f, Y: %.2f, Z: %.2f", pos.x or 0, pos.y or 0, pos.z or 0)
-                end },
-            }
-            InfoPopup:AddInfo(popup, data, waypointInfoFields)
-
-            selectWaypoint.OnClick = function()
-                if trigger then
-                    SMS.TeleportToWaypoint:SendToServer({ data=trigger })
-                else
-                    Ext.Utils.PrintError("Waypoint " .. name .. " has no trigger.")
+                selectWaypoint.OnClick = function()
+                    if trigger then
+                        SMS.TeleportToWaypoint:SendToServer({ data=trigger })
+                    else
+                        Ext.Utils.PrintError("Waypoint " .. name .. " has no trigger.")
+                    end
                 end
             end
-
-            i = i + 1
         end
-    end
+    })
 end
 
 return WaypointTab

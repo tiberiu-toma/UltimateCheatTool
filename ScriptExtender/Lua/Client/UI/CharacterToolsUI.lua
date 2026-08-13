@@ -63,8 +63,8 @@ function CharacterToolsUI:Initialize()
         -- Refresh character-specific tabs within this UI
         if self.SpellTab and self.SpellTab.Tab.Visible then self.SpellTab:GetLearnedSpells() end
         if self.TagTab and self.TagTab.Tab.Visible then self.TagTab:GetAppliedTags() end
-        if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAddedPassives() end
-        if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedStatuses() end
+        if self.PassiveTab and self.PassiveTab.Tab.Visible then self.PassiveTab:GetAppliedModifications() end
+        if self.StatusTab and self.StatusTab.Tab.Visible then self.StatusTab:GetAppliedModifications() end
         if self.ResourceTab and self.ResourceTab.Tab.Visible then self.ResourceTab:GetAddedResources() end
         if self.AbilityTab and self.AbilityTab.Tab.Visible then self.AbilityTab:FetchAbilities(true) end
         if self.SkillsTab and self.SkillsTab.Tab.Visible then self.SkillsTab:Draw() end

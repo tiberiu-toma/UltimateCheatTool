@@ -33,6 +33,23 @@ function FilterComponent:New(parent, config, onChange)
     return instance
 end
 
+---@param row ExtuiTableRow
+---@param label string
+---@param options table
+---@param stateKey string
+local function _CreateFilterCombo(self, row, label, options, stateKey)
+    row:AddCell():AddText(label .. ":")
+    local selectedIndex = 1
+    for i, v in ipairs(options) do if v == self.State[stateKey] then selectedIndex = i; break end end
+    local combo = row:AddCell():AddCombo("##" .. stateKey .. "Filter")
+    combo.Options = options
+    combo.SelectedIndex = selectedIndex - 1
+    combo.OnChange = function(c)
+        self.State[stateKey] = options[c.SelectedIndex + 1]
+        self.OnChange()
+    end
+end
+
 function FilterComponent:SetModNameOptions(modNames)
     self.ModNameOptions = modNames
     self:Draw()
@@ -51,55 +68,19 @@ function FilterComponent:Draw()
     local row = filterTable:AddRow()
 
     if self.Config.mod then
-        row:AddCell():AddText("Mod:")
-        local selectedIndex = 1
-        for i, v in ipairs(self.ModNameOptions) do if v == self.State.modName then selectedIndex = i; break end end
-        local combo = row:AddCell():AddCombo("##ModNameFilter")
-        combo.Options = self.ModNameOptions
-        combo.SelectedIndex = selectedIndex - 1
-        combo.OnChange = function(c)
-            self.State.modName = self.ModNameOptions[c.SelectedIndex + 1]
-            self.OnChange()
-        end
+        _CreateFilterCombo(self, row, "Mod", self.ModNameOptions, "modName")
     end
 
     if self.Config.modifierList then
-        row:AddCell():AddText("Type:")
-        local selectedIndex = 1
-        for i, v in ipairs(self.ModifierListOptions) do if v == self.State.modifierList then selectedIndex = i; break end end
-        local combo = row:AddCell():AddCombo("##ModifierListFilter")
-        combo.Options = self.ModifierListOptions
-        combo.SelectedIndex = selectedIndex - 1
-        combo.OnChange = function(c)
-            self.State.modifierList = self.ModifierListOptions[c.SelectedIndex + 1]
-            self.OnChange()
-        end
+        _CreateFilterCombo(self, row, "Type", self.ModifierListOptions, "modifierList")
     end
 
     if self.Config.slot then
-        row:AddCell():AddText("Slot:")
-        local selectedIndex = 1
-        for i, v in ipairs(self.SlotOptions) do if v == self.State.slot then selectedIndex = i; break end end
-        local combo = row:AddCell():AddCombo("##SlotFilter")
-        combo.Options = self.SlotOptions
-        combo.SelectedIndex = selectedIndex - 1
-        combo.OnChange = function(c)
-            self.State.slot = self.SlotOptions[c.SelectedIndex + 1]
-            self.OnChange()
-        end
+        _CreateFilterCombo(self, row, "Slot", self.SlotOptions, "slot")
     end
 
     if self.Config.rarity then
-        row:AddCell():AddText("Rarity:")
-        local selectedIndex = 1
-        for i, v in ipairs(self.RarityOptions) do if v == self.State.rarity then selectedIndex = i; break end end
-        local combo = row:AddCell():AddCombo("##RarityFilter")
-        combo.Options = self.RarityOptions
-        combo.SelectedIndex = selectedIndex - 1
-        combo.OnChange = function(c)
-            self.State.rarity = self.RarityOptions[c.SelectedIndex + 1]
-            self.OnChange()
-        end
+        _CreateFilterCombo(self, row, "Rarity", self.RarityOptions, "rarity")
     end
 end
 

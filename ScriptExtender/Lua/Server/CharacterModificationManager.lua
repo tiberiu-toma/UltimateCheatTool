@@ -1,6 +1,44 @@
 CharacterModificationManager = {}
 local reapplyOnLoad = false
 
+--- Re-applies boosts that can be stacked (e.g. ability/skill boosts).
+--- It first removes all instances to prevent infinite stacking on load, then re-applies them.
+---@param charUUID string The character to apply boosts to.
+---@param boostMods table The table of modifications for a specific boost type.
+local function ReapplyStackingBoosts(charUUID, boostMods)
+    if not boostMods or HLP.Count(boostMods) == 0 then return end
+
+    local boostsToApply = {}
+    -- Count how many of each boost string we need to apply
+    for _, modData in pairs(boostMods) do
+        if modData and modData.boostString then
+            boostsToApply[modData.boostString] = (boostsToApply[modData.boostString] or 0) + 1
+        end
+    end
+
+    if HLP.Count(boostsToApply) == 0 then return end
+
+    -- Remove all instances of these boosts first
+    for boostString, _ in pairs(boostsToApply) do
+        Osi.RemoveBoosts(charUUID, boostString, 99, "", "") -- Remove all
+    end
+
+    -- After a short delay, re-apply all boosts to avoid timing issues on load.
+    local ticks = 0
+    local e
+    e = Ext.Events.Tick:Subscribe(function()
+        ticks = ticks + 1
+        if ticks >= 5 then -- Wait a few ticks
+            for boostString, count in pairs(boostsToApply) do
+                for i = 1, count do
+                    Osi.AddBoosts(charUUID, boostString, "", "")
+                end
+            end
+            Ext.Events.Tick:Unsubscribe(e)
+        end
+    end)
+end
+
 -- Called when a session is loaded to re-apply all saved modifications.
 function CharacterModificationManager:ReapplyAll()
 	-- Re-apply boosts from CharacterModifications
@@ -9,40 +47,29 @@ function CharacterModificationManager:ReapplyAll()
 		for charUUID, modifications in pairs(modifiedCharacters) do
 			-- Re-apply spells
 			if modifications.spells then
-				for spellId, spellData in pairs(modifications.spells) do
-					if spellData.spellName and spellData.learningStrategy and spellData.castingAbility then
-						local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", spellData.spellName, spellData.learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", spellData.castingAbility)
-						Osi.AddBoosts(charUUID, boostString, "", "")
-					end
-				end
+                local spellBoosts = {}
+                for _, spellData in pairs(modifications.spells) do
+                    if spellData.boostString then
+                        table.insert(spellBoosts, spellData.boostString)
+                    end
+                end
+                -- Remove all first to prevent issues, then re-add.
+                for _, boostString in ipairs(spellBoosts) do
+                    Osi.RemoveBoosts(charUUID, boostString, 1, "", "")
+                end
+                for _, boostString in ipairs(spellBoosts) do
+                    Osi.AddBoosts(charUUID, boostString, "", "")
+                end
 			end
 
 			-- Re-apply resources
-			if modifications.resources then
-				for boostKey, resourceModData in pairs(modifications.resources) do
-					if resourceModData.boostString then
-						Osi.AddBoosts(charUUID, resourceModData.boostString, "", "")
-					end
-				end
-			end
+            ReapplyStackingBoosts(charUUID, modifications.resources)
 
 			-- Re-apply abilities
-			if modifications.abilities then
-				for boostKey, abilityModData in pairs(modifications.abilities) do
-					if abilityModData.boostString then
-						Osi.AddBoosts(charUUID, abilityModData.boostString, "", "")
-					end
-				end
-			end
+            ReapplyStackingBoosts(charUUID, modifications.abilities)
 
 			-- Re-apply skills
-			if modifications.skills then
-				for boostKey, skillModData in pairs(modifications.skills) do
-					if skillModData.boostString then
-						Osi.AddBoosts(charUUID, skillModData.boostString, "", "")
-					end
-				end
-			end
+            ReapplyStackingBoosts(charUUID, modifications.skills)
 		end
 	end
 

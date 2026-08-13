@@ -68,125 +68,97 @@ function ResourceTab:Init()
 end
 
 function ResourceTab:DrawGrid()
-    local shownCount = HLP.Count(self.Items)
-    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
+    UI_Utils.CreateItemGrid(self.MainArea, self.Items, {
+        maxTableWidth = self.Config.maxTableWidth,
+        idPrefix = "Resource",
+        sizingFixedSame = false,
+        renderItem = function(cell, uuid, data)
+            local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
+            if name then
+                local description = LCL.PreprocessXML(HLP.GetAttr(data, "description"))
 
-    local t = self.MainArea:AddTable("ResourceGrid", tableWidth)
-    t.SizingFixedSame = false
-    t.NoHostExtendX = true
+                local shortName = name
+                if HLP.Strlen(shortName) > 25 then
+                    shortName = HLP.Cut(shortName, 1, 25) .. "..."
+                end
 
-    local i = 1
-    local row
+                local resourceButton = cell:AddButton(shortName .. "##Resource" .. uuid)
+                local popup = cell:AddPopup("AddResource" .. uuid)
+                local amountPopup = cell:AddPopup("AddResourceAmountPopup_" .. uuid)
+                local levelPopup = cell:AddPopup("AddResourceLevelPopup_" .. uuid)
 
-    for uuid,data in kpairs(self.Items) do
-        if (i - 1) % self.Config.maxTableWidth == 0 then
-            row = t:AddRow()
-        end
+                resourceButton.OnClick = function() popup:Open() end
 
-        local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
-        if not name then goto continue end
-        local description = LCL.PreprocessXML(HLP.GetAttr(data, "description"))
+                local actionsTable = popup:AddTable("ResourceActionsTable" .. uuid, 2)
+                actionsTable.SizingFixedSame = false
+                actionsTable.NoHostExtendX = true
 
-        local shortName = name
-        if HLP.Strlen(shortName) > 25 then
-            shortName = HLP.Cut(shortName, 1, 25) .. "..."
-        end
+                local row1 = actionsTable:AddRow()
+                local addButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add") .. "##Add" .. uuid)
+                local removeButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##Remove" .. uuid)
+                
+                local row2 = actionsTable:AddRow()
+                local addForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_ResourceTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
+                local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_ResourceTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
 
-        local cell = row:AddCell()
-        local resourceButton = cell:AddButton(shortName .. "##Resource" .. uuid)
-        local popup = cell:AddPopup("AddResource" .. uuid)
-        local amountPopup = cell:AddPopup("AddResourceAmountPopup_" .. uuid) -- New popup for amount selection
-        local levelPopup = cell:AddPopup("AddResourceLevelPopup_" .. uuid)   -- New popup for level selection
+                InfoPopup:AddInfo(popup, data, { { key = "id", label = "ID" }, { key = "displayName", label = "Name" }, { key = "description", label = "Description" }, { key = "maxLevel", label = "Max Level" } })
 
-        resourceButton.OnClick = function()
-            popup:Open()
-        end
+                removeButton.OnClick = function() SMS.ManageResource:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 }) end
 
-        local actionsTable = popup:AddTable("ResourceActionsTable" .. uuid, 2)
-        actionsTable.SizingFixedSame = false
-        actionsTable.NoHostExtendX = true
+                addButton.OnClick = function()
+                    UI_Utils.DestroyChildren(amountPopup)
+                    amountPopup:AddText("Select Amount:")
+                    amountPopup:AddSeparator()
 
-        local row1 = actionsTable:AddRow()
-        local addButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add") .. "##Add" .. uuid)
-        local removeButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##Remove" .. uuid)
-        
-        local row2 = actionsTable:AddRow()
-        local addForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_ResourceTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
-        local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_ResourceTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
-
-        local resourceInfoFields = {
-            { key = "id", label = "ID" },
-            { key = "displayName", label = "Name" },
-            { key = "description", label = "Description" },
-            { key = "maxLevel", label = "Max Level" },
-        }
-        InfoPopup:AddInfo(popup, data, resourceInfoFields)
-
-        removeButton.OnClick = function()
-            SMS.ManageResource:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
-        end
-
-        addButton.OnClick = function()
-            UI_Utils.DestroyChildren(amountPopup)
-            amountPopup:AddText("Select Amount:")
-            amountPopup:AddSeparator()
-
-            for _, amount in ipairs(self.Config.amountOptions) do
-                local amountBtn = amountPopup:AddButton(tostring(amount))
-                amountBtn.OnClick = function()
-                    if data.maxLevel and data.maxLevel > 0 then
-                        UI_Utils.DestroyChildren(levelPopup)
-                        levelPopup:AddText("Select Level (Max: " .. data.maxLevel .. "):")
-                        levelPopup:AddSeparator()
-                        for level = 1, data.maxLevel do
-                            local levelBtn = levelPopup:AddButton(tostring(level))
-                            levelBtn.OnClick = function()
-                                SMS.ManageResource:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data, amount=amount, level=level })
+                    for _, amount in ipairs(self.Config.amountOptions) do
+                        local amountBtn = amountPopup:AddButton(tostring(amount))
+                        amountBtn.OnClick = function()
+                            if data.maxLevel and data.maxLevel > 0 then
+                                UI_Utils.DestroyChildren(levelPopup)
+                                levelPopup:AddText("Select Level (Max: " .. data.maxLevel .. "):")
+                                levelPopup:AddSeparator()
+                                for level = 1, data.maxLevel do
+                                    local levelBtn = levelPopup:AddButton(tostring(level))
+                                    levelBtn.OnClick = function() SMS.ManageResource:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data, amount=amount, level=level }) end
+                                end
+                                levelPopup:Open()
+                            else
+                                SMS.ManageResource:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data, amount=amount, level=0 })
                             end
                         end
-                        levelPopup:Open()
-                    else
-                        SMS.ManageResource:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data, amount=amount, level=0 })
                     end
+                    amountPopup:Open()
                 end
-            end
-            amountPopup:Open()
-        end
 
-        addForPartyBtn.OnClick = function()
-            UI_Utils.DestroyChildren(amountPopup) -- Reuse amountPopup for party selection
-            amountPopup:AddText("Select Amount for Party:")
-            amountPopup:AddSeparator()
+                addForPartyBtn.OnClick = function()
+                    UI_Utils.DestroyChildren(amountPopup) -- Reuse amountPopup for party selection
+                    amountPopup:AddText("Select Amount for Party:")
+                    amountPopup:AddSeparator()
 
-            for _, amount in ipairs(self.Config.amountOptions) do
-                local amountBtn = amountPopup:AddButton(tostring(amount))
-                amountBtn.OnClick = function()
-                    if data.maxLevel and data.maxLevel > 0 then
-                        UI_Utils.DestroyChildren(levelPopup) -- Reuse levelPopup for party selection
-                        levelPopup:AddText("Select Level for Party (Max: " .. data.maxLevel .. "):")
-                        levelPopup:AddSeparator()
-                        for level = 1, data.maxLevel do
-                            local levelBtn = levelPopup:AddButton(tostring(level))
-                            levelBtn.OnClick = function()
-                                SMS.AddResourceForParty:SendToServer({ ID = USERID, uuid = uuid, data = data, amount=amount, level=level })
+                    for _, amount in ipairs(self.Config.amountOptions) do
+                        local amountBtn = amountPopup:AddButton(tostring(amount))
+                        amountBtn.OnClick = function()
+                            if data.maxLevel and data.maxLevel > 0 then
+                                UI_Utils.DestroyChildren(levelPopup) -- Reuse levelPopup for party selection
+                                levelPopup:AddText("Select Level for Party (Max: " .. data.maxLevel .. "):")
+                                levelPopup:AddSeparator()
+                                for level = 1, data.maxLevel do
+                                    local levelBtn = levelPopup:AddButton(tostring(level))
+                                    levelBtn.OnClick = function() SMS.AddResourceForParty:SendToServer({ ID = USERID, uuid = uuid, data = data, amount=amount, level=level }) end
+                                end
+                                levelPopup:Open()
+                            else
+                                SMS.AddResourceForParty:SendToServer({ ID = USERID, uuid = uuid, data = data, amount=amount, level=0 })
                             end
                         end
-                        levelPopup:Open()
-                    else
-                        SMS.AddResourceForParty:SendToServer({ ID = USERID, uuid = uuid, data = data, amount=amount, level=0 })
                     end
+                    amountPopup:Open()
                 end
+
+                removeForPartyBtn.OnClick = function() SMS.RemoveResourceForParty:SendToServer({ ID = USERID, uuid = uuid }) end
             end
-            amountPopup:Open()
         end
-
-        removeForPartyBtn.OnClick = function()
-            SMS.RemoveResourceForParty:SendToServer({ ID = USERID, uuid = uuid })
-        end
-
-        i = i + 1
-        ::continue::
-    end
+    })
 end
 
 function ResourceTab:GetAddedResources()
