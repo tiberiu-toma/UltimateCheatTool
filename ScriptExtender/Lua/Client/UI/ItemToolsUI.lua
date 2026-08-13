@@ -60,7 +60,7 @@ function ItemToolsUI:Initialize()
         -- This function will be called when the equipment selection changes.
         -- Let's force a redraw of the added/applied sections for relevant tabs.
         if self.PassiveTab and self.PassiveTab.Tab.Visible then
-            self.PassiveTab:GetAddedPassives()
+            self.PassiveTab:GetAppliedModifications()
             -- Re-render the main grid to update button states without a server call
             self.PassiveTab:SetData({
                 data = self.PassiveTab.Items,
@@ -70,7 +70,7 @@ function ItemToolsUI:Initialize()
             })
         end
         if self.StatusTab and self.StatusTab.Tab.Visible then
-            self.StatusTab:GetAppliedStatuses()
+            self.StatusTab:GetAppliedModifications()
             -- Re-render the main grid to update button states without a server call
             self.StatusTab:SetData({
                 data = self.StatusTab.Items,
