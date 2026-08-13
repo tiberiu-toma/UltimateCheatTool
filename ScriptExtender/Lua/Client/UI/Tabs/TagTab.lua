@@ -62,76 +62,51 @@ function TagTab:Init()
 end
 
 function TagTab:DrawGrid()
-    local shownCount = HLP.Count(self.Items)
-    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
+    UI_Utils.CreateItemGrid(self.MainArea, self.Items, {
+        maxTableWidth = self.Config.maxTableWidth,
+        idPrefix = "Tag",
+        sizingFixedSame = false,
+        renderItem = function(cell, uuid, data)
+            local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
+            if name then
+                local description = LCL.PreprocessXML(HLP.GetAttr(data, "displayDescription"))
+                if description then
+                    local shortName = name
+                    if HLP.Strlen(shortName) > 25 then
+                        shortName = HLP.Cut(shortName, 1, 25) .. "..."
+                    end
 
-    local t = self.MainArea:AddTable("TagGrid", tableWidth)
-    t.SizingFixedSame = false
-    t.NoHostExtendX = true
+                    local tagButton = cell:AddButton(shortName .. "##Tag" .. uuid)
+                    local popup = cell:AddPopup("AddTag" .. uuid)
 
-    local i = 1
-    local row
+                    tagButton.OnClick = function() popup:Open() end
 
-    for uuid,data in kpairs(self.Items) do
-        if (i - 1) % self.Config.maxTableWidth == 0 then
-            row = t:AddRow()
-        end
+                    local actionsTable = popup:AddTable("TagActionsTable" .. uuid, 2)
+                    actionsTable.SizingFixedSame = false
+                    actionsTable.NoHostExtendX = true
 
-        local name = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
-        if name then
-            local description = LCL.PreprocessXML(HLP.GetAttr(data, "displayDescription"))
-            if description then
-                local shortName = name
-                if HLP.Strlen(shortName) > 25 then
-                    shortName = HLP.Cut(shortName, 1, 25) .. "..."
+                    local row1 = actionsTable:AddRow()
+                    local addButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add") .. "##Add" .. uuid)
+                    local removeButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##Remove" .. uuid)
+                    local row2 = actionsTable:AddRow()
+                    local addForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_TagTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
+                    local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_TagTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
+
+                    local tagInfoFields = {
+                        { key = "id", label = "ID" },
+                        { key = "displayName", label = "Name" },
+                        { key = "displayDescription", label = "Description" },
+                    }
+                    InfoPopup:AddInfo(popup, data, tagInfoFields)
+
+                    removeButton.OnClick = function() SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 }) end
+                    addButton.OnClick = function() SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data }) end
+                    addForPartyBtn.OnClick = function() SMS.AddTagForParty:SendToServer({ ID = USERID, uuid = uuid, data = data }) end
+                    removeForPartyBtn.OnClick = function() SMS.RemoveTagForParty:SendToServer({ ID = USERID, uuid = uuid }) end
                 end
-
-                local cell = row:AddCell()
-                local tagButton = cell:AddButton(shortName .. "##Tag" .. uuid)
-                local popup = cell:AddPopup("AddTag" .. uuid)
-
-                tagButton.OnClick = function()
-                    popup:Open()
-                end
-
-                local actionsTable = popup:AddTable("TagActionsTable" .. uuid, 2)
-                actionsTable.SizingFixedSame = false
-                actionsTable.NoHostExtendX = true
-
-                local row1 = actionsTable:AddRow()
-                local addButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb72", "Add") .. "##Add" .. uuid)
-                local removeButton = row1:AddCell():AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb73", "Remove") .. "##Remove" .. uuid)
-                local row2 = actionsTable:AddRow()
-                local addForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_TagTab_AddForParty", "Add for Party") .. "##AddParty" .. uuid)
-                local removeForPartyBtn = row2:AddCell():AddButton(LCL.Get("UCT_TagTab_RemoveForParty", "Remove for Party") .. "##RemoveParty" .. uuid)
-
-                local tagInfoFields = {
-                    { key = "id", label = "ID" },
-                    { key = "displayName", label = "Name" },
-                    { key = "displayDescription", label = "Description" },
-                }
-                InfoPopup:AddInfo(popup, data, tagInfoFields)
-
-                removeButton.OnClick = function()
-                    SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 })
-                end
-
-                addButton.OnClick = function()
-                    SMS.ManageTag:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, data=data })
-                end
-
-                addForPartyBtn.OnClick = function()
-                    SMS.AddTagForParty:SendToServer({ ID = USERID, uuid = uuid, data = data })
-                end
-
-                removeForPartyBtn.OnClick = function()
-                    SMS.RemoveTagForParty:SendToServer({ ID = USERID, uuid = uuid })
-                end
-
-                i = i + 1
             end
         end
-    end
+    })
 end
 
 function TagTab:GetAppliedTags()

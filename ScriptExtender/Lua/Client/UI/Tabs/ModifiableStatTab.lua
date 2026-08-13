@@ -83,48 +83,36 @@ function ModifiableStatTab:Init()
 end
 
 function ModifiableStatTab:DrawGrid()
-    local shownCount = HLP.Count(self.Items)
-    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
+    UI_Utils.CreateItemGrid(self.MainArea, self.Items, {
+        maxTableWidth = self.Config.maxTableWidth,
+        idPrefix = self.Config.statName,
+        sizingFixedSame = false,
+        renderItem = function(cell, uuid, data)
+            local icon = HLP.GetAttr(data, "icon")
+            if not icon or icon == "unknown" or icon == "" then icon = "EC_Portrait_Generic" end
+            local name = HLP.GetAttr(data, "displayName")
+            
+            if name then
+                local fullName = name
+                if HLP.Strlen(name) > 20 then name = HLP.Cut(name, 1, 20) .. "..." end
 
-    local t = self.MainArea:AddTable(self.Config.statName .. "Grid", tableWidth)
-    t.SizingFixedSame = false
-    t.NoHostExtendX = true
+                local item = cell:AddImageButton("##" .. self.Config.statName .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+                cell:AddText(name)
+                local popup = cell:AddPopup("Add" .. self.Config.statName .. uuid)
 
-    local i = 1
-    local row
+                item.OnClick = function() popup:Open() end
 
-    for uuid, data in kpairs(self.Items) do
-        if (i - 1) % self.Config.maxTableWidth == 0 then
-            row = t:AddRow()
-        end
+                if self.ParentUI == "CharacterTools" then
+                    self:_DrawCharacterActions(popup, uuid, data)
+                elseif self.ParentUI == "ItemTools" then
+                    self:_DrawItemActions(popup, uuid, data)
+                end
 
-        local icon = HLP.GetAttr(data, "icon")
-        if not icon or icon == "unknown" or icon == "" then icon = "EC_Portrait_Generic" end
-        local name = HLP.GetAttr(data, "displayName")
-        
-        if name then
-            local fullName = name
-            if HLP.Strlen(name) > 20 then name = HLP.Cut(name, 1, 20) .. "..." end
-
-            local cell = row:AddCell()
-            local item = cell:AddImageButton("##" .. self.Config.statName .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-            cell:AddText(name)
-            local popup = cell:AddPopup("Add" .. self.Config.statName .. uuid)
-
-            item.OnClick = function() popup:Open() end
-
-            if self.ParentUI == "CharacterTools" then
-                self:_DrawCharacterActions(popup, uuid, data)
-            elseif self.ParentUI == "ItemTools" then
-                self:_DrawItemActions(popup, uuid, data)
+                data.fullName = fullName
+                InfoPopup:AddInfo(popup, data, self.Config.infoFields)
             end
-
-            data.fullName = fullName
-            InfoPopup:AddInfo(popup, data, self.Config.infoFields)
-
-            i = i + 1
         end
-    end
+    })
 end
 
 function ModifiableStatTab:_DrawCharacterActions(popup, uuid, data)

@@ -65,57 +65,41 @@ function NPCTab:Init()
 end
 
 function NPCTab:DrawGrid()
-    local shownCount = HLP.Count(self.Items)
-    local tableWidth = math.min(shownCount, self.Config.maxTableWidth)
+    UI_Utils.CreateItemGrid(self.MainArea, self.Items, {
+        maxTableWidth = self.Config.maxTableWidth,
+        idPrefix = "NPC",
+        sizingFixedSame = true,
+        renderItem = function(cell, uuid, data)
+            local icon = "EC_Portrait_Generic"
+            local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
 
-    local t = self.MainArea:AddTable("NPCGrid", tableWidth)
-    t.SizingFixedSame = true
-    t.NoHostExtendX = true
+            if fullName then
+                local name = fullName
+                if HLP.Strlen(name) > 20 then
+                    name = HLP.Cut(name, 1, 20) .. "..."
+                end
 
-    local i = 1
-    local row
+                local npcItem = cell:AddImageButton("##NPC" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
+                cell:AddText(name)
+                local popup = cell:AddPopup("AddItem" .. uuid)
 
-    for uuid,data in kpairs(self.Items) do
-        if (i - 1) % self.Config.maxTableWidth == 0 then
-            row = t:AddRow()
+                npcItem.OnClick = function() popup:Open() end
+
+                local selectNPC = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. "##" .. uuid)
+
+                data.fullName = fullName
+                local npcInfoFields = {
+                    { key = "id", label = "ID" },
+                    { key = "fullName", label = "Name" },
+                }
+                InfoPopup:AddInfo(popup, data, npcInfoFields)
+
+                selectNPC.OnClick = function()
+                    SMS.SpawnCharacter:SendToServer({ ID = USERID, uuid=uuid, amount=1, data=data })
+                end
+            end
         end
-        
-        local icon = "EC_Portrait_Generic"
-        local fullName = LCL.PreprocessXML(HLP.GetAttr(data, "displayName"))
-
-        if not fullName then goto continue end
-
-        local name = fullName
-        if HLP.Strlen(name) > 20 then
-            name = HLP.Cut(name, 1, 20) .. "..."
-        end
-
-        local cell = row:AddCell()
-        local npcItem = cell:AddImageButton("##NPC" .. uuid, icon, {100*ViewPortScale, 100*ViewPortScale})
-        cell:AddText(name)
-        local popup = cell:AddPopup("AddItem" .. uuid)
-
-        npcItem.OnClick = function()
-            popup:Open()
-        end
-
-        local selectNPC = popup:AddButton(LCL.Get("hb1787db13e1747e681ca4bad56e73bb75", "Spawn") .. "##" .. uuid)
-
-        data.fullName = fullName
-        local npcInfoFields = {
-            { key = "id", label = "ID" },
-            { key = "fullName", label = "Name" },
-        }
-        InfoPopup:AddInfo(popup, data, npcInfoFields)
-
-        selectNPC.OnClick = function()
-            SMS.SpawnCharacter:SendToServer({ ID = USERID, uuid=uuid, amount=1, data=data })
-        end
-
-        i = i + 1
-
-        ::continue::
-    end
+    })
 end
 
 function NPCTab:GetSpawnedNPCs()

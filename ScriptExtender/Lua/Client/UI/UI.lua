@@ -30,6 +30,38 @@ function UI_Utils.DestroyChildren(obj)
     end
 end
 
+--- Creates a generic grid of items from a data table.
+---@param parent ExtuiGroup The parent UI element to draw into.
+---@param items table The data to display, keyed by a unique ID.
+---@param config table Configuration for the grid.
+function UI_Utils.CreateItemGrid(parent, items, config)
+    local shownCount = HLP.Count(items)
+    if shownCount == 0 then
+        return
+    end
+
+    local maxTableWidth = config.maxTableWidth or 5
+    local tableWidth = math.min(shownCount, maxTableWidth)
+
+    local t = parent:AddTable((config.idPrefix or "Generic") .. "Grid", tableWidth)
+    t.SizingFixedSame = config.sizingFixedSame or false
+    t.NoHostExtendX = true
+
+    local i = 1
+    local row
+
+    for uuid, data in kpairs(items) do
+        if (i - 1) % maxTableWidth == 0 then
+            row = t:AddRow()
+        end
+
+        local cell = row:AddCell()
+        config.renderItem(cell, uuid, data)
+
+        i = i + 1
+    end
+end
+
 function UI_Utils.CenterObjectH(parent, objDef)
     if not objDef or not parent then return end
 
