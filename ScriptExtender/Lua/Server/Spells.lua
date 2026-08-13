@@ -62,8 +62,15 @@ function SPLL._Manage(character, uuid, data, ability, unlearn)
     if unlearn then
         local spellData = mods[character].spells[uuid]
         if spellData then
-            local boostString = string.format("UnlockSpell(%s,%s,%s,,%s)", spellData.spellName, spellData.learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", spellData.castingAbility)
-            Osi.RemoveBoosts(character, boostString, 1, "", "")
+            local boostStringToRemove = spellData.boostString
+            if not boostStringToRemove and spellData.spellName and spellData.learningStrategy and spellData.castingAbility then
+                -- Fallback for data from older versions that didn't store the boostString directly
+                boostStringToRemove = string.format("UnlockSpell(%s,%s,%s,,%s)", spellData.spellName, spellData.learningStrategy, "d136c5d9-0ff0-43da-acce-a74a07f8d6bf", spellData.castingAbility)
+            end
+
+            if boostStringToRemove then
+                Osi.RemoveBoosts(character, boostStringToRemove, 1, "", "")
+            end
             mods[character].spells[uuid] = nil
         end
     else
@@ -74,7 +81,8 @@ function SPLL._Manage(character, uuid, data, ability, unlearn)
             spellName = uuid,
             learningStrategy = learningStrategy,
             castingAbility = ability,
-            data = data
+            data = data,
+            boostString = boostString
         }
     end
     Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications = mods

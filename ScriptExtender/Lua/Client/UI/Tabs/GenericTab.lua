@@ -13,6 +13,23 @@ function GenericTab:New(holder)
     return instance
 end
 
+---@param resourcesTable ExtuiTable
+---@param labelHandle string
+---@param labelFallback string
+---@param amounts table
+---@param idPrefix string
+---@param smsEvent ExtNet.Channel
+---@param buttonTextFormat? string
+local function _CreateResourceRow(resourcesTable, labelHandle, labelFallback, amounts, idPrefix, smsEvent, buttonTextFormat)
+    buttonTextFormat = buttonTextFormat or "Add %s"
+    local row = resourcesTable:AddRow()
+    row:AddCell():AddText(LCL.Get(labelHandle, labelFallback))
+    for _, amount in ipairs(amounts) do
+        local btn = row:AddCell():AddButton(string.format(buttonTextFormat, tostring(amount)) .. "##" .. idPrefix .. tostring(amount))
+        btn.OnClick = function() smsEvent:SendToServer({ character = UIState.SelectedCharacter, Amount = amount }) end
+    end
+end
+
 function GenericTab:Init()
     -- Character Actions
     local actionsGroup = self.Tab:AddGroup("CharacterActions")
@@ -55,53 +72,11 @@ function GenericTab:Init()
     local resourcesTable = resourcesGroup:AddTable("ResourcesTable", 5)
     resourcesTable.NoHostExtendX = true
 
-    -- Gold Row
-    local goldRow = resourcesTable:AddRow()
-    goldRow:AddCell():AddText(LCL.Get("UCT_GenericTab_AddGold", "Add Gold:"))
-    local goldAmounts = {1000, 10000, 50000, 100000}
-    for _, amount in ipairs(goldAmounts) do
-        local btn = goldRow:AddCell():AddButton("Add " .. amount .. "##Gold" .. tostring(amount))
-        btn.OnClick = function()
-            local charUUID = UIState.SelectedCharacter
-            SMS.AddGold:SendToServer({ character = charUUID, Amount = amount })
-        end
-    end
-
-    -- Experience Row
-    local expRow = resourcesTable:AddRow()
-    expRow:AddCell():AddText(LCL.Get("UCT_GenericTab_AddExperience", "Add Experience:"))
-    local expAmounts = {1000, 10000, 50000, 100000}
-    for _, amount in ipairs(expAmounts) do
-        local btn = expRow:AddCell():AddButton("Add " .. amount .. " XP##XP" .. tostring(amount))
-        btn.OnClick = function()
-            local charUUID = UIState.SelectedCharacter
-            SMS.AddExperience:SendToServer({ character = charUUID, Amount = amount })
-        end
-    end
-
-    -- Inspiration Row
-    local inspirationRow = resourcesTable:AddRow()
-    inspirationRow:AddCell():AddText(LCL.Get("UCT_GenericTab_AddInspiration", "Add Inspiration:"))
-    local inspirationAmounts = {1, 2, 3, 4}
-    for _, amount in ipairs(inspirationAmounts) do
-        local btn = inspirationRow:AddCell():AddButton("Add " .. amount .. "##Inspiration" .. tostring(amount))
-        btn.OnClick = function()
-            local charUUID = UIState.SelectedCharacter
-            SMS.AddInspiration:SendToServer({ character = charUUID, Amount = amount })
-        end
-    end
-
-    -- Tadpoles Row
-    local tadpoleRow = resourcesTable:AddRow()
-    tadpoleRow:AddCell():AddText(LCL.Get("UCT_GenericTab_AddTadpoles", "Add Tadpoles:"))
-    local tadpoleAmounts = {1, 5, 10, 25}
-    for _, amount in ipairs(tadpoleAmounts) do
-        local btn = tadpoleRow:AddCell():AddButton("Add " .. amount .. "##Tadpole" .. tostring(amount))
-        btn.OnClick = function()
-            local charUUID = UIState.SelectedCharacter
-            SMS.AddTadpoles:SendToServer({ character = charUUID, Amount = amount })
-        end
-    end
+    _CreateResourceRow(resourcesTable, "UCT_GenericTab_AddGold", "Add Gold:", {1000, 10000, 50000, 100000}, "Gold", SMS.AddGold)
+    _CreateResourceRow(resourcesTable, "UCT_GenericTab_AddExperience", "Add Experience:", {1000, 10000, 50000, 100000}, "XP", SMS.AddExperience, "Add %s XP")
+    _CreateResourceRow(resourcesTable, "UCT_GenericTab_AddInspiration", "Add Inspiration:", {1, 2, 3, 4}, "Inspiration", SMS.AddInspiration)
+    _CreateResourceRow(resourcesTable, "UCT_GenericTab_AddTadpoles", "Add Tadpoles:", {1, 5, 10, 25}, "Tadpole", SMS.AddTadpoles)
+    
     self.Tab:AddSeparator()
 end
 

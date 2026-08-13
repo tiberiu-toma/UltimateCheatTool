@@ -57,139 +57,20 @@ function PASSV.Add(character, passiveId, remove)
 end
 
 function PASSV.AddOnItem(itemInstanceUUID, templateUUID, passiveId)
-    local item = Ext.Entity.Get(itemInstanceUUID)
-    if not item then return end
-
-    local originalStatsName = Ext.Template.GetTemplate(templateUUID).Stats
-    local originalStats = Ext.Stats.Get(originalStatsName)
-    if not originalStats then return end
-
-    -- Create a unique stats object name for this specific item instance
-    local instanceStatsName = originalStatsName .. "_UCT_" .. itemInstanceUUID
-    local instanceStats = Ext.Stats.Get(instanceStatsName)
-
-    local modifiedEquipment = Ext.Vars.GetModVariables(ModuleUUID).ModifiedEquipment or {}
-    local itemModEntry = modifiedEquipment[itemInstanceUUID]
-
-    -- If a custom stats object exists, check if its PassivesOnEquip/StatusOnEquip need to be cleared.
-    -- This prevents stale data from previous save sessions from reappearing.
-    if instanceStats then
-        -- Clear PassivesOnEquip if no equip passives are tracked for this item in the current save
-        if not itemModEntry or not itemModEntry.passives or HLP.Count(itemModEntry.passives) == 0 then
-            instanceStats.PassivesOnEquip = ""
-        end
-        -- Clear StatusOnEquip if no equip statuses are tracked for this item in the current save
-        if not itemModEntry or not itemModEntry.statuses or HLP.Count(itemModEntry.statuses) == 0 then
-            instanceStats.StatusOnEquip = ""
-        end
-    end
-    
-    -- If it doesn't exist, create it by copying the original
-    if not instanceStats then
-        instanceStats = Ext.Stats.Create(instanceStatsName, originalStats.ModifierList, originalStatsName)
-        if not instanceStats then return end -- Creation failed
-    end
-
-    -- Add the new passive
-    local passivesOnEquip = HLP.GetAttr(instanceStats, "PassivesOnEquip") or ""
-    if string.find(passivesOnEquip, passiveId, 1, true) then
-        return -- Passive already applied, do nothing.
-    end
-
-    passivesOnEquip = (passivesOnEquip == "" and passiveId) or (passivesOnEquip .. ";" .. passiveId)
-    instanceStats.PassivesOnEquip = passivesOnEquip
-    instanceStats:Sync()
-
-    -- Apply the new stats object to the item instance and refresh it
-    if item.Data.StatsId ~= instanceStatsName then
-        item.Data.StatsId = instanceStatsName
-        item:Replicate("Data")
-    end
-
-    HLP.RefreshEquippedItem(nil, templateUUID)
+    HLP.ManageStatOnItem(itemInstanceUUID, templateUUID, passiveId, "PassivesOnEquip", "StatusOnEquip", false)
 end
 
 function PASSV.RemoveFromItem(itemInstanceUUID, templateUUID, passiveId)
-    local item = Ext.Entity.Get(itemInstanceUUID)
-    if not item then return end
-
-    local originalStatsName = Ext.Template.GetTemplate(templateUUID).Stats
-    local instanceStatsName = originalStatsName .. "_UCT_" .. itemInstanceUUID
-    local instanceStats = Ext.Stats.Get(instanceStatsName)
-
-    if not instanceStats then return end
-
-    local passivesOnEquip = HLP.GetAttr(instanceStats, "PassivesOnEquip") or ""
-    if not string.find(passivesOnEquip, passiveId, 1, true) then
-        return -- Passive not found on this item
-    end
-
-    -- Remove the passive from the list
-    local items = {}
-    for p in string.gmatch(passivesOnEquip, "([^;]+)") do
-        if p ~= passiveId then
-            table.insert(items, p)
-        end
-    end
-    instanceStats.PassivesOnEquip = table.concat(items, ";")
-
-    -- Check if this was the last modification. If so, revert to original stats.
-    local statusesOnEquip = HLP.GetAttr(instanceStats, "StatusOnEquip") or ""
-    if instanceStats.PassivesOnEquip == "" and statusesOnEquip == "" then
-        item.Data.StatsId = originalStatsName
-    end
-
-    instanceStats:Sync()
-    item:Replicate("Data")
-    HLP.RefreshEquippedItem(nil, templateUUID)
+    HLP.ManageStatOnItem(itemInstanceUUID, templateUUID, passiveId, "PassivesOnEquip", "StatusOnEquip", true)
 end
 
 function PASSV.Manage(payload)
-    local uuid = payload.uuid
-    local data = payload.data
-    local character = payload.character
     local remove = HLP.GetAttr(payload, "remove")
-
-    if not character then return end
-    
-    PASSV.Add(character, uuid, remove)
-
-    local passives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
-    if not passives[character] then passives[character] = {} end
-
-    if remove then
-        passives[character][uuid] = nil
-    else
-        passives[character][uuid] = data
-    end
-    
-    Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
+    HLP.ManageCharacterStat(payload, remove, "AddedPassives", PASSV.Add, Osi.RemovePassive, "Passive")
 end
 
 function PASSV.ManageForParty(payload, remove)
-    local uuid = payload.uuid
-    local data = payload.data
-
-    local partyMembers = PARTY.GetMembers()
-    if not partyMembers or #partyMembers == 0 then return end
-
-    local passives = Ext.Vars.GetModVariables(ModuleUUID).AddedPassives or {}
-
-    for _, member in ipairs(partyMembers) do
-        local charUUID = member.uuid
-        PASSV.Add(charUUID, uuid, remove)
-        if not passives[charUUID] then passives[charUUID] = {} end
-        
-        if remove then
-            passives[charUUID][uuid] = nil
-        else
-            passives[charUUID][uuid] = data
-        end
-    end
-
-    Ext.Vars.GetModVariables(ModuleUUID).AddedPassives = passives
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Passive" }, payload.ID)
+    HLP.ManageCharacterStatForParty(payload, remove, "AddedPassives", PASSV.Add, Osi.RemovePassive, "Passive")
 end
 
 function PASSV.ManageOnItem(payload, remove)

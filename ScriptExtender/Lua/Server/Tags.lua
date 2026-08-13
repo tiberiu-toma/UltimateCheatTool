@@ -39,50 +39,10 @@ function TAGS.Clear(character, tagId)
 end
 
 function TAGS.Manage(payload)
-    local tagId = payload.uuid
-    local data = payload.data
-    local character = payload.character
     local remove = HLP.GetAttr(payload, "remove")
-
-    if not character then return end
-
-    local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
-    if not tags[character] then tags[character] = {} end
-
-    if remove then
-        TAGS.Clear(character, tagId)
-        tags[character][tagId] = nil
-    else
-        TAGS.Set(character, tagId)
-        tags[character][tagId] = data
-    end
-    
-    Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Tag" }, payload.ID)
+    HLP.ManageCharacterStat(payload, remove, "AppliedTags", TAGS.Set, TAGS.Clear, "Tag")
 end
 
 function TAGS.ManageForParty(payload, remove)
-    local tagId = payload.uuid
-    local data = payload.data
-
-    local partyMembers = PARTY.GetMembers()
-    if not partyMembers or #partyMembers == 0 then return end
-
-    local tags = Ext.Vars.GetModVariables(ModuleUUID).AppliedTags or {}
-
-    for _, member in ipairs(partyMembers) do
-        local charUUID = member.uuid
-        if not tags[charUUID] then tags[charUUID] = {} end
-        
-        if remove then
-            TAGS.Clear(charUUID, tagId)
-            tags[charUUID][tagId] = nil
-        else
-            TAGS.Set(charUUID, tagId)
-            tags[charUUID][tagId] = data
-        end
-    end
-
-    Ext.Vars.GetModVariables(ModuleUUID).AppliedTags = tags
-    HLP.ToClientDelayed(SMS.UIRefresh, { tab = "Tag" }, payload.ID)
+    HLP.ManageCharacterStatForParty(payload, remove, "AppliedTags", TAGS.Set, TAGS.Clear, "Tag")
 end
