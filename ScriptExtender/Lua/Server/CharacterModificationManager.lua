@@ -53,12 +53,21 @@ function CharacterModificationManager:ReapplyAll()
                         table.insert(spellBoosts, spellData.boostString)
                     end
                 end
-                -- Remove all first to prevent issues, then re-add.
-                for _, boostString in ipairs(spellBoosts) do
-                    Osi.RemoveBoosts(charUUID, boostString, 1, "", "")
-                end
-                for _, boostString in ipairs(spellBoosts) do
-                    Osi.AddBoosts(charUUID, boostString, "", "")
+                -- Remove all first to prevent issues, then re-add after a delay.
+                if #spellBoosts > 0 then
+                    for _, boostString in ipairs(spellBoosts) do
+                        Osi.RemoveBoosts(charUUID, boostString, 1, "", "")
+                    end
+
+                    local ticks = 0
+                    local e
+                    e = Ext.Events.Tick:Subscribe(function()
+                        ticks = ticks + 1
+                        if ticks >= 5 then -- Wait a few ticks
+                            for _, boostString in ipairs(spellBoosts) do Osi.AddBoosts(charUUID, boostString, "", "") end
+                            Ext.Events.Tick:Unsubscribe(e)
+                        end
+                    end)
                 end
 			end
 
