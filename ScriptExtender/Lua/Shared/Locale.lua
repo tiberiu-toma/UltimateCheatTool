@@ -51,6 +51,7 @@ LocaleText = {
 	UCT_SkillTab_Label = "Skills",
 	UCT_WaypointTab_Label = "Waypoints",
 	UCT_DamageTab_Label = "Damage",
+	UCT_ProficiencyTab_Label = "Proficiency",
 
 	-- Search Labels
 	UCT_SearchEquipment_Label = "Search Equipment:",
