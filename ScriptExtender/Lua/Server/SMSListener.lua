@@ -52,6 +52,10 @@ SMS.ManageAbility:SetHandler(function(payload) ABIL.Manage(payload) end)
 SMS.ManageSkill:SetHandler(function(payload) SKL.Manage(payload) end)
 SMS.ClearAllSkillBoosts:SetHandler(function(payload) SKL.ClearAllBoosts(payload) end)
 
+-- Proficiencies
+SMS.ManageProficiency:SetHandler(function(payload) PROF.Manage(payload) end)
+SMS.ClearAllProficiencyBoosts:SetHandler(function(payload) PROF.ClearAllBoosts(payload) end)
+
 -- Passives
 SMS.AddPassive:SetHandler(function(payload) PASSV.Manage(payload) end)
 SMS.AddPassiveForParty:SetHandler(function(payload) PASSV.ManageForParty(payload) end)

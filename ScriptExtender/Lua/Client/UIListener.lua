@@ -132,6 +132,9 @@ local refreshHandlers = {
     Skill = function()
         if CharacterTools and CharacterTools.SkillsTab and CharacterTools.SkillsTab.Tab.Visible then CharacterTools.SkillsTab:Draw() end
     end,
+    Proficiency = function()
+        if CharacterTools and CharacterTools.ProficiencyTab and CharacterTools.ProficiencyTab.Tab.Visible then CharacterTools.ProficiencyTab:Draw() end
+    end,
     Damage = function()
         if ItemTools and ItemTools.DamageTab and ItemTools.DamageTab.Tab.Visible then ItemTools.DamageTab:GetAddedDamage() end
     end,
