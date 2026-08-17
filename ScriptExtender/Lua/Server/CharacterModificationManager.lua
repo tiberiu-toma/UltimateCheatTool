@@ -79,7 +79,8 @@ function CharacterModificationManager:ReapplyAll()
 			end
 
 			-- Re-apply resources
-            ReapplyStackingBoosts(charUUID, modifications.resources)
+            -- Commented out as it is not necessary anymore, and it was causing a bug
+            --ReapplyStackingBoosts(charUUID, modifications.resources)
 
 			-- Re-apply abilities
             ReapplyStackingBoosts(charUUID, modifications.abilities)
