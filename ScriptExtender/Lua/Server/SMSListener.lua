@@ -56,6 +56,10 @@ SMS.ClearAllSkillBoosts:SetHandler(function(payload) SKL.ClearAllBoosts(payload)
 SMS.ManageProficiency:SetHandler(function(payload) PROF.Manage(payload) end)
 SMS.ClearAllProficiencyBoosts:SetHandler(function(payload) PROF.ClearAllBoosts(payload) end)
 
+-- Resistances
+SMS.ManageResistance:SetHandler(function(payload) RES.Manage(payload) end)
+SMS.ClearAllResistanceBoosts:SetHandler(function(payload) RES.ClearAllBoosts(payload) end)
+
 -- Passives
 SMS.AddPassive:SetHandler(function(payload) PASSV.Manage(payload) end)
 SMS.AddPassiveForParty:SetHandler(function(payload) PASSV.ManageForParty(payload) end)
