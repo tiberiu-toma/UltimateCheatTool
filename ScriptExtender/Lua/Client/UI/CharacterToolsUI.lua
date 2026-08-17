@@ -10,6 +10,7 @@ local AbilityTab = Ext.Require("Client/UI/Tabs/AbilityTab.lua")
 local SkillsTab = Ext.Require("Client/UI/Tabs/SkillsTab.lua")
 local TagTab = Ext.Require("Client/UI/Tabs/TagTab.lua")
 local ProficiencyTab = Ext.Require("Client/UI/Tabs/ProficiencyTab.lua")
+local ResistanceTab = Ext.Require("Client/UI/Tabs/ResistanceTab.lua")
 local RecruitTab = Ext.Require("Client/UI/Tabs/RecruitTab.lua")
 --local ResetTab = Ext.Require("Client/UI/Tabs/ResetTab.lua")
 
@@ -28,6 +29,7 @@ local RecruitTab = Ext.Require("Client/UI/Tabs/RecruitTab.lua")
 ---@field AbilityTab AbilityTab
 ---@field SkillsTab SkillsTab
 ---@field ProficiencyTab ProficiencyTab
+---@field ResistanceTab ResistanceTab
 ---@field PassiveTab PassiveTab
 ---@field StatusTab StatusTab
 -----@field ResetTab ResetTab
@@ -71,6 +73,7 @@ function CharacterToolsUI:Initialize()
         if self.AbilityTab and self.AbilityTab.Tab.Visible then self.AbilityTab:FetchAbilities(true) end
         if self.SkillsTab and self.SkillsTab.Tab.Visible then self.SkillsTab:Draw() end
         if self.ProficiencyTab and self.ProficiencyTab.Tab.Visible then self.ProficiencyTab:Draw() end
+        if self.ResistanceTab and self.ResistanceTab.Tab.Visible then self.ResistanceTab:Draw() end
     end)
 
     self.TabBar = self.Window:AddTabBar("UCT_CharacterTabBar")
@@ -84,6 +87,7 @@ function CharacterToolsUI:Initialize()
     self.SkillsTab = SkillsTab:New(self.TabBar)
     self.TagTab = TagTab:New(self.TabBar)
     self.ProficiencyTab = ProficiencyTab:New(self.TabBar)
+    self.ResistanceTab = ResistanceTab:New(self.TabBar)
     self.RecruitTab = RecruitTab:New(self.TabBar)
     --self.ResetTab = ResetTab:New(self.TabBar)
 
@@ -96,6 +100,7 @@ function CharacterToolsUI:Initialize()
     self.SkillsTab:Init()
     self.TagTab:Init()
     self.ProficiencyTab:Init()
+    self.ResistanceTab:Init()
     self.RecruitTab:Init()
     --self.ResetTab:Init()
 

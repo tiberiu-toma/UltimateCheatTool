@@ -90,6 +90,9 @@ function CharacterModificationManager:ReapplyAll()
 
 			-- Re-apply proficiencies
             ReapplyStackingBoosts(charUUID, modifications.proficiencies)
+
+			-- Re-apply resistances
+            ReapplyStackingBoosts(charUUID, modifications.resistances)
 		end
 	end
 
