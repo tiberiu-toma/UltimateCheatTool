@@ -46,7 +46,10 @@ function CharacterModificationManager:ReapplyAll()
 	if modifiedCharacters and HLP.Count(modifiedCharacters) > 0 then
 		for charUUID, modifications in pairs(modifiedCharacters) do
 			-- Re-apply spells
-			if modifications.spells then
+			if modifications.spells and HLP.Count(modifications.spells) > 0 then
+                -- Save the hotbar before we mess with the spells
+                HotbarManager.Save(charUUID)
+
                 local spellBoosts = {}
                 for _, spellData in pairs(modifications.spells) do
                     if spellData.boostString then
@@ -64,7 +67,11 @@ function CharacterModificationManager:ReapplyAll()
                     e = Ext.Events.Tick:Subscribe(function()
                         ticks = ticks + 1
                         if ticks >= 5 then -- Wait a few ticks
-                            for _, boostString in ipairs(spellBoosts) do Osi.AddBoosts(charUUID, boostString, "", "") end
+                            for _, boostString in ipairs(spellBoosts) do 
+                                Osi.AddBoosts(charUUID, boostString, "", "") 
+                            end
+                            -- Schedule the hotbar to be restored
+                            HotbarManager.Restore(charUUID)
                             Ext.Events.Tick:Unsubscribe(e)
                         end
                     end)
