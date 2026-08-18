@@ -66,6 +66,10 @@ SMS.ClearAllResistanceBoosts:SetHandler(function(payload) RES.ClearAllBoosts(pay
 SMS.ManageReaction:SetHandler(function(payload) REACT.Manage(payload) end)
 SMS.ClearAllReactionBoosts:SetHandler(function(payload) REACT.ClearAllBoosts(payload) end)
 
+-- Character Buffs
+SMS.ManageCharacterBuff:SetHandler(function(payload) CBF.Manage(payload) end)
+SMS.ClearAllCharacterBuffs:SetHandler(function(payload) CBF.ClearAllBoosts(payload) end)
+
 -- Passives
 SMS.AddPassive:SetHandler(function(payload) PASSV.Manage(payload) end)
 SMS.AddPassiveForParty:SetHandler(function(payload) PASSV.ManageForParty(payload) end)

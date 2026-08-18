@@ -152,6 +152,9 @@ local refreshHandlers = {
     Resistance = function()
         if CharacterTools and CharacterTools.ResistanceTab and CharacterTools.ResistanceTab.Tab.Visible then CharacterTools.ResistanceTab:Draw() end
     end,
+    CharacterBuffs = function()
+        if CharacterTools and CharacterTools.CharacterBuffsTab and CharacterTools.CharacterBuffsTab.Tab.Visible then CharacterTools.CharacterBuffsTab:Draw() end
+    end,
     Reaction = function()
         if CharacterTools and CharacterTools.ReactionTab and CharacterTools.ReactionTab.Tab.Visible then CharacterTools.ReactionTab:GetLearnedReactions() end
     end,

@@ -55,6 +55,7 @@ LocaleText = {
 	UCT_ResistanceTab_Label = "Resistances",
 	UCT_OtherItemTab_Label = "Other Items",
 	UCT_ReactionTab_Label = "Reactions",
+	UCT_CharacterBuffsTab_Label = "Buffs",
 
 	-- Search Labels
 	UCT_SearchEquipment_Label = "Search Equipment:",
