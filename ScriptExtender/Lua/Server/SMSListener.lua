@@ -31,6 +31,7 @@ SMS.FetchWaypoints:SetHandler(CreateFetchHandler(TELP, SMS.SendWaypoints))
 SMS.FetchConsumables:SetHandler(CreateFetchHandler(CONS, SMS.SendConsumables))
 SMS.FetchPassives:SetHandler(CreateFetchHandler(PASSV, SMS.SendPassives))
 SMS.FetchStatuses:SetHandler(CreateFetchHandler(STAT, SMS.SendStatuses))
+SMS.FetchOtherItems:SetHandler(CreateFetchHandler(OITM, SMS.SendOtherItems))
 SMS.FetchTags:SetHandler(CreateFetchHandler(TAGS, SMS.SendTags))
 
 -- Spells
@@ -180,6 +181,23 @@ SMS.FetchConsumableModNames:SetHandler(function(payload)
         { data = modNames },
         payload.ID
     )
+end)
+
+SMS.FetchOtherItemModNames:SetHandler(function(payload)
+    local itemData = Ext.Template.GetAllRootTemplates()
+    local extractor = function(template)
+        if HLP.GetAttr(template, "TemplateType") == "item" and not EKP.IsEquipable(template) and not CONS.IsConsumable(template) then
+            local stats = Ext.Stats.Get(template.Stats)
+            if stats then
+                local modId = HLP.GetAttr(stats, "ModId")
+                local mod = Ext.Mod.GetMod(modId)
+                return mod and mod.Info and mod.Info.Name or "Unknown"
+            end
+        end
+        return nil
+    end
+    local modNames = FLTR.GetModNames(itemData, extractor)
+    HLP.ToClient(SMS.SendOtherItemModNames, { data = modNames }, payload.ID)
 end)
 
 local function CreateStatsModNameFetchHandler(statsType, sendMessage)
