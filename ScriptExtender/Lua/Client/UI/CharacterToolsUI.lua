@@ -12,6 +12,7 @@ local TagTab = Ext.Require("Client/UI/Tabs/TagTab.lua")
 local ProficiencyTab = Ext.Require("Client/UI/Tabs/ProficiencyTab.lua")
 local ResistanceTab = Ext.Require("Client/UI/Tabs/ResistanceTab.lua")
 local ReactionTab = Ext.Require("Client/UI/Tabs/ReactionTab.lua")
+local CharacterBuffsTab = Ext.Require("Client/UI/Tabs/CharacterBuffsTab.lua")
 local RecruitTab = Ext.Require("Client/UI/Tabs/RecruitTab.lua")
 --local ResetTab = Ext.Require("Client/UI/Tabs/ResetTab.lua")
 
@@ -31,6 +32,7 @@ local RecruitTab = Ext.Require("Client/UI/Tabs/RecruitTab.lua")
 ---@field SkillsTab SkillsTab
 ---@field ProficiencyTab ProficiencyTab
 ---@field ResistanceTab ResistanceTab
+---@field CharacterBuffsTab CharacterBuffsTab
 ---@field ReactionTab ReactionTab
 ---@field PassiveTab PassiveTab
 ---@field StatusTab StatusTab
@@ -76,6 +78,7 @@ function CharacterToolsUI:Initialize()
         if self.SkillsTab and self.SkillsTab.Tab.Visible then self.SkillsTab:Draw() end
         if self.ProficiencyTab and self.ProficiencyTab.Tab.Visible then self.ProficiencyTab:Draw() end
         if self.ResistanceTab and self.ResistanceTab.Tab.Visible then self.ResistanceTab:Draw() end
+        if self.CharacterBuffsTab and self.CharacterBuffsTab.Tab.Visible then self.CharacterBuffsTab:Draw() end
         if self.ReactionTab and self.ReactionTab.Tab.Visible then self.ReactionTab:GetLearnedReactions() end
     end)
 
@@ -92,6 +95,7 @@ function CharacterToolsUI:Initialize()
     self.TagTab = TagTab:New(self.TabBar)
     self.ProficiencyTab = ProficiencyTab:New(self.TabBar)
     self.ResistanceTab = ResistanceTab:New(self.TabBar)
+    self.CharacterBuffsTab = CharacterBuffsTab:New(self.TabBar)
     self.RecruitTab = RecruitTab:New(self.TabBar)
     --self.ResetTab = ResetTab:New(self.TabBar)
 
@@ -106,6 +110,7 @@ function CharacterToolsUI:Initialize()
     self.TagTab:Init()
     self.ProficiencyTab:Init()
     self.ResistanceTab:Init()
+    self.CharacterBuffsTab:Init()
     self.RecruitTab:Init()
     --self.ResetTab:Init()
 
