@@ -4,6 +4,7 @@ local EquipmentSelector = Ext.Require("Client/UI/Components/EquipmentSelector.lu
 local EquipmentTab = Ext.Require("Client/UI/Tabs/EquipmentTab.lua")
 local ConsumableTab = Ext.Require("Client/UI/Tabs/ConsumableTab.lua")
 local PassiveTab = Ext.Require("Client/UI/Tabs/PassiveTab.lua")
+local OtherItemTab = Ext.Require("Client/UI/Tabs/OtherItemTab.lua")
 local StatusTab = Ext.Require("Client/UI/Tabs/StatusTab.lua")
 local DamageTab = Ext.Require("Client/UI/Tabs/DamageTab.lua")
 
@@ -16,6 +17,7 @@ local DamageTab = Ext.Require("Client/UI/Tabs/DamageTab.lua")
 ---@field TabBar ExtuiTabBar
 ---@field EquipmentTab EquipmentTab
 ---@field ConsumableTab ConsumableTab
+---@field OtherItemTab OtherItemTab
 ---@field PassiveTab PassiveTab
 ---@field StatusTab StatusTab
 ---@field DamageTab DamageTab
@@ -89,12 +91,14 @@ function ItemToolsUI:Initialize()
 
     self.EquipmentTab = EquipmentTab:New(self.TabBar)
     self.ConsumableTab = ConsumableTab:New(self.TabBar)
+    self.OtherItemTab = OtherItemTab:New(self.TabBar)
     self.DamageTab = DamageTab:New(self.TabBar)
     self.PassiveTab = PassiveTab:New(self.TabBar, "ItemTools") -- Add PassiveTab to ItemTools
     self.StatusTab = StatusTab:New(self.TabBar, "ItemTools") -- Add StatusTab to ItemTools
 
     self.EquipmentTab:Init()
     self.ConsumableTab:Init()
+    self.OtherItemTab:Init()
     self.DamageTab:Init()
     self.PassiveTab:Init() -- Initialize ItemTools' PassiveTab
     self.StatusTab:Init() -- Initialize ItemTools' StatusTab

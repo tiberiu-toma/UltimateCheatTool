@@ -17,6 +17,7 @@ SMS.SendTags:SetHandler(CreateDataHandler(function() return CharacterTools and C
 SMS.SendResources:SetHandler(CreateDataHandler(function() return CharacterTools and CharacterTools.ResourceTab end))
 SMS.SendConsumables:SetHandler(CreateDataHandler(function() return ItemTools and ItemTools.ConsumableTab end))
 SMS.SendWaypoints:SetHandler(CreateDataHandler(function() return MiscTools and MiscTools.WaypointTab end))
+SMS.SendOtherItems:SetHandler(CreateDataHandler(function() return ItemTools and ItemTools.OtherItemTab end))
 
 -- Handlers for tabs that exist in multiple UI contexts
 SMS.SendPassives:SetHandler(function (payload)
@@ -63,6 +64,12 @@ SMS.SendStatusModNames:SetHandler(function (payload)
     end
     if ItemTools and ItemTools.StatusTab and ItemTools.StatusTab.FilterComponent then
         ItemTools.StatusTab.FilterComponent:SetModNameOptions(payload.data)
+    end
+end)
+
+SMS.SendOtherItemModNames:SetHandler(function (payload)
+    if ItemTools and ItemTools.OtherItemTab and ItemTools.OtherItemTab.FilterComponent then
+        ItemTools.OtherItemTab.FilterComponent:SetModNameOptions(payload.data)
     end
 end)
 
