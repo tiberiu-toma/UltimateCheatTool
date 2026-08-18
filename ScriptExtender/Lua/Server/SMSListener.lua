@@ -33,6 +33,7 @@ SMS.FetchPassives:SetHandler(CreateFetchHandler(PASSV, SMS.SendPassives))
 SMS.FetchStatuses:SetHandler(CreateFetchHandler(STAT, SMS.SendStatuses))
 SMS.FetchOtherItems:SetHandler(CreateFetchHandler(OITM, SMS.SendOtherItems))
 SMS.FetchTags:SetHandler(CreateFetchHandler(TAGS, SMS.SendTags))
+SMS.FetchReactions:SetHandler(CreateFetchHandler(REACT, SMS.SendReactions))
 
 -- Spells
 SMS.LearnSpell:SetHandler(function(payload) SPLL.Manage(payload) end)
@@ -60,6 +61,10 @@ SMS.ClearAllProficiencyBoosts:SetHandler(function(payload) PROF.ClearAllBoosts(p
 -- Resistances
 SMS.ManageResistance:SetHandler(function(payload) RES.Manage(payload) end)
 SMS.ClearAllResistanceBoosts:SetHandler(function(payload) RES.ClearAllBoosts(payload) end)
+
+-- Reactions
+SMS.ManageReaction:SetHandler(function(payload) REACT.Manage(payload) end)
+SMS.ClearAllReactionBoosts:SetHandler(function(payload) REACT.ClearAllBoosts(payload) end)
 
 -- Passives
 SMS.AddPassive:SetHandler(function(payload) PASSV.Manage(payload) end)
@@ -218,3 +223,4 @@ end
 SMS.FetchSpellModNames:SetHandler(CreateStatsModNameFetchHandler("SpellData", SMS.SendSpellModNames))
 SMS.FetchPassiveModNames:SetHandler(CreateStatsModNameFetchHandler("PassiveData", SMS.SendPassiveModNames))
 SMS.FetchStatusModNames:SetHandler(CreateStatsModNameFetchHandler("StatusData", SMS.SendStatusModNames))
+SMS.FetchReactionModNames:SetHandler(CreateStatsModNameFetchHandler("InterruptData", SMS.SendReactionModNames))

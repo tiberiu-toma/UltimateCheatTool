@@ -11,6 +11,7 @@ local SkillsTab = Ext.Require("Client/UI/Tabs/SkillsTab.lua")
 local TagTab = Ext.Require("Client/UI/Tabs/TagTab.lua")
 local ProficiencyTab = Ext.Require("Client/UI/Tabs/ProficiencyTab.lua")
 local ResistanceTab = Ext.Require("Client/UI/Tabs/ResistanceTab.lua")
+local ReactionTab = Ext.Require("Client/UI/Tabs/ReactionTab.lua")
 local RecruitTab = Ext.Require("Client/UI/Tabs/RecruitTab.lua")
 --local ResetTab = Ext.Require("Client/UI/Tabs/ResetTab.lua")
 
@@ -30,6 +31,7 @@ local RecruitTab = Ext.Require("Client/UI/Tabs/RecruitTab.lua")
 ---@field SkillsTab SkillsTab
 ---@field ProficiencyTab ProficiencyTab
 ---@field ResistanceTab ResistanceTab
+---@field ReactionTab ReactionTab
 ---@field PassiveTab PassiveTab
 ---@field StatusTab StatusTab
 -----@field ResetTab ResetTab
@@ -74,12 +76,14 @@ function CharacterToolsUI:Initialize()
         if self.SkillsTab and self.SkillsTab.Tab.Visible then self.SkillsTab:Draw() end
         if self.ProficiencyTab and self.ProficiencyTab.Tab.Visible then self.ProficiencyTab:Draw() end
         if self.ResistanceTab and self.ResistanceTab.Tab.Visible then self.ResistanceTab:Draw() end
+        if self.ReactionTab and self.ReactionTab.Tab.Visible then self.ReactionTab:GetLearnedReactions() end
     end)
 
     self.TabBar = self.Window:AddTabBar("UCT_CharacterTabBar")
 
     self.GenericTab = GenericTab:New(self.TabBar)
     self.SpellTab = SpellTab:New(self.TabBar)
+    self.ReactionTab = ReactionTab:New(self.TabBar)
     self.PassiveTab = PassiveTab:New(self.TabBar, "CharacterTools") -- Add PassiveTab to CharacterTools
     self.StatusTab = StatusTab:New(self.TabBar, "CharacterTools") -- Add StatusTab to CharacterTools
     self.ResourceTab = ResourceTab:New(self.TabBar)
@@ -93,6 +97,7 @@ function CharacterToolsUI:Initialize()
 
     self.GenericTab:Init()
     self.SpellTab:Init()
+    self.ReactionTab:Init()
     self.PassiveTab:Init() -- Initialize CharacterTools' PassiveTab
     self.StatusTab:Init() -- Initialize CharacterTools' StatusTab
     self.ResourceTab:Init()

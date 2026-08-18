@@ -18,6 +18,7 @@ SMS.SendResources:SetHandler(CreateDataHandler(function() return CharacterTools 
 SMS.SendConsumables:SetHandler(CreateDataHandler(function() return ItemTools and ItemTools.ConsumableTab end))
 SMS.SendWaypoints:SetHandler(CreateDataHandler(function() return MiscTools and MiscTools.WaypointTab end))
 SMS.SendOtherItems:SetHandler(CreateDataHandler(function() return ItemTools and ItemTools.OtherItemTab end))
+SMS.SendReactions:SetHandler(CreateDataHandler(function() return CharacterTools and CharacterTools.ReactionTab end))
 
 -- Handlers for tabs that exist in multiple UI contexts
 SMS.SendPassives:SetHandler(function (payload)
@@ -70,6 +71,12 @@ end)
 SMS.SendOtherItemModNames:SetHandler(function (payload)
     if ItemTools and ItemTools.OtherItemTab and ItemTools.OtherItemTab.FilterComponent then
         ItemTools.OtherItemTab.FilterComponent:SetModNameOptions(payload.data)
+    end
+end)
+
+SMS.SendReactionModNames:SetHandler(function (payload)
+    if CharacterTools and CharacterTools.ReactionTab and CharacterTools.ReactionTab.FilterComponent then
+        CharacterTools.ReactionTab.FilterComponent:SetModNameOptions(payload.data)
     end
 end)
 
@@ -144,6 +151,9 @@ local refreshHandlers = {
     end,
     Resistance = function()
         if CharacterTools and CharacterTools.ResistanceTab and CharacterTools.ResistanceTab.Tab.Visible then CharacterTools.ResistanceTab:Draw() end
+    end,
+    Reaction = function()
+        if CharacterTools and CharacterTools.ReactionTab and CharacterTools.ReactionTab.Tab.Visible then CharacterTools.ReactionTab:GetLearnedReactions() end
     end,
     Damage = function()
         if ItemTools and ItemTools.DamageTab and ItemTools.DamageTab.Tab.Visible then ItemTools.DamageTab:GetAddedDamage() end

@@ -39,48 +39,50 @@ local function ReapplyStackingBoosts(charUUID, boostMods)
     end)
 end
 
+--- Re-applies spell boosts and handles hotbar restoration.
+---@param charUUID string The character to apply boosts to.
+---@param spellMods table The spell modification table for the character.
+local function ReapplySpellBoosts(charUUID, spellMods)
+    if not spellMods or HLP.Count(spellMods) == 0 then return end
+
+    local spellBoosts = {}
+    for _, data in pairs(spellMods) do
+        if data.boostString then table.insert(spellBoosts, data.boostString) end
+    end
+
+    if #spellBoosts > 0 then
+        HotbarManager.Save(charUUID)
+
+        for _, boostString in ipairs(spellBoosts) do
+            Osi.RemoveBoosts(charUUID, boostString, 1, "", "")
+        end
+
+        local ticks = 0
+        local e
+        e = Ext.Events.Tick:Subscribe(function()
+            ticks = ticks + 1
+            if ticks >= 5 then -- Wait a few ticks
+                for _, boostString in ipairs(spellBoosts) do
+                    Osi.AddBoosts(charUUID, boostString, "", "")
+                end
+                HotbarManager.Restore(charUUID)
+                Ext.Events.Tick:Unsubscribe(e)
+            end
+        end)
+    end
+end
+
 -- Called when a session is loaded to re-apply all saved modifications.
 function CharacterModificationManager:ReapplyAll()
 	-- Re-apply boosts from CharacterModifications
 	local modifiedCharacters = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications
 	if modifiedCharacters and HLP.Count(modifiedCharacters) > 0 then
 		for charUUID, modifications in pairs(modifiedCharacters) do
-			-- Re-apply spells
-			if modifications.spells and HLP.Count(modifications.spells) > 0 then
-                -- Save the hotbar before we mess with the spells
-                HotbarManager.Save(charUUID)
+			-- Re-apply spells (hotbar items)
+			ReapplySpellBoosts(charUUID, modifications.spells)
 
-                local spellBoosts = {}
-                for _, spellData in pairs(modifications.spells) do
-                    if spellData.boostString then
-                        table.insert(spellBoosts, spellData.boostString)
-                    end
-                end
-                -- Remove all first to prevent issues, then re-add after a delay.
-                if #spellBoosts > 0 then
-                    for _, boostString in ipairs(spellBoosts) do
-                        Osi.RemoveBoosts(charUUID, boostString, 1, "", "")
-                    end
-
-                    local ticks = 0
-                    local e
-                    e = Ext.Events.Tick:Subscribe(function()
-                        ticks = ticks + 1
-                        if ticks >= 5 then -- Wait a few ticks
-                            for _, boostString in ipairs(spellBoosts) do 
-                                Osi.AddBoosts(charUUID, boostString, "", "") 
-                            end
-                            -- Schedule the hotbar to be restored
-                            HotbarManager.Restore(charUUID)
-                            Ext.Events.Tick:Unsubscribe(e)
-                        end
-                    end)
-                end
-			end
-
-			-- Re-apply resources
-            -- Commented out as it is not necessary anymore, and it was causing a bug
-            --ReapplyStackingBoosts(charUUID, modifications.resources)
+			-- Re-apply reactions
+            ReapplyStackingBoosts(charUUID, modifications.reactions)
 
 			-- Re-apply abilities
             ReapplyStackingBoosts(charUUID, modifications.abilities)

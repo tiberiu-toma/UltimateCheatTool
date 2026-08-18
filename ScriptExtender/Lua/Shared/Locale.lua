@@ -54,6 +54,7 @@ LocaleText = {
 	UCT_ProficiencyTab_Label = "Proficiency",
 	UCT_ResistanceTab_Label = "Resistances",
 	UCT_OtherItemTab_Label = "Other Items",
+	UCT_ReactionTab_Label = "Reactions",
 
 	-- Search Labels
 	UCT_SearchEquipment_Label = "Search Equipment:",
@@ -66,6 +67,7 @@ LocaleText = {
 	UCT_SearchTags_Label = "Search Tags:",
 	UCT_SearchWaypoints_Label = "Search Waypoints:",
 	UCT_SearchOtherItems_Label = "Search Other Items:",
+	UCT_SearchReactions_Label = "Search Reactions:",
 	UCT_SearchSkills_Label = "Search Skills:",
 
 	-- Generic Tab
