@@ -43,6 +43,23 @@ function FLTR.Apply(items, filters)
         end
         if not matches then goto continue end
 
+        -- Spell Level Filter
+        if filters.spellLevel and filters.spellLevel ~= "All" then
+            local itemLevel = item.level
+            if filters.spellLevel == "Cantrip" then
+                if itemLevel ~= 0 then matches = false end
+            elseif tostring(itemLevel) ~= filters.spellLevel then
+                matches = false
+            end
+        end
+        if not matches then goto continue end
+
+        -- Spell School Filter
+        if filters.spellSchool and filters.spellSchool ~= "All" and item.spellSchool ~= filters.spellSchool then
+            matches = false
+        end
+        if not matches then goto continue end
+
         table.insert(filteredItems, item)
         ::continue::
     end

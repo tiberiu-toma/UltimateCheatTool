@@ -21,7 +21,7 @@ function SpellTab:New(holder)
         searchLabelHandle = "UCT_SearchSpells_Label",
         noItemsText = "No spells found.",
         maxTableWidth = 5,
-        filters = { mod = true }
+        filters = { mod = true, spellLevel = true, spellSchool = true }
     }
 
     local instance = BaseTab:New(holder, config)
