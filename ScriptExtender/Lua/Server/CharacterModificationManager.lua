@@ -59,7 +59,8 @@ local function SaveResourceSnapshots()
                             -- Iterate all resource entries to find the matching one by UUID and level
                             for _, entries in pairs(entity.ActionResources.Resources) do
                                 for _, entry in pairs(entries) do
-                                    if tostring(entry.ResourceUUID) == tostring(modData.id) and entry.Level == (modData.level or 0) then
+                                    local staticData = Ext.StaticData.Get(entry.ResourceUUID, "ActionResource")
+                                    if tostring(staticData.Name) == tostring(modData.id) and entry.Level == (modData.level or 0) then
                                         snapshots[charUUID][key] = entry.Amount
                                     end
                                 end
@@ -121,7 +122,7 @@ local function ReapplyResourceBoosts(charUUID, resourceMods)
             local e2
             e2 = Ext.Events.Tick:Subscribe(function()
                 ticks2 = ticks2 + 1
-                if ticks2 >= 3 then
+                if ticks2 >= 20 then
                     local snapshots = Ext.Vars.GetModVariables(ModuleUUID).ResourceAmountSnapshots or {}
                     local charSnapshots = snapshots[charUUID]
                     if charSnapshots then
@@ -133,11 +134,10 @@ local function ReapplyResourceBoosts(charUUID, resourceMods)
                                 if info then
                                     for _, entries in pairs(entity.ActionResources.Resources) do
                                         for _, entry in pairs(entries) do
-                                            if tostring(entry.ResourceUUID) == tostring(info.id) and entry.Level == info.level then
-                                                if entry.Amount > savedAmount then
-                                                    entry.Amount = savedAmount
-                                                    changed = true
-                                                end
+                                            local staticData = Ext.StaticData.Get(entry.ResourceUUID, "ActionResource")
+                                            if tostring(staticData.Name) == tostring(info.id) and entry.Level == info.level then
+                                                entry.Amount = savedAmount
+                                                changed = true
                                             end
                                         end
                                     end
