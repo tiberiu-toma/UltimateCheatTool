@@ -44,10 +44,25 @@ function RSRC._Manage(character, resourceId, data, amount, level, remove, unique
     if not mods[character].resources then mods[character].resources = {} end
 
     if remove then
-        local resourceData = mods[character].resources[uniqueKey]
-        if resourceData and resourceData.boostString then
-            Osi.RemoveBoosts(character, resourceData.boostString, 1, "", "")
-            mods[character].resources[uniqueKey] = nil
+        local keysToRemove = {}
+        if uniqueKey then
+            if mods[character].resources[uniqueKey] then
+                table.insert(keysToRemove, uniqueKey)
+            else
+                for key, resourceData in pairs(mods[character].resources) do
+                    if resourceData.id == uniqueKey then
+                        table.insert(keysToRemove, key)
+                    end
+                end
+            end
+        end
+
+        for _, key in ipairs(keysToRemove) do
+            local resourceData = mods[character].resources[key]
+            if resourceData and resourceData.boostString then
+                Osi.RemoveBoosts(character, resourceData.boostString, 1, "", "")
+                mods[character].resources[key] = nil
+            end
         end
     else
         local boostString = string.format("ActionResource(%s,%s,%s)", resourceId, amount, level)
