@@ -9,13 +9,14 @@ function REACT.GetAll(search, page, filters)
     local itemData = Ext.Stats.GetStats("InterruptData")
     local allMatchingReactions = {}
 
-    for k,v in pairs(itemData) do 
+    for k, v in pairs(itemData) do
         local id = v
         v = Ext.Stats.Get(v)
         local icon = HLP.GetAttr(v, "Icon")
         local name = HLP.GetAttr(v, "Name")
         local handle = HLP.GetAttr(v, "DisplayName")
         local description = Ext.Loca.GetTranslatedString(HLP.GetAttr(v, "Description"))
+        local cost = HLP.GetAttr(v, "Cost") -- Add this line to retrieve the cost
 
         local modId = HLP.GetAttr(v, "ModId")
         local mod = Ext.Mod.GetMod(modId)
@@ -31,7 +32,8 @@ function REACT.GetAll(search, page, filters)
                 icon = icon,
                 displayName = displayName,
                 description = description,
-                modName = modName
+                modName = modName,
+                cost = cost -- Add this line to include the cost
             })
         end
     end

@@ -46,8 +46,13 @@ function ReactionTab:New(holder)
 
             item.OnClick = function() popup:Open() end
 
-            InfoPopup:AddInfo(popup, data, { { key = "id", label = "ID" }, { key = "displayName", label = "Name" } })
+            local infoFields = {}
+            if data.id then table.insert(infoFields, { key = "id", label = "ID" }) end
+            if data.displayName or data.fullName then table.insert(infoFields, { key = data.fullName and "fullName" or "displayName", label = "Name" }) end
+            if data.cost then table.insert(infoFields, { key = "cost", label = "Cost" }) end
 
+            InfoPopup:AddInfo(popup, data, infoFields)
+            
             local removeBtn = popup:AddButton("Unlearn##" .. uuid)
             removeBtn.OnClick = function() SMS.ManageReaction:SendToServer({ ID = USERID, character = UIState.SelectedCharacter, uuid=uuid, remove=1 }) end
         end
@@ -92,10 +97,13 @@ function ReactionTab:DrawGrid()
                 local unlearnBtn = row1:AddCell():AddButton("Unlearn##Unlearn" .. uuid)
 
                 data.fullName = fullName
-                local infoFields = {
-                    { key = "id", label = "ID" }, { key = "fullName", label = "Name" },
-                    { key = "description", label = "Description" }, { key = "modName", label = "Mod Name" },
-                }
+                local infoFields = {}
+                if data.id then table.insert(infoFields, { key = "id", label = "ID" }) end
+                if data.fullName then table.insert(infoFields, { key = "fullName", label = "Name" }) end
+                if data.description then table.insert(infoFields, { key = "description", label = "Description" }) end
+                if data.modName then table.insert(infoFields, { key = "modName", label = "Mod Name" }) end
+                if data.cost then table.insert(infoFields, { key = "cost", label = "Cost" }) end
+
                 InfoPopup:AddInfo(popup, data, infoFields)
                 
                 learnBtn.OnClick = function()
