@@ -14,7 +14,7 @@ function EKP.GetTemplateData(v)
     local icon = HLP.GetAttr(v, "Icon")
     local name = HLP.GetAttr(v, "Name")
     local handle = HLP.GetAttr(v, "DisplayName.Handle.Handle")
-    local displayName = HLP.GetTranslatedString(handle, name)
+    local displayName = handle ~= nil and handle ~= "" and HLP.GetTranslatedString(handle, name) or name
     local rarity = nil
     local armorClass = nil
     local armorType = nil
