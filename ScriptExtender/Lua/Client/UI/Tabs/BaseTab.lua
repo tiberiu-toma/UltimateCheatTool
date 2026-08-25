@@ -107,7 +107,7 @@ function BaseTab:AddSearch()
 
     -- Allow child classes to add more buttons to the search area
     if self.AddExtraSearchButtons then
-        self:AddExtraSearchButtons(self.SearchArea)
+        self:AddExtraSearchButtons(self.SearchArea, self.FilterComponent)
     end
 
     if self.FilterComponent then

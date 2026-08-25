@@ -100,6 +100,7 @@ SMS.ManageDamageOnItem:SetHandler(function(payload) DMG.ManageOnItem(payload, pa
 SMS.SpawnTemplate:SetHandler(function(payload) EKP.Spawn(payload) end)
 SMS.SpawnAllOfTemplateForParty:SetHandler(function(payload) EKP.SpawnForParty(payload) end)
 SMS.SpawnAllEquipment:SetHandler(function(payload) EKP.SpawnAll(payload) end)
+SMS.SpawnFilteredEquipment:SetHandler(function(payload) EKP.SpawnFiltered(payload) end)
 SMS.SpawnCharacter:SetHandler(function(payload) ENPC.Spawn(payload) end)
 SMS.DespawnCharacter:SetHandler(function(payload) ENPC.Despawn(payload) end)
 SMS.ManageNPC:SetHandler(function(payload) ENPC.Manage(payload) end)
