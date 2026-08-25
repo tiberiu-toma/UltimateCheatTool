@@ -11,7 +11,9 @@ function TAGS.GetAll(search, page, filters)
 
     for _, tagId in pairs(tagData) do
         local staticData = Ext.StaticData.Get(tagId, "Tag")
-        local displayName = HLP.GetTranslatedString(staticData.DisplayName.Handle.Handle, staticData.Name)
+        local handle = HLP.GetAttr(staticData, "DisplayName.Handle.Handle")
+        local name = HLP.GetAttr(staticData, "Name")
+        local displayName = handle ~= nil and handle ~= "" and HLP.GetTranslatedString(handle, name) or name
         local displayDescription = Ext.Loca.GetTranslatedString(staticData.DisplayDescription.Handle.Handle, staticData.Description)
 
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName))

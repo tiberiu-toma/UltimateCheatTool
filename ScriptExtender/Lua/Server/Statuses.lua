@@ -21,7 +21,7 @@ function STAT.GetAll(search, page, filters)
 
         local name = HLP.GetAttr(v, "Name")
         local handle = HLP.GetAttr(v, "DisplayName") 
-        local displayName = HLP.GetTranslatedString(handle, name)
+        local displayName = handle ~= nil and handle ~= "" and HLP.GetTranslatedString(handle, name) or name
 
         local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName))
 
