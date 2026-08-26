@@ -30,11 +30,18 @@ function EquipmentTab:New(holder)
     return instance
 end
 
-function EquipmentTab:AddExtraSearchButtons(searchArea)
+function EquipmentTab:AddExtraSearchButtons(searchArea, filterComponent)
     local spawnAllBtn = searchArea:AddButton(LCL.Get("UCT_EquipmentTab_SpawnAll", "Spawn All (Non-Story)"))
+    spawnAllBtn.SameLine = true
     spawnAllBtn.OnClick = function()
         local charUUID = UIState.SelectedCharacter
         SMS.SpawnAllEquipment:SendToServer({ ID = charUUID })
+    end
+    local spawnFilteredBtn = searchArea:AddButton(LCL.Get("UCT_EquipmentTab_SpawnFiltered", "Spawn Filtered (Non-Story)"))
+    spawnFilteredBtn.SameLine = true
+    spawnFilteredBtn.OnClick = function()
+        local charUUID = UIState.SelectedCharacter
+        SMS.SpawnFilteredEquipment:SendToServer({ ID = charUUID, filters = filterComponent:GetState(), search = self.SearchText })
     end
 end
 

@@ -85,6 +85,32 @@ function EKP.GetAll(search, page, filters)
     return UTL.Paginate(filtered, page, pageSize)
 end
 
+function EKP.GetFilteredItems(search, filters)
+    search = search or ""
+    local itemData = Ext.Template.GetAllRootTemplates()
+
+    local allMatchingEquipment = {}
+
+    for k,v in pairs(itemData) do 
+        if HLP.GetAttr(v, "TemplateType") == "item" and not HLP.GetAttr(v, "StoryItem") then
+            local data = EKP.GetTemplateData(v)
+            if data then
+                local displayName = data.displayName
+                local name = data.name
+                local matchesSearch = (search == "") or (displayName and HLP.StrContains(search, displayName)) or (name and HLP.StrContains(search, name))
+
+                if matchesSearch then
+                    table.insert(allMatchingEquipment, data)
+                end
+            end
+        end
+    end
+
+    local filtered = FLTR.Apply(allMatchingEquipment, filters)
+    table.sort(filtered, function(a, b) return a.displayName < b.displayName end)
+    return filtered
+end
+
 function EKP.GetAllEquippedItems()
     local allPartyItems = {}
     local partyMembers = HLP.GetAllChars()
@@ -205,5 +231,19 @@ function EKP.SpawnAll(payload)
 
     for _,uuid in ipairs(allItems) do
         Osi.TemplateAddTo(uuid, character, 1, 0)
+    end
+end
+
+function EKP.SpawnFiltered(payload)
+    local filters = payload.filters or {}
+    local search = payload.search or ""
+    local character = payload.ID
+
+    if not character then return end
+
+    local filteredItems = EKP.GetFilteredItems(search, filters)
+
+    for _, itemData in ipairs(filteredItems) do
+        Osi.TemplateAddTo(itemData.id, character, 1, 0)
     end
 end
