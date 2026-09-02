@@ -127,7 +127,7 @@ function EKP.GetEquippedItems(characterUUID)
         "Helmet", "Breast", "Gloves", "Boots",
         "Melee Main Weapon", "Melee Offhand Weapon", "Ranged Main Weapon", "Ranged Offhand Weapon",
         "Amulet", "Ring", "Ring2", "Underwear", "Cloak",
-        "VanityBody", "VanityBoots", "MusicalInstrument", "Torch" --????
+        "VanityBody", "VanityBoots", "MusicalInstrument",
     }
 
     for _, slot in ipairs(slots) do
