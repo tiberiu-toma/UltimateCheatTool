@@ -31,7 +31,8 @@ function FilterComponent:New(parent, config, onChange)
         SlotOptions = {
             "All", "Helmet", "Breast", "Gloves", "Boots", "Melee Main Weapon", 
             "Melee Offhand Weapon", "Ranged Main Weapon", "Ranged Offhand Weapon", 
-            "Amulet", "Ring", "Ring2", "Underwear", "Cloak", "MusicalInstrument"
+            "Amulet", "Ring", "Ring2", "Underwear", "Cloak", "MusicalInstrument", 
+            "VanityBody", "VanityBoots"
         },
         SpellLevelOptions = { "All", "Cantrip", "1", "2", "3", "4", "5", "6", "7", "8", "9" },
         SpellSchoolOptions = { "All", "Abjuration", "Conjuration", "Divination", "Enchantment", "Evocation", "Illusion", "Necromancy", "Transmutation" }
