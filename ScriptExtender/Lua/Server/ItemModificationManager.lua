@@ -77,7 +77,8 @@ function ItemModificationManager:ReapplyAll()
 									table.insert(passivesToApply, passiveId)
 								end
 							end
-							instanceStats.PassivesOnEquip = table.concat(passivesToApply, ";")
+							local existingPassives = originalStats.PassivesOnEquip
+							instanceStats.PassivesOnEquip = existingPassives .. ";" .. table.concat(passivesToApply, ";")
 
 							local statusesToApply = {}
 							if modifications.statuses then
@@ -85,7 +86,8 @@ function ItemModificationManager:ReapplyAll()
 									table.insert(statusesToApply, statusId)
 								end
 							end
-							instanceStats.StatusOnEquip = table.concat(statusesToApply, ";")
+							local existingStatuses = originalStats.StatusOnEquip
+							instanceStats.StatusOnEquip = existingStatuses .. ";" .. table.concat(statusesToApply, ";")
 
 							instanceStats:Sync()
 							item.Data.StatsId = instanceStatsName
