@@ -19,6 +19,13 @@ function HotbarManager.Save(charUUID)
     end
 end
 
+function HotbarManager.RestoreHotbarForParty()
+    local partyMembers = PARTY.GetMembers()
+    for _, member in ipairs(partyMembers) do
+        HotbarManager.Restore(member.uuid)
+    end
+end
+
 --- Schedules a restoration of a character's saved hotbar state from the cache.
 ---@param charUUID string
 function HotbarManager.Restore(charUUID)

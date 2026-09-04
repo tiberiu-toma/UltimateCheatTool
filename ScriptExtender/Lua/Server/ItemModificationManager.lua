@@ -92,13 +92,37 @@ function ItemModificationManager:ReapplyAll()
 							instanceStats:Sync()
 							item.Data.StatsId = instanceStatsName
 							item:Replicate("Data")
+
+							ItemModificationManager:SaveWeaponActionsInHotbar()
+
 							HLP.RefreshEquippedItem(nil, templateUUID)
+
+							ItemModificationManager:RestoreWeaponActionsInHotbar()
 						end
 					end
 				end
 			end
 		end
 	end
+end
+
+function ItemModificationManager:SaveWeaponActionsInHotbar()
+	local partyMembers = PARTY.GetMembers()
+    for _, member in ipairs(partyMembers) do
+        HotbarManager.Save(member.uuid)
+    end
+end
+
+function ItemModificationManager:RestoreWeaponActionsInHotbar()
+	local ticks = 0
+	local e
+	e = Ext.Events.Tick:Subscribe(function()
+		ticks = ticks + 1
+		if ticks >= 10 then -- Wait a few ticks
+			HotbarManager.RestoreHotbarForParty()
+			Ext.Events.Tick:Unsubscribe(e)
+		end
+	end)
 end
 
 -- Subscribe to the session loaded event.
