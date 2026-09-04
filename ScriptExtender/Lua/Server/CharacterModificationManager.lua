@@ -39,6 +39,79 @@ local function ReapplyStackingBoosts(charUUID, boostMods)
     end)
 end
 
+--- Checks if a character has any health-affecting modifications (Max HP buffs or Constitution boosts).
+---@param modifications table The character modifications table.
+---@return boolean
+local function HasHealthModifications(modifications)
+    if not modifications then return false end
+
+    if modifications.characterBuffs and HLP.Count(modifications.characterBuffs) > 0 then
+        for _, modData in pairs(modifications.characterBuffs) do
+            if modData and modData.boostString and string.find(modData.boostString, "IncreaseMaxHP") then
+                return true
+            end
+        end
+    end
+
+    if modifications.abilities and HLP.Count(modifications.abilities) > 0 then
+        for _, modData in pairs(modifications.abilities) do
+            if modData then
+                if modData.abilityName == "Constitution" then
+                    return true
+                end
+                if modData.boostString and string.find(modData.boostString, "Constitution") then
+                    return true
+                end
+            end
+        end
+    end
+
+    return false
+end
+
+--- Snapshots the current health amounts for all characters with health modifications.
+--- This is called right before a save so we can restore damaged health states on load/save re-application.
+local function SaveHealthSnapshots()
+    local mods = Ext.Vars.GetModVariables(ModuleUUID).CharacterModifications or {}
+    local snapshots = {}
+
+    for charUUID, modifications in pairs(mods) do
+        if HasHealthModifications(modifications) then
+            local entity = Ext.Entity.Get(charUUID)
+            if entity and entity.Health and entity.Health.Hp then
+                snapshots[charUUID] = entity.Health.Hp
+            end
+        end
+    end
+
+    Ext.Vars.GetModVariables(ModuleUUID).HealthAmountSnapshots = snapshots
+end
+
+--- Restores snapshotted health amounts for a character after boosts are re-applied.
+---@param charUUID string The character to restore health for.
+local function RestoreHealthSnapshot(charUUID)
+    local snapshots = Ext.Vars.GetModVariables(ModuleUUID).HealthAmountSnapshots or {}
+    local savedHp = snapshots[charUUID]
+    if not savedHp or savedHp <= 0 then return end
+
+    local ticks = 0
+    local e
+    e = Ext.Events.Tick:Subscribe(function()
+        ticks = ticks + 1
+        if ticks >= 25 then
+            local entity = Ext.Entity.Get(charUUID)
+            if entity and entity.Health then
+                local targetHp = math.min(savedHp, entity.Health.MaxHp)
+                if targetHp > 0 then
+                    entity.Health.Hp = targetHp
+                    entity:Replicate("Health")
+                end
+            end
+            Ext.Events.Tick:Unsubscribe(e)
+        end
+    end)
+end
+
 --- Snapshots the current resource amounts for all characters with resource modifications.
 --- This is called right before a save so we can restore spent resource states on load.
 local function SaveResourceSnapshots()
@@ -219,6 +292,11 @@ function CharacterModificationManager:ReapplyAll(isSave)
             if not isSave then
                 ReapplyResourceBoosts(charUUID, modifications.resources)
             end
+
+            -- Restore health (with damaged amount preservation)
+            if HasHealthModifications(modifications) then
+                RestoreHealthSnapshot(charUUID)
+            end
 		end
 	end
 
@@ -246,10 +324,11 @@ end)
 
 -- Wait for the game to enter a safe state before running the logic.
 Ext.Events.GameStateChanged:Subscribe(function(ev)
-    -- When transitioning to Save, snapshot current resource amounts so we can
-    -- restore spent resources after the boosts are re-applied on load.
+    -- When transitioning to Save, snapshot current resource and health amounts so we can
+    -- restore spent resources and health after the boosts are re-applied on load/save.
     if ev.ToState == "Save" then
         SaveResourceSnapshots()
+        SaveHealthSnapshots()
     end
 
     -- When the game is running and we have a pending re-apply, execute it.
